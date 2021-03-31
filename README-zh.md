@@ -1,9 +1,6 @@
 ### android-rtm-sdk 使用文档
-- [版本支持](#版本支持)
-- [使用说明](#使用说明)
-- [使用示例](#使用示例)
 - [接口说明](#接口说明)
-- [测试案例](#测试案例)
+    - [测试案例](#测试案例)
 
 ### 版本支持
 - 最低支持Android版本为4.1(api16)
@@ -82,6 +79,7 @@ import com.rtmsdk.RTMAudio; //语音相关功能
 - [房间/群组/好友接口](doc-zh/RTMRelationship.md)
 - [用户系统命令接口](doc-zh/RTMUserSystem.md)
 - [语音接口](doc-zh/RTMAudio.md)
+- [RTM实时语音接口](doc-zh/RTV.md)
 - [RTM错误码](doc-zh/ErrorCode.md)
 
 
