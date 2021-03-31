@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".startActivity">
+
+    <Button
+        android:id="@+id/RTMIM"
+        android:layout_width="148dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="364dp"
+        android:text="RTM聊天测试"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/RTMVoice"
+        android:layout_width="148dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="40dp"
+        android:text="RTM实时语音"
+        app:layout_constraintBottom_toBottomOf="@+id/RTMIM"
+        app:layout_constraintStart_toEndOf="@+id/RTMIM"
+        app:layout_constraintTop_toTopOf="@+id/RTMIM"
+        app:layout_constraintVertical_bias="0.0" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
