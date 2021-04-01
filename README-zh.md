@@ -1,6 +1,8 @@
 ### android-rtm-sdk 使用文档
 - [版本支持](#版本支持)
+- [依赖集成](#依赖集成)
 - [使用说明](#使用说明)
+- [使用示例](#使用示例)
 - [接口说明](#接口说明)
 - [测试案例](#测试案例)
 
@@ -8,10 +10,11 @@
 - 最低支持Android版本为4.1(api16)
 - 支持fpnn ecc加密(secp192r1,secp224r1,secp256r1,secp256r1)
 
+### 依赖集成
 
 ### 使用说明
 - RTM通信需要网络权限，使用离线语音或者实时语音相关功能需要存储，录音和蓝牙权限
-- 请在子线程初始化RTMClient以及登录和任何发送操作
+- 如果使用实时语音请在任意activity的oncreate中 初始化RTMClient对象
 - RTM默认支持自动重连(请继承RTMPushProcessor类的reloginWillStart和reloginCompleted方法) 初始化需要传入applicationContext
 - 服务器push消息:请继承RTMPushProcessor类,重写自己需要的push系列函数(RTM的push回调函数和收发线程在一起 如果用户在push的回调函数中有耗时操作 建议请独开启线程处理)
 - RTM的各项服务配置和增值服务可以在后台配置，请登陆管理后台预览详细的配置参数
@@ -20,7 +23,7 @@
   - room默认不支持多房间（当用户进入第二个房间会自动退出第一个房间） 用户可以在控制台开启支持多房间配置
 - RTMConfig是RTM的全局配置参数，所有配置均已有默认值，使用者如需要重新设置默认值，请在初始化RTMclient调用带RTMConfig的构造函数。
 - RTM实时语音说明:
-  - 开启实时语音功能需要RTM先登陆成功，然后调用initRTMVoice初始化
+  - 开启实时语音功能需要RTM登陆成功，然后调用initRTMVoice
 - 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
      public class TestErrorRecorder extends ErrorRecorder {
@@ -81,7 +84,6 @@ import com.rtmsdk.RTMAudio; //语音相关功能
 - [房间/群组/好友接口](doc-zh/RTMRelationship.md)
 - [用户系统命令接口](doc-zh/RTMUserSystem.md)
 - [语音接口](doc-zh/RTMAudio.md)
-- [RTM实时语音接口](doc-zh/RTV.md)
 - [RTM错误码](doc-zh/ErrorCode.md)
 
 
