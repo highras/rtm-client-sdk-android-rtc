@@ -15,8 +15,8 @@
 ### 使用说明
 - RTM通信需要网络权限，使用离线语音或者实时语音相关功能需要存储，录音和蓝牙权限
 - 如果使用实时语音请在任意activity的oncreate中 初始化RTMClient对象
-- RTM默认支持自动重连(请继承RTMPushProcessor类的reloginWillStart和reloginCompleted方法) 初始化需要传入applicationContext
-- 服务器push消息:请继承RTMPushProcessor类,重写自己需要的push系列函数(RTM的push回调函数和收发线程在一起 如果用户在push的回调函数中有耗时操作 建议请独开启线程处理)
+- RTM默认支持自动重连(请继承RTMPushProcessor类的reloginWillStart和reloginCompleted方法)
+- 服务器push消息:请继承RTMPushProcessor类,重写自己需要的push系列函数(RTM的push回调函数和收发线程在一起 如果用户在push的回调函数中有耗时操作 建议单独开启线程处理)
 - RTM的各项服务配置和增值服务可以在后台配置，请登陆管理后台预览详细的配置参数
 - 所有同步和异步接口都会返回 RTMAnswer结构，请优先判断answer中的errorCode 如果为0正常
 - RTM的room和group的区别 group在服务端会持久化 room是非持久化(用户下线或者RTM链接断开会自动离开room)
@@ -48,7 +48,7 @@
     或者
     RTMConfig newconfig = new RTMConfig();
     newconfig.defaultErrorRecorder = new TestErrorRecorder();
-    RTMClient rtmclient  = new RTMClient((String endpoint, long pid, long uid, RTMPushProcessor serverPushProcessor,Context applicationContext,RTMConfig newconfig)
+    RTMClient rtmclient  = new RTMClient((String endpoint, long pid, long uid, RTMPushProcessor serverPushProcessor,Activity activity,RTMConfig newconfig)
     ~~~
 
 ### 使用示例
