@@ -550,7 +550,7 @@ public class RTV extends Activity {
                     alertDialog("getUserToken is empty");
                 }
             } else
-                alertDialog("getUserToken " + ret.getErrorMessage());
+                alertDialog("getUserToken " + ret.getErrorCode());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

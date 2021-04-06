@@ -1,2 +1,4 @@
 include ':app'
 rootProject.name = "RTVdemo"
+include ':fpnnsdk'
+include ':fpnn-rtm-sdk'

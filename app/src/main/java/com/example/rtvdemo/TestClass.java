@@ -1629,9 +1629,9 @@ class GroupCase implements com.example.rtvdemo.CaseInterface {
     }
 
     void asyncGroupTest(){
-        client.getGroupMembers(new IRTMCallback<HashSet<Long>>() {
+        client.getGroupMembers(new IRTMDoubleValueCallback<HashSet<Long>, HashSet<Long>>() {
             @Override
-            public void onResult(HashSet<Long> uids, RTMAnswer answer) {
+            public void onResult(HashSet<Long> uids, HashSet<Long> onlineuids,RTMAnswer answer) {
                 com.example.rtvdemo.TestClass.asyncOutPutMsg(answer,"getGroupMembers",uids!=null?uids.toString():"");
             }
         },groupId);
