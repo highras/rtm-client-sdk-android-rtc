@@ -202,15 +202,6 @@ public class TestClass {
                 com.example.rtvdemo.TestClass.outPutMsg(answer, "sendFile audio", com.example.rtvdemo.TestClass.userBeizhu, mtime, messageId,false);
             }
         }, com.example.rtvdemo.TestClass.roomId, FileMessageType.AUDIOFILE, com.example.rtvdemo.TestClass.audioStruct.audioData,"",lll, com.example.rtvdemo.TestClass.audioStruct);
-
-//        ModifyTimeStruct dd = client.sendAudio(peerUid,audioFile);
-//        client.sendGroupAudio(groupId,audioFile);
-//        if (testMap == null) {
-//            mylog.log("rtmclient init error");
-//            return;
-//        }
-//        AudioCase hh = (AudioCase) testMap.get("audio");
-//        hh.sendAudio(data);
     }
 
     public void startCase() throws InterruptedException {

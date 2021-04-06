@@ -186,12 +186,6 @@ public class RTM extends Activity {
                 }
 
                 if (grantFlas) {
-                    //-----------未授权-----------
-                    // 判断用户是否点击了不再提醒。(检测该权限是否还可以申请)
-                    // shouldShowRequestPermissionRationale合理的解释应该是：如果应用之前请求过此权限
-                    //但用户拒绝了请求且未勾选"Don’t ask again"(不在询问)选项，此方法将返回 true。
-                    //注：如果用户在过去拒绝了权限请求，并在权限请求系统对话框中勾选了
-                    //"Don’t ask again" 选项，此方法将返回 false。如果设备规范禁止应用具有该权限，此方法会返回 false。
                     boolean shouldShowRequestFlas = false;
                     for (String per : permissions) {
                         if (shouldShowRequestPermissionRationale(per)) {
@@ -224,17 +218,9 @@ public class RTM extends Activity {
         ceshi.pushUserTokens = new HashMap<Long, String>() {
             {
 //                put(101L, "2FB123B31E9188B1250A7DAF2196E64F");
-//                put(102L, "C84E6F19C4D4386B273F19CA43A0B8BB");
-//                put(103L, "04F1A70E3CF133C80007360F3BD43BB6");
-//                put(104L, "E1DA4D1D1339AF26144DDFC02D0E954A");
-//                put(105L, "8DED3F4B8871D8EFCEC73522EF4820F1");
-//                put(106L, "40914C1100DB7DEF8648F9A6F8BF25AC");
-//                put(107L, "1F6B13BC197E187C36240BCD2BBB244C");
-//                put(108L, "30C7AD1C92A9642C86BF2F239639A62D");
             }
         };
         for (final long testuid : ceshi.pushUserTokens.keySet()) {
-//            RTMClient rtmUser = new RTMClient(endpoint, pid, testuid, new RTMExampleQuestProcessor());
             RTMClient rtmUser = new RTMClient(endpoint, pid, testuid, new RTMExampleQuestProcessor(),this,ll);
             ceshi.addClients(testuid, rtmUser);
         }
@@ -401,9 +387,5 @@ public class RTM extends Activity {
                 startTestCase(pid, uid, getToken(pid,uid), "161.189.171.91:13325");
             }
         }).start();
-
-//        TestClass.mySleep(20);
-//        ceshi.client.closeRTM();
-//        ceshi.client = null;
     }
 }

@@ -34,61 +34,6 @@ public class startActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
-//        this.getApplication().registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-//            private int activityStartCount = 0;
-//            @Override
-//            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
-//
-//            }
-//
-//            @Override
-//
-//            public void onActivityStarted(Activity activity) {
-//
-//                activityStartCount++;
-//                mylog.log(" onActivityStarted " + activityStartCount);
-//
-//                //数值从0变到1说明是从后台切到前台
-//
-//                if (activityStartCount == 1){
-//                    mylog.log(" 进入前台 ");
-//                }
-//
-//            }
-//
-//            @Override
-//            public void onActivityResumed(@NonNull Activity activity) {
-//
-//            }
-//
-//            @Override
-//            public void onActivityPaused(@NonNull Activity activity) {
-//
-//            }
-//
-//            @Override
-//            public void onActivityStopped(@NonNull Activity activity) {
-//                activityStartCount--;
-//                mylog.log(" onActivityStopped " + activityStartCount);
-//
-//                //数值从0变到1说明是从后台切到前台
-//
-//                if (activityStartCount == 0){
-//                    mylog.log(" 进入后台 ");
-//                }
-//            }
-//
-//            @Override
-//            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle bundle) {
-//
-//            }
-//
-//            @Override
-//            public void onActivityDestroyed(@NonNull Activity activity) {
-//
-//            }
-//        });
-
         TestButtonListener testbutton = new TestButtonListener();
 
         if (getSupportActionBar() != null)
