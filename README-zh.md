@@ -35,6 +35,9 @@
 - 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
      public class TestErrorRecorder extends ErrorRecorder {
+        public TestErrorRecorder(){
+             super.setErrorRecorder(this);
+         }
         public void recordError(Exception e) {
             Log.i("log","Exception:" + e);
         }
