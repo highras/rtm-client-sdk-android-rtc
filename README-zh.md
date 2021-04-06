@@ -1,6 +1,9 @@
 ### android-rtm-sdk 使用文档
 - [接口说明](#接口说明)
-    - [测试案例](#测试案例)
+- [依赖集成](#依赖集成)
+- [使用说明](#使用说明)
+- [接口说明](#接口说明)
+- [测试案例](#测试案例)
 
 ### 版本支持
 - 最低支持Android版本为4.1(api16)
@@ -35,11 +38,11 @@
         public void recordError(Exception e) {
             Log.i("log","Exception:" + e);
         }
-    
+
         public void recordError(String message) {
             Log.i("log","Error:" + message);
         }
-    
+
         public void recordError(String message, Exception e) {
             Log.i("log",String.format("Error: %s, exception: %s", message, e));
         }
@@ -61,17 +64,17 @@ import com.rtmsdk.RTMAudio; //发送录音相关功能
     public class RTMExampleQuestProcessor extends RTMPushProcessor {
         ....//重写自己需要处理的业务接口
     }
-    
+
     RTMClient client = new RTMClient(String endpoint, long pid, long uid,new RTMExampleQuestProcessor());
-    
+
     //若服务端启用fpnn加密功能 客户端需要传入公钥和曲线算法
     client.enableEncryptorByDerData(String curve, byte[] peerPublicKey);
-    
+
     //-- sync
     client.login(String token)
     //-- Async
-    client.login(loginCallback callback, String token)
-    
+    client.login(loginCallback callback, String token )
+
     login成功后可以正常调用rtm相关接口
     client.sendChat/ client.sendMessage.....
 ~~~
