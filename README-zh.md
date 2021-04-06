@@ -48,7 +48,7 @@
     或者
     RTMConfig newconfig = new RTMConfig();
     newconfig.defaultErrorRecorder = new TestErrorRecorder();
-    RTMClient rtmclient  = new RTMClient((String endpoint, long pid, long uid, RTMPushProcessor serverPushProcessor,Context applicationContext,RTMConfig newconfig)
+    RTMClient rtmclient  = new RTMClient((String endpoint, long pid, long uid, RTMPushProcessor serverPushProcessor,Activity activity,RTMConfig newconfig)
     ~~~
 
 ### 使用示例
