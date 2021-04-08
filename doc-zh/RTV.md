@@ -45,7 +45,7 @@
      * @param roomId   房间id
      * return RTMAnswer
      */
-    public RTMAnswer leaveVoiceRoom(final long roomId)xw
+    public RTMAnswer leaveVoiceRoom(final long roomId)
 
 
     /**
