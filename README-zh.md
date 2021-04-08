@@ -19,7 +19,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
     ~~~
-- 如果使用实时语音功能请在任意activity的oncreate中 初始化RTMClient对象
 - RTM默认支持断线重连(请继承RTMPushProcessor类的reloginWillStart和reloginCompleted方法,具体用法请参见代码中的方法注释)
 - 服务器push消息:请继承RTMPushProcessor类,重写自己需要的push系列函数(RTM的push回调函数和收发线程在一起 如果用户在push的回调函数中有耗时操作建议单独开启线程处理)
 - RTM的各项服务配置和增值服务可以在后台配置，请登陆管理后台预览详细的配置参数
