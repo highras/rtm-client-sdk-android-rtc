@@ -19,7 +19,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
     ~~~
-- 如果使用实时语音功能请在任意activity的oncreate中 初始化RTMClient对象
 - RTM默认支持断线重连(请继承RTMPushProcessor类的reloginWillStart和reloginCompleted方法,具体用法请参见代码中的方法注释)
 - 服务器push消息:请继承RTMPushProcessor类,重写自己需要的push系列函数(RTM的push回调函数和收发线程在一起 如果用户在push的回调函数中有耗时操作建议单独开启线程处理)
 - RTM的各项服务配置和增值服务可以在后台配置，请登陆管理后台预览详细的配置参数
@@ -28,6 +27,7 @@
   - room默认不支持多房间（当用户进入第二个房间会自动退出第一个房间） 用户可以在控制台开启支持多房间配置
 - RTMConfig是RTM的全局配置参数，所有配置均已有默认值，如需要重新设置默认值，请在初始化RTMclient调用带RTMConfig的构造函数。
 - RTM实时语音说明:
+  - 如果使用实时语音功能请在任意activity的oncreate中 初始化RTMClient对象
   - 开启实时语音功能需要RTM先登陆成功，然后调用initRTMVoice初始化实时语音
   - 由于安卓设备录音大小差别很大 sdk提供增益接口 使用者可自行调节录音声音大小
   - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(需要调用setActivityRoom)
@@ -59,10 +59,6 @@
     ~~~
 
 ### 使用示例
-import com.rtmsdk.RTMClient;<br>
-import com.rtmsdk.RTMErrorCode;
-import com.rtmsdk.RTMAudio; //发送录音相关功能
-
  ~~~
     public class RTMExampleQuestProcessor extends RTMPushProcessor {
         ....//重写自己需要处理的业务接口
@@ -80,6 +76,11 @@ import com.rtmsdk.RTMAudio; //发送录音相关功能
 
     login成功后可以正常调用rtm相关接口
     client.sendChat/ client.sendMessage.....
+
+    实时语音
+    client.enterVoiceRoom(long roomId);
+    client.setActivityRoom(long rid);
+    client.canSpeak(boolean status) //打开或关闭麦克风
 ~~~
 
 ##  接口说明
