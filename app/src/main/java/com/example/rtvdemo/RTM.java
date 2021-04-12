@@ -47,7 +47,8 @@ public class RTM extends Activity {
     private <T extends View> T $(int resId) {
         return (T) super.findViewById(resId);
     }
-
+    final String rtmEndpoint = "161.189.171.91:13321";
+    final String rtcEndpoint = "161.189.171.91:13702";
     Chronometer timer;
     Context mycontext = this;
     int REQUEST_CODE_CONTACT = 101;
@@ -202,13 +203,13 @@ public class RTM extends Activity {
     }
 
 
-    void startTestCase(final long pid, final long uid, final String token, final String endpoint) {
-        ceshi = new TestClass(pid,uid,token,endpoint);
+    void startTestCase(final long pid, final long uid, final String token) {
+        ceshi = new TestClass(pid,uid,token,rtmEndpoint);
         TestErrorRecorder mylogRecoder = new TestErrorRecorder();
         RTMConfig ll = new RTMConfig();
         ll.defaultErrorRecorder = mylogRecoder;
 
-        ceshi.client  = new RTMClient(endpoint, pid, uid, new RTMExampleQuestProcessor(),this,ll);
+        ceshi.client  = new RTMClient(rtmEndpoint,rtcEndpoint, pid, uid, new RTMExampleQuestProcessor(),this,ll);
 //        ceshi.client  = new RTMClient(endpoint, pid, uid, new RTMExampleQuestProcessor());
 //        ceshi.client.setErrorRecoder(mylogRecoder);
 
@@ -221,7 +222,7 @@ public class RTM extends Activity {
             }
         };
         for (final long testuid : ceshi.pushUserTokens.keySet()) {
-            RTMClient rtmUser = new RTMClient(endpoint, pid, testuid, new RTMExampleQuestProcessor(),this,ll);
+            RTMClient rtmUser = new RTMClient(rtmEndpoint,rtcEndpoint, pid, testuid, new RTMExampleQuestProcessor(),this,ll);
             ceshi.addClients(testuid, rtmUser);
         }
 
@@ -384,7 +385,7 @@ public class RTM extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                startTestCase(pid, uid, getToken(pid,uid), "161.189.171.91:13325");
+                startTestCase(pid, uid, getToken(pid,uid));
             }
         }).start();
     }

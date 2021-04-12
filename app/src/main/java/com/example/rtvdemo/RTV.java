@@ -38,7 +38,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RTV extends Activity {
-    final String endpoint = "161.189.171.91:13325";
+    final String rtmEndpoint = "161.189.171.91:13321";
+    final String rtcEndpoint = "161.189.171.91:13702";
     final long pid = 11000002;
 
     TextView uidtext;
@@ -343,7 +344,7 @@ public class RTV extends Activity {
                                 }
                             } else {
                                 uid = getuid();
-                                client = new RTMClient(endpoint, pid, uid, new RTMExampleQuestProcessor(), (Activity) mycontext);
+                                client = new RTMClient(rtmEndpoint, rtcEndpoint, pid,uid, new RTMExampleQuestProcessor(), (Activity) mycontext);
                                 if (client == null) {
                                     addLog("RTMclient " + "初始化失败");
                                     return;
