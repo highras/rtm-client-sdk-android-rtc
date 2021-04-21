@@ -46,7 +46,7 @@ public class RTV extends Activity {
     TextView textuid2;
     Random rand = new Random();
     int REQUEST_CODE_CONTACT = 101;
-    public AtomicLong currRoom = new AtomicLong(333);
+    public AtomicLong currRoom = new AtomicLong(0);
 
     TestErrorRecorder mylogRecoder = new TestErrorRecorder();
     long uid;
@@ -141,7 +141,7 @@ public class RTV extends Activity {
                 if (answerEnter.errorCode != 0) {
                     msg = userInfo() + "重新进入房间 " + id + answer.getErrInfo();
                 } else {
-//                    client.setActivityRoom(id);
+                    client.setActivityRoom(id);
                     voiceStatus = true;
                     msg = userInfo() + "重新进入房间 " + id + " 成功";
                     RTV.this.runOnUiThread(new Runnable() {
@@ -197,6 +197,7 @@ public class RTV extends Activity {
             RTV.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    client.setActivityRoom(roomId);
                     currRoom.set(roomId);
                     RTV.this.runOnUiThread(new Runnable() {
                         @Override
@@ -313,6 +314,7 @@ public class RTV extends Activity {
             public void onResult(RTMStruct.RTMAnswer answer) {
                 astTake("进入房间  " + roomId + " " + transRet(answer));
                 if (answer.errorCode == 0) {
+                    client.setActivityRoom(roomId);
                     currRoom.set(roomId);
                     RTV.this.runOnUiThread(new Runnable() {
                         @Override
@@ -447,6 +449,7 @@ public class RTV extends Activity {
                                 public void onResult(RTMStruct.RTMAnswer answer) {
                                     addLog("createVoiceRoom roomid " + inputRid + " " + transRet(answer));
                                     if (answer.errorCode == 0) {
+                                        client.setActivityRoom(inputRid);
                                         voiceStatus = true;
                                         currRoom.set(inputRid);
                                         RTV.this.runOnUiThread(new Runnable() {
