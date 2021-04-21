@@ -10,8 +10,8 @@
         android:id="@+id/yueshu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="1dp"
         android:background="@drawable/beijing"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -20,26 +20,15 @@
 
         <Button
             android:id="@+id/clear"
-            android:layout_width="110dp"
+            android:layout_width="90dp"
             android:layout_height="40dp"
-            android:layout_marginTop="52dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/colors"
             android:text="清除日志"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/mic" />
-
-        <Button
-            android:id="@+id/miclevel"
-            android:layout_width="110dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginLeft="4dp"
-            android:background="@drawable/colors"
-            android:text="麦克风增益"
-            app:layout_constraintBottom_toBottomOf="@+id/roommembers"
-            app:layout_constraintStart_toEndOf="@+id/roommembers"
-            app:layout_constraintTop_toTopOf="@+id/roommembers"
-            app:layout_constraintVertical_bias="0.0" />
 
         <Button
             android:id="@+id/roommembers"
@@ -86,7 +75,7 @@
             android:layout_height="50dp"
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/colors"
             android:text="创建房间"
             app:layout_constraintStart_toStartOf="parent"
@@ -98,11 +87,11 @@
             android:layout_height="39dp"
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/colors"
             android:text="登陆"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/checkbox" />
 
         <TextView
             android:id="@+id/textuid"
@@ -110,7 +99,7 @@
             android:layout_height="31dp"
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
-            android:layout_marginTop="44dp"
+            android:layout_marginTop="72dp"
             android:includeFontPadding="false"
             android:textSize="16dp"
             app:layout_constraintStart_toEndOf="@+id/login"
@@ -143,25 +132,81 @@
             android:id="@+id/laba"
             android:layout_width="54dp"
             android:layout_height="38dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginLeft="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
             android:background="@drawable/voiceclose"
             app:layout_constraintBottom_toBottomOf="@+id/mic"
             app:layout_constraintStart_toEndOf="@+id/mic"
             app:layout_constraintTop_toTopOf="@+id/mic"
-            app:layout_constraintVertical_bias="1.0"></ImageView>
+            app:layout_constraintVertical_bias="0.0"></ImageView>
 
         <ImageView
             android:id="@+id/mic"
             android:layout_width="40dp"
             android:layout_height="37dp"
-            android:layout_marginStart="64dp"
-            android:layout_marginLeft="64dp"
-            android:layout_marginTop="36dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="24dp"
             android:background="@drawable/micclose"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/create"></ImageView>
 
+        <CheckBox
+            android:id="@+id/checkbox"
+            android:layout_width="157dp"
+            android:layout_height="51dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginTop="4dp"
+            android:text="是否启用双声道"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <SeekBar
+            android:id="@+id/huatiao"
+            android:layout_width="0dp"
+            android:layout_height="22dp"
+            android:layout_marginTop="4dp"
+            android:max="30"
+            android:min="0"
+            android:thumb="@drawable/seek_bar_thumb"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/laba"
+            app:layout_constraintTop_toBottomOf="@+id/beishu" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/beishu"
+            android:layout_width="185dp"
+            android:layout_height="39dp"
+            android:layout_marginTop="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/huatiao"
+            app:layout_constraintTop_toBottomOf="@+id/enter">
+
+            <TextView
+                android:id="@+id/showbeishu"
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/textView"
+                app:layout_constraintTop_toTopOf="parent"></TextView>
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="110dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="0dp"
+                android:layout_marginLeft="0dp"
+                android:gravity="center"
+                android:text="麦克风增益倍数"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0"></TextView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

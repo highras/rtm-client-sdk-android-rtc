@@ -1,10 +1,10 @@
 ### android-rtm-sdk 使用文档
 - [AndroidVersionSupport](#androidversionsupport)
-  - [Depends](#depends)
-  - [Instructions](#instructions)
-  - [Demonstration](#demonstration)
-- [API-Interface](#api-interface)
-    - [TestCase](#testcase)
+- [Depends](#depends)
+- [Instructions](#instructions)
+- [Demonstration](#demonstration)
+- [API](#api-interface)
+- [TestCase](#testcase)
 
 ## AndroidVersionSupport
 - lowest Android version is 4.1(api16)
@@ -102,7 +102,6 @@ import com.rtmsdk.RTMAudio; //audio
 - [Room/Group/Friend](doc-en/RTMRelationship.md)
 - [User-System](doc-en/RTMUserSystem.md)
 - [Audio](doc-en/RTMAudio.md)
-- [RTMRealTime-Voice](doc-en/RTV.md)
 
 #### TestCase
 - [Case](app/src/main/java/com/rtm)

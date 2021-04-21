@@ -10,14 +10,16 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fpnn.sdk.ErrorRecorder;
 import com.fpnn.sdk.TCPClient;
@@ -29,34 +31,33 @@ import com.rtmsdk.RTMPushProcessor;
 import com.rtmsdk.RTMStruct;
 import com.rtmsdk.UserInterface;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RTV extends Activity {
-    final String rtmEndpoint = "161.189.171.91:13321";
-    final String rtcEndpoint = "161.189.171.91:13702";
+    String rtmEndpoint = "161.189.171.91:13321";
+    String rtcEndpoint = "161.189.171.91:13702";
     final long pid = 11000002;
+    int agclevel = 0;
 
     TextView uidtext;
+    CheckBox channellNum;
     TextView textuid2;
     Random rand = new Random();
     int REQUEST_CODE_CONTACT = 101;
-    public AtomicLong currRoom = new AtomicLong(0);
+    public AtomicLong currRoom = new AtomicLong(333);
 
     TestErrorRecorder mylogRecoder = new TestErrorRecorder();
     long uid;
-    EditText utext;
+    SeekBar agc;
     Context mycontext = this;
     RTMClient client;
     public boolean micStatus = false;
     TextView logview;
     ImageView laba;
     ImageView mic;
+    TextView showbeishu;
     boolean micphoneStatus = false;
     boolean voiceStatus = false;
     Object interLock = new Object();
@@ -77,7 +78,7 @@ public class RTV extends Activity {
         });
     }
 
-    final String[] buttonNames = {"create", "enter", "leave", "login", "clear", "roommembers", "miclevel"};
+    final String[] buttonNames = {"create", "enter", "leave", "login", "clear", "roommembers"};
 
     public class TestErrorRecorder extends ErrorRecorder {
         public TestErrorRecorder() {
@@ -120,17 +121,17 @@ public class RTV extends Activity {
     class RTMExampleQuestProcessor extends RTMPushProcessor {
         String msg = "";
 
-        public boolean reloginWillStart(long uid, RTMStruct.RTMAnswer answer, int reloginCount) {
+        public boolean reloginWillStart(long uid,  int reloginCount) {
             if (reloginCount >= 10) {
                 return false;
             }
-            msg = userInfo() + " 开始重连第 " + reloginCount + "次,结果 " + answer.getErrInfo();
+            msg = userInfo() + " 开始重连第 " + reloginCount + "次";
             astTake(msg);
             return true;
         }
 
         public void reloginCompleted(long uid, boolean successful, RTMStruct.RTMAnswer answer, int reloginCount) {
-            msg = userInfo() + " 重连结束 结果 " + transRet(answer);
+            msg = userInfo() + " 重连结束 共" + reloginCount + "次，结果 " + transRet(answer);
             astTake(msg);
             if (successful) {
                 final long id = currRoom.get();
@@ -140,7 +141,7 @@ public class RTV extends Activity {
                 if (answerEnter.errorCode != 0) {
                     msg = userInfo() + "重新进入房间 " + id + answer.getErrInfo();
                 } else {
-                    client.setActivityRoom(id);
+//                    client.setActivityRoom(id);
                     voiceStatus = true;
                     msg = userInfo() + "重新进入房间 " + id + " 成功";
                     RTV.this.runOnUiThread(new Runnable() {
@@ -197,25 +198,19 @@ public class RTV extends Activity {
                 @Override
                 public void run() {
                     currRoom.set(roomId);
-                    client.setActivityRoom(roomId);
-                    client.getVoiceRoomMembers(new UserInterface.IRTMDoubleValueCallback<HashSet<Long>, HashSet<Long>>() {
+                    RTV.this.runOnUiThread(new Runnable() {
                         @Override
-                        public void onResult(final HashSet<Long> longs, HashSet<Long> longs2, final RTMStruct.RTMAnswer answer) {
-                            RTV.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (answer.errorCode == 0) {
-                                        laba.setBackgroundResource(R.drawable.voiceopen);
-                                        mic.setBackgroundResource(R.drawable.micclose);
-                                        currRoom.set(roomId);
-                                    }
-                                }
-                            });
+                        public void run() {
+                            voiceStatus = true;
+                            micStatus = false;
+                            textuid2.setText("房间id-" + roomId);
+                            laba.setBackgroundResource(R.drawable.voiceopen);
+                            mic.setBackgroundResource(R.drawable.micclose);
                         }
-                    }, roomId);
+                    });
                 }
             });
-            astTake("user " + uid + "被拉入房间 " + roomId);
+            astTake("user " + uid + "被拉入房间 " + roomId + answer.getErrInfo());
         }
 
         @Override
@@ -312,6 +307,50 @@ public class RTV extends Activity {
         return "用户 " + uid + " ";
     }
 
+    void realEnterRoom(final long roomId){
+        client.enterVoiceRoom(new UserInterface.IRTMEmptyCallback() {
+            @Override
+            public void onResult(RTMStruct.RTMAnswer answer) {
+                astTake("进入房间  " + roomId + " " + transRet(answer));
+                if (answer.errorCode == 0) {
+                    currRoom.set(roomId);
+                    RTV.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            voiceStatus = true;
+                            micStatus = false;
+                            textuid2.setText("房间id-" + roomId);
+                            laba.setBackgroundResource(R.drawable.voiceopen);
+                            mic.setBackgroundResource(R.drawable.micclose);
+                        }
+                    });
+                }
+            }
+        }, roomId);
+    }
+
+
+    void realLeaveRoom(){
+        client.leaveVoiceRoom(new UserInterface.IRTMEmptyCallback() {
+            @Override
+            public void onResult(RTMStruct.RTMAnswer answer) {
+            }
+        }, currRoom.get());
+        astTake(userInfo() + "离开房间 " + currRoom.get());
+
+        RTV.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                laba.setBackgroundResource(R.drawable.voiceclose);
+                mic.setBackgroundResource(R.drawable.micclose);
+                currRoom.set(-1);
+                micphoneStatus = false;
+                micStatus = false;
+                textuid2.setText("");
+            }
+        });
+    }
+
     class TestButtonListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -338,18 +377,6 @@ public class RTV extends Activity {
                         @Override
                         public void run() {
 //                                    MainActivity.this.checkVersion();
-                            if (client != null) {
-                                if (client.isOnline()) {
-                                    client.bye(false);
-                                }
-                            } else {
-                                uid = getuid();
-                                client = new RTMClient(rtmEndpoint, rtcEndpoint, pid,uid, new RTMExampleQuestProcessor(), (Activity) mycontext);
-                                if (client == null) {
-                                    addLog("RTMclient " + "初始化失败");
-                                    return;
-                                }
-                            }
                             login();
                         }
                     }).start();
@@ -357,54 +384,37 @@ public class RTV extends Activity {
                 case R.id.leave:
                     if (!checkClient())
                         return;
-
-                    client.leaveVoiceRoom(new UserInterface.IRTMEmptyCallback() {
-                        @Override
-                        public void onResult(RTMStruct.RTMAnswer answer) {
-                        }
-                    }, currRoom.get());
-                    astTake(userInfo() + "离开房间 " + currRoom.get());
-
-                    RTV.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            laba.setBackgroundResource(R.drawable.voiceclose);
-                            mic.setBackgroundResource(R.drawable.micclose);
-                            currRoom.set(-1);
-                            micphoneStatus = false;
-                            micStatus = false;
-                            textuid2.setText("");
-                        }
-                    });
-
+                    if (currRoom.get() <= 0 )
+                        return;
+                    realLeaveRoom();
                     break;
-                case R.id.miclevel:
-                    final EditText inputmiclevel = new EditText(mycontext);
-                    AlertDialog.Builder buildermic = new AlertDialog.Builder(mycontext);
-                    buildermic.setTitle("请输入麦克风增益倍数").setIcon(android.R.drawable.ic_dialog_info).setView(inputmiclevel)
-                            .setNegativeButton("取消", null);
-                    buildermic.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (client == null) {
-                                alertDialog("请先登录");
-                                return;
-                            }
-                            if (inputmiclevel.getText().toString().isEmpty()) {
-                                return;
-                            }
-                            int miclevel = 0;
-                            try {
-                                miclevel = Integer.parseInt(inputmiclevel.getText().toString());
-                            } catch (NumberFormatException e) {
-                                alertDialog("请输入数字");
-                                return;
-                            }
-                            RTCEngine.setMicphoneGain(miclevel);
-                            addLog("设置麦克风增益等级:" + miclevel);
-                        }
-                    });
-                    buildermic.show();
-                    break;
+//                case R.id.miclevel:
+//                    final EditText inputmiclevel = new EditText(mycontext);
+//                    AlertDialog.Builder buildermic = new AlertDialog.Builder(mycontext);
+//                    buildermic.setTitle("请输入麦克风增益倍数").setIcon(android.R.drawable.ic_dialog_info).setView(inputmiclevel)
+//                            .setNegativeButton("取消", null);
+//                    buildermic.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            if (client == null) {
+//                                alertDialog("请先登录");
+//                                return;
+//                            }
+//                            if (inputmiclevel.getText().toString().isEmpty()) {
+//                                return;
+//                            }
+//                            int miclevel = 0;
+//                            try {
+//                                miclevel = Integer.parseInt(inputmiclevel.getText().toString());
+//                            } catch (NumberFormatException e) {
+//                                alertDialog("请输入数字");
+//                                return;
+//                            }
+//                            RTCEngine.setMicphoneGain(miclevel);
+//                            addLog("设置麦克风增益等级:" + miclevel);
+//                        }
+//                    });
+//                    buildermic.show();
+//                    break;
                 case R.id.create:
                     final EditText inputServer = new EditText(mycontext);
                     AlertDialog.Builder builder = new AlertDialog.Builder(mycontext);
@@ -437,13 +447,12 @@ public class RTV extends Activity {
                                 public void onResult(RTMStruct.RTMAnswer answer) {
                                     addLog("createVoiceRoom roomid " + inputRid + " " + transRet(answer));
                                     if (answer.errorCode == 0) {
+                                        voiceStatus = true;
+                                        currRoom.set(inputRid);
                                         RTV.this.runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                voiceStatus = true;
-                                                currRoom.set(inputRid);
                                                 textuid2.setText("房间id " + inputRid);
-                                                client.setActivityRoom(inputRid);
                                                 laba.setBackgroundResource(R.drawable.voiceopen);
                                                 mic.setBackgroundResource(R.drawable.micclose);
                                             }
@@ -488,30 +497,7 @@ public class RTV extends Activity {
                                 client.leaveVoiceRoom(currRoom.get());
                                 astTake(userInfo() + "离开房间 " + currRoom.get());
                             }
-                            client.enterVoiceRoom(new UserInterface.IRTMEmptyCallback() {
-                                @Override
-                                public void onResult(RTMStruct.RTMAnswer answer) {
-                                    astTake("进入房间  " + inputRid1 + " " + transRet(answer));
-                                    if (answer.errorCode == 0) {
-                                        currRoom.set(inputRid1);
-                                        RTMStruct.RTMAnswer bb = client.setActivityRoom(inputRid1);
-                                        if (bb.errorCode != 0) {
-                                            addLog("设置活跃房间失败");
-                                            return;
-                                        }
-                                        RTV.this.runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                voiceStatus = true;
-                                                micStatus = false;
-                                                textuid2.setText("房间id-" + inputRid1);
-                                                laba.setBackgroundResource(R.drawable.voiceopen);
-                                                mic.setBackgroundResource(R.drawable.micclose);
-                                            }
-                                        });
-                                    }
-                                }
-                            }, inputRid1);
+                            realEnterRoom(inputRid1);
                         }
                     });
                     builder1.show();
@@ -533,7 +519,10 @@ public class RTV extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        client.bye();
+        if (client != null) {
+            client.leaveVoiceRoom(currRoom.get());
+            client.bye();
+        }
     }
 
 
@@ -559,12 +548,21 @@ public class RTV extends Activity {
     }
 
     void login() {
+        if (client != null && client.isOnline()) {
+            client.bye();
+            realLeaveRoom();
+        }
         String token = getToken();
         if (token.isEmpty())
             return;
+        boolean ret = channellNum.isChecked();
         RTMStruct.RTMAnswer answertoken = client.login(token);
         if (answertoken.errorCode == 0) {
-            RTMStruct.RTMAnswer answer1 = client.initRTMVoice();
+            RTMStruct.RTMAnswer answer1;
+            if (ret)
+                answer1 = client.initRTMVoiceWithStereo();
+            else
+                answer1 = client.initRTMVoice();
             if (answer1.errorCode != 0) {
                 alertDialog("初始化音频 " + answer1.getErrInfo());
                 return;
@@ -576,10 +574,32 @@ public class RTV extends Activity {
                     uidtext.setText("用户id-" + uid);
                 }
             });
+//            realEnterRoom(333);
         } else {
             addLog("RTM登录失败 " + answertoken.getErrInfo());
         }
     }
+
+    SeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            showbeishu.setText(String.valueOf(seekBar.getProgress()));
+            agclevel = seekBar.getProgress();
+//            mylog.log("当前进度：" + seekBar.getProgress());
+//            Toast.makeText(mycontext, "当前进度：" + seekBar.getProgress(), Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+//            Toast.makeText(mycontext, "开始：" + seekBar.getProgress(), Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            RTCEngine.setMicphoneGain(agclevel);
+            addLog("设置麦克风增益等级:" + agclevel);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -587,6 +607,29 @@ public class RTV extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.activity_main);
+
+        if (client != null) {
+            if (client.isOnline()) {
+                client.bye(false);
+            }
+        } else {
+            uid = getuid();
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    client = new RTMClient(rtmEndpoint,rtcEndpoint, pid, uid, new RTMExampleQuestProcessor(), (Activity) mycontext);
+//                    if (client == null) {
+//                        addLog("RTMclient " + "初始化失败");
+//                        return;
+//                    }
+//                }
+//            }).start();
+            client = new RTMClient(rtmEndpoint,rtcEndpoint, pid, uid, new RTMExampleQuestProcessor(), (Activity) mycontext);
+            if (client == null) {
+                addLog("RTMclient " + "初始化失败");
+                return;
+            }
+        }
 
         laba = $(R.id.laba);
         mic = $(R.id.mic);
@@ -643,9 +686,14 @@ public class RTV extends Activity {
             }
         });
 
+        agc = $(R.id.huatiao);
+        showbeishu = $(R.id.showbeishu);
+        showbeishu.setTextSize(16);
+        channellNum = $(R.id.checkbox);
         logview = $(R.id.logview);
         logview.setTextSize(14);
         logview.setMovementMethod(ScrollingMovementMethod.getInstance());
+        agc.setOnSeekBarChangeListener(onSeekBarChangeListener);
 
         TestButtonListener testButtonListener = new TestButtonListener();
 
