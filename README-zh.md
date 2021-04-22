@@ -12,16 +12,11 @@
 
 ### 依赖集成
  dependency in Gradle
-    - Add maventral as your repository in project's build.gradle:
-    ~~~
     allprojects {
             repositories {
                 maventral()
             }
         }
-    ~~~
-    - Add dependency in your module's build.gradle:
-    ~~~
     dependencies {
         implementation 'com.github.highras:rtm-android:2.0.0'
     }
