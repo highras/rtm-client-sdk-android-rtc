@@ -18,7 +18,7 @@
             }
         }
     dependencies {
-        implementation 'com.github.highras:rtm-android:2.0.0'
+        implementation 'com.github.highras:rtm-android-voice:2.7.0'
     }
 ### 使用说明
 - RTM需要的权限
