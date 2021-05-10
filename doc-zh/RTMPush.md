@@ -58,5 +58,13 @@
         public void pushGroupFile(RTMMessage msg){}
         public void pushRoomFile(RTMMessage msg){}
         public void pushBroadcastFile(RTMMessage msg){}
+        
+        //实时语音消息
+        public void pushEnterVoiceRoom(long roomId, long userId, long time){} //某人进入语音房间
+        public void pushExitVoiceRoom(long roomId, long userId, long time){} //某人离开语音房间
+        public void pushVoiceRoomClosed(long roomId){}//语音房间被关闭
+        public void pushInviteIntoVoiceRoom(long roomId, long userId){} //被邀请加入房间(需要再次调用进入房间接口真正进入语音房间)
+        public void pushKickoutVoiceRoom(long roomId){} //被踢出语音房间
+        public void pushPullRoom(long roomId, RTMStruct.RTMAnswer answer){} //被服务器拉入房间
     }
 ~~~
