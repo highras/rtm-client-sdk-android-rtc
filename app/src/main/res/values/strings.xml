@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">RTVdemo</string>
+    <string name="app_name">rtmVideo-demo</string>
+    <string name="btnlength">110dp</string>
+    <string name="btnwidth">40dp</string>
 </resources>
