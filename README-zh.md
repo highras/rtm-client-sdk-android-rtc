@@ -1,26 +1,24 @@
 ### android-rtm-sdk-RTC 使用文档
+
+- [版本支持](#版本支持)
+- [依赖集成](#依赖集成)
+- [使用说明](#使用说明)
+- [使用示例](#使用示例)
 - [接口说明](#接口说明)
-    - [测试案例](#测试案例)
+- [测试案例](#测试案例)
+
 
 ### 版本支持
-- 最低支持Android版本为4.1(api16)
+- 最低支持Android版本为7.0
 - 支持fpnn ecc加密(secp192r1,secp224r1,secp256r1,secp256r1)
 
 ### 依赖集成
-~~~
- dependency in Gradle
-    allprojects {
-            repositories {
-                maventral()
-            }
-        }
-    dependencies {
-        implementation 'com.github.highras:rtm-android-voice:2.7.0'
-    }
-~~~
+
 ### 使用说明
 - RTM需要的权限
   ~~~
+    <uses-permission android:name="android.permission.BLUETOOTH" /><!-- 蓝牙权限 -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -33,10 +31,10 @@
 - RTM的room和group的区别 group在服务端会持久化 room是非持久化(用户下线或者RTM链接断开会自动离开room)
   - room默认不支持多房间（当用户进入第二个房间会自动退出第一个房间） 用户可以在控制台开启支持多房间配置
 - RTMConfig是RTM的全局配置参数，所有配置均已有默认值，使用者如需要重新设置默认值，请在初始化RTMclient调用带RTMConfig的构造函数。
-- RTM实时语音说明:
+- RTC说明:
   - 如果使用实时语音功能请在任意activity的oncreate主线程中 初始化RTMClient对象
-  - 开启实时语音功能需要RTM先登陆成功，然后调用initRTMVoice初始化实时语音
-  - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
+  - 开启RTC功能需要RTM先登陆成功，然后调用initRTMVoice或者initVideo初始化实时音频或视频
+  - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音),实时视频房间只能进入一个
   - RTM链接断开，进入的实时语音房间会自动退出，需要在重连完成后再次进入房间
 - 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
@@ -91,7 +89,7 @@
 - [房间/群组/好友接口](doc-zh/RTMRelationship.md)
 - [用户系统命令接口](doc-zh/RTMUserSystem.md)
 - [语音接口](doc-zh/RTMAudio.md)
-- [实时语音](doc-zh/RTC.md)
+- [RTC接口](doc-zh/RTC.md)
 - [RTM错误码](doc-zh/ErrorCode.md)
 
 
