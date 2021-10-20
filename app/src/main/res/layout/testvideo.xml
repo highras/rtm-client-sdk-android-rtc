@@ -2,84 +2,54 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/alllayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/alllayout"
     android:background="@drawable/beijing"
-    tools:context=".TestvideoActivity">
+    tools:context=".TestvoiceActivity">
 
 
     <TextView
         android:id="@+id/membertext"
-        android:layout_width="102dp"
+        android:layout_width="92dp"
         android:layout_height="30dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
         android:gravity="center"
         android:text="房间成员列表"
-        android:textSize="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/roomLayout" />
+        android:textSize="14dp"
+        app:layout_constraintStart_toEndOf="@+id/roomLayout"
+        app:layout_constraintTop_toBottomOf="@+id/textuid2" />
 
     <Spinner
         android:id="@+id/roomsMembers"
         style="@android:style/Widget.Holo.Light.Spinner"
-        android:layout_width="103dp"
+        android:layout_width="93dp"
         android:layout_height="42dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:overlapAnchor="false"
         android:popupBackground="@drawable/spinnerback"
         android:spinnerMode="dropdown"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/membertext"
+        app:layout_constraintStart_toStartOf="@+id/membertext"
         app:layout_constraintTop_toBottomOf="@+id/membertext"></Spinner>
-
-    <Button
-        android:id="@+id/subscribe"
-        android:layout_width="94dp"
-        android:layout_height="31dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/colors"
-        android:text="订阅"
-        app:layout_constraintStart_toEndOf="@+id/membertext"
-        app:layout_constraintTop_toBottomOf="@+id/roomLayout" />
-
-    <Button
-        android:id="@+id/unsubscribe"
-        android:layout_width="93dp"
-        android:layout_height="38dp"
-        android:background="@drawable/colors"
-        android:text="取消订阅"
-        app:layout_constraintBottom_toBottomOf="@+id/roomsMembers"
-        app:layout_constraintStart_toEndOf="@+id/roomsMembers"
-        app:layout_constraintTop_toBottomOf="@+id/membertext"
-        app:layout_constraintVertical_bias="1.0" />
 
     <CheckBox
         android:id="@+id/checkbox"
-        android:layout_width="167dp"
-        android:layout_height="26dp"
+        android:layout_width="142dp"
+        android:layout_height="40dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:text="是否启用双声道"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/cameraswitch"
-        android:layout_width="33dp"
-        android:layout_height="35dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/cameraswitch"
-        android:scaleType="fitCenter"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></ImageView>
-
     <Button
         android:id="@+id/login"
         android:layout_width="84dp"
         android:layout_height="39dp"
         android:layout_marginStart="4dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/colors"
         android:text="登陆"
         app:layout_constraintStart_toStartOf="parent"
@@ -87,8 +57,8 @@
 
     <TextView
         android:id="@+id/textuid"
-        android:layout_width="117dp"
-        android:layout_height="32dp"
+        android:layout_width="118dp"
+        android:layout_height="28dp"
         android:layout_marginStart="4dp"
         android:includeFontPadding="false"
         android:textSize="16dp"
@@ -107,7 +77,7 @@
 
     <LinearLayout
         android:id="@+id/roomLayout"
-        android:layout_width="199dp"
+        android:layout_width="179dp"
         android:layout_height="35dp"
         android:orientation="horizontal"
         android:weightSum="2"
@@ -137,85 +107,101 @@
         android:layout_height="0dp"
         android:background="@drawable/biankuang"
         android:textSize="14dp"
-        app:layout_constraintBottom_toTopOf="@+id/surfaceshow"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/subscribe"
-        app:layout_constraintTop_toBottomOf="@+id/textuid2"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <LinearLayout
-        android:id="@+id/surfaceshow"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:weightSum="2"
-        android:background="@drawable/linercolor"
-        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/previewsurface">
-        <LinearLayout
-            android:id="@+id/surface1"
-            android:weightSum="3"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-        </LinearLayout>
+        app:layout_constraintStart_toEndOf="@+id/huatiao"
+        app:layout_constraintTop_toBottomOf="@+id/roomsMembers" />
 
-        <LinearLayout
-            android:id="@+id/surface2"
-            android:weightSum="3"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-        </LinearLayout>
-    </LinearLayout>
+    <ToggleButton
+        android:id="@+id/checkbutton"
+        android:layout_width="202dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="32dp"
+        android:checked="false"
+        android:textOff="udp不可丢弃"
+        android:textOn="udp可丢弃"
+        app:layout_constraintBottom_toBottomOf="@+id/checkbox"
+        app:layout_constraintStart_toEndOf="@+id/checkbox"
+        app:layout_constraintTop_toTopOf="@+id/checkbox"
+        app:layout_constraintVertical_bias="0.0" />
 
     <LinearLayout
         android:id="@+id/buttonshow"
         android:layout_width="0dp"
         android:layout_height="38dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginTop="10dp"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toStartOf="@+id/logview"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/roomsMembers">
+        app:layout_constraintTop_toBottomOf="@+id/roomLayout">
 
-
-        <ImageView
-            android:id="@+id/camerastatus"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="5dp"
-            android:background="@drawable/cameraclose"></ImageView>
 
         <ImageView
             android:id="@+id/mic"
-            android:layout_width="40dp"
+            android:layout_width="30dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="5dp"
-            android:layout_marginRight="5dp"
+            android:layout_marginStart="2dp"
             android:background="@drawable/micclose"></ImageView>
+
+        <ImageView
+            android:id="@+id/speaker"
+            android:layout_width="35dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/speakeron"></ImageView>
+
+        <ImageView
+            android:id="@+id/laba"
+            android:layout_width="35dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/voiceclose"></ImageView>
 
         <Button
             android:id="@+id/clear"
-            android:layout_width="106dp"
+            android:layout_width="80dp"
             android:layout_height="match_parent"
             android:background="@drawable/colors"
-            android:text="清除日志"></Button>
+            android:text="清除日志"
+            android:textSize="12dp"></Button>
     </LinearLayout>
 
-    <SurfaceView
-        android:id="@+id/previewsurface"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/beishu"
         android:layout_width="0dp"
-        android:layout_height="188dp"
-        android:layout_marginStart="4dp"
-        app:layout_constraintEnd_toEndOf="@+id/unsubscribe"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonshow" />
+        android:layout_height="30dp"
+        app:layout_constraintEnd_toEndOf="@+id/buttonshow"
+        app:layout_constraintStart_toStartOf="@+id/buttonshow"
+        app:layout_constraintTop_toBottomOf="@+id/buttonshow">
+
+        <TextView
+            android:id="@+id/showbeishu"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="10dp"
+            android:gravity="center"
+            android:textSize="14dp"
+            app:layout_constraintEnd_toEndOf="parent"></TextView>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="麦克风增益倍数"
+            android:textSize="14dp"
+            app:layout_constraintEnd_toStartOf="@+id/showbeishu"
+            app:layout_constraintStart_toStartOf="parent"></TextView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <SeekBar
+        android:id="@+id/huatiao"
+        android:layout_width="176dp"
+        android:layout_height="25dp"
+        android:max="10"
+        android:min="0"
+        android:thumb="@drawable/seek_bar_thumb"
+        app:layout_constraintEnd_toEndOf="@+id/beishu"
+        app:layout_constraintStart_toStartOf="@+id/beishu"
+        app:layout_constraintTop_toBottomOf="@+id/beishu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
