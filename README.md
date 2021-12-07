@@ -1,3 +1,3 @@
 ##  android-rtc-sdk 使用文档
-- [RTM中文文档](README-zh.md)
-- [RTM-DOC-EN](README-en.md)
+- [RTC中文文档](README-zh.md)
+- [RTC-DOC-EN](README-en.md)
