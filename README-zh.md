@@ -9,7 +9,7 @@
 
 
 ### 版本支持
-- 最低支持Android版本为7.0
+- 最低支持Android版本为4.4
 - 支持fpnn ecc加密(secp192r1,secp224r1,secp256r1,secp256r1)
 
 ### 依赖集成
@@ -18,7 +18,6 @@
 - RTM需要的权限
   ~~~
     <uses-permission android:name="android.permission.BLUETOOTH" /><!-- 蓝牙权限 -->
-    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -34,7 +33,7 @@
 - RTC说明:
   - 如果使用实时语音功能请在任意activity的oncreate主线程中 初始化RTMClient对象
   - 开启RTC功能需要RTM先登陆成功，然后调用initRTMVoice或者initVideo初始化实时音频或视频
-  - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音),实时视频房间只能进入一个
+  - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
   - RTM链接断开，进入的实时语音房间会自动退出，需要在重连完成后再次进入房间
 - 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
