@@ -1,4 +1,2 @@
 include ':app'
-rootProject.name = "RTMVoicedemo"
-include ':fpnnsdk'
-include ':fpnn-rtm-sdk'
+rootProject.name = "rtc-video-udp"

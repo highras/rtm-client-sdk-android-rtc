@@ -58,7 +58,7 @@
         public void pushGroupFile(RTMMessage msg){}
         public void pushRoomFile(RTMMessage msg){}
         public void pushBroadcastFile(RTMMessage msg){}
-        
+
         //实时语音消息
         public void pushEnterVoiceRoom(long roomId, long userId, long time){} //某人进入语音房间
         public void pushExitVoiceRoom(long roomId, long userId, long time){} //某人离开语音房间
