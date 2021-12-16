@@ -18,7 +18,7 @@
             }
         }
     dependencies {
-        implementation 'com.github.highras:rtc-android:2.7.1'
+        implementation 'com.github.highras:rtc-android:2.7.2'
     }
 ### 使用说明
 - RTC需要的权限
