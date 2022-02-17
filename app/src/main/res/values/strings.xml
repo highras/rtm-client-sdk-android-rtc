@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">rtcVideo-demo</string>
+    <string name="app_name">rtmVoice-demo</string>
     <string name="btnlength">110dp</string>
     <string name="btnwidth">40dp</string>
 </resources>
