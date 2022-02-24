@@ -1,11 +1,10 @@
 package com.rtcsdk;
 
 import android.app.Activity;
-import android.view.SurfaceView;
-
-import java.util.Map;
 
 import com.rtcsdk.UserInterface.IRTMEmptyCallback;
+
+import java.util.Map;
 
 public class RTMClient extends RTMRTC {
     public RTMClient(String rtmEndpoint, String rtcEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity) {

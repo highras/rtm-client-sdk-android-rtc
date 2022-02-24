@@ -42,6 +42,6 @@ public enum RTCEngine {
     public static native String setVoiceStat(boolean flag);
     public static native void setdiscardable(boolean flag);
     public static native void setpreview(Surface view);
-
+    public static native int isInRTCRoom();
     public static native void bindDecodeSurface(long uid, Surface surface);
 }

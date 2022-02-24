@@ -5,9 +5,15 @@ import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
 import com.rtcsdk.DuplicatedMessageFilter.MessageCategories;
+import com.rtcsdk.RTMStruct.FileStruct;
+import com.rtcsdk.RTMStruct.HistoryMessage;
+import com.rtcsdk.RTMStruct.HistoryMessageResult;
+import com.rtcsdk.RTMStruct.MessageType;
+import com.rtcsdk.RTMStruct.ModifyTimeStruct;
+import com.rtcsdk.RTMStruct.RTMAnswer;
+import com.rtcsdk.RTMStruct.SingleMessage;
 import com.rtcsdk.UserInterface.IRTMCallback;
 import com.rtcsdk.UserInterface.IRTMDoubleValueCallback;
-import com.rtcsdk.RTMStruct.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -140,7 +146,7 @@ class RTMMessageCore extends RTMCore {
             if (delete)
                 continue;
 
-            RTMStruct.HistoryMessage tmp = new RTMStruct.HistoryMessage();
+            HistoryMessage tmp = new HistoryMessage();
             tmp.cursorId = rtmUtils.wantLong(value.get(0));
             tmp.fromUid = rtmUtils.wantLong(value.get(1));
             tmp.messageType = (byte)rtmUtils.wantInt(value.get(2));
@@ -238,7 +244,7 @@ class RTMMessageCore extends RTMCore {
     }
 
     private void adjustHistoryMessageResultForP2PMessage(long toUid, HistoryMessageResult result) {
-        for (RTMStruct.HistoryMessage hm : result.messages) {
+        for (HistoryMessage hm : result.messages) {
             if (hm.fromUid == 1) {
                 hm.fromUid = getUid();
                 hm.toId = toUid;
@@ -258,7 +264,7 @@ class RTMMessageCore extends RTMCore {
                 HistoryMessageResult result = new HistoryMessageResult();
                 if (errorCode == okRet) {
                     result = buildHistoryMessageResult(answer);
-                    if (type == DuplicatedMessageFilter.MessageCategories.P2PMessage)
+                    if (type == MessageCategories.P2PMessage)
                         adjustHistoryMessageResultForP2PMessage(id, result);
                 }
                 callback.onResult(result, genRTMAnswer(answer,errorCode));
@@ -271,7 +277,7 @@ class RTMMessageCore extends RTMCore {
         Answer answer = sendQuest(quest);
         HistoryMessageResult result = buildHistoryMessageResult(answer);
         if (result.errorCode == RTMErrorCode.RTM_EC_OK.value()) {
-            if (type == DuplicatedMessageFilter.MessageCategories.P2PMessage)
+            if (type == MessageCategories.P2PMessage)
                 adjustHistoryMessageResultForP2PMessage(id, result);
         }
         return result;

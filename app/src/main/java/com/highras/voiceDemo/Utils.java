@@ -80,5 +80,9 @@ public enum Utils {
         }
         return output.toString();
     }
-
+    public static Boolean isEmpty(String data) {
+        if (data == null || data.length() == 0)
+            return true;
+        else return false;
+    }
 }

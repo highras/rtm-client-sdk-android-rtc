@@ -5,7 +5,7 @@ plugins {
 android {
     signingConfigs {
         release {
-            storeFile file('./Untitled')
+            storeFile file('../Untitled')
             storePassword 'myjopen421'
             keyAlias 'keyrtcvoice'
             keyPassword 'myjopen421'
@@ -31,6 +31,20 @@ android {
         }
     }
 
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def outputFile = output.outputFile
+            def fileName
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                if (variant.buildType.name.equals('release')) {//如果是release包
+                    fileName = "release_videodemo.apk"
+                } else if (variant.buildType.name.equals('debug')) {//如果是debug包
+                    fileName = "debug_videodemo.apk"
+                }
+                outputFileName = fileName
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false

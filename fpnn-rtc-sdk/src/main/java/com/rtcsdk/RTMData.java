@@ -5,9 +5,10 @@ import androidx.annotation.NonNull;
 import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
+import com.rtcsdk.RTMStruct.DataInfo;
+import com.rtcsdk.RTMStruct.RTMAnswer;
 import com.rtcsdk.UserInterface.IRTMCallback;
 import com.rtcsdk.UserInterface.IRTMEmptyCallback;
-import com.rtcsdk.RTMStruct.*;
 
 class RTMData extends RTMessage {
 
@@ -69,7 +70,7 @@ class RTMData extends RTMessage {
      * @param value     设置的value值
      *  return          RTMAnswer
      */
-    public RTMStruct.RTMAnswer dataSet(@NonNull String key, @NonNull String value) {
+    public RTMAnswer dataSet(@NonNull String key, @NonNull String value) {
         Quest quest = new Quest("dataset");
         quest.param("key", key);
         quest.param("val", value);
@@ -93,7 +94,7 @@ class RTMData extends RTMessage {
      * @param key      key值
      * @return    RTMAnswer
      */
-    public RTMStruct.RTMAnswer dataDelete(@NonNull String key){
+    public RTMAnswer dataDelete(@NonNull String key){
         Quest quest = new Quest("datadel");
         quest.param("key", key);
         return sendQuestEmptyResult(quest);

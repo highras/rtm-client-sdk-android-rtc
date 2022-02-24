@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.SensorManager;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -21,17 +20,29 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.OrientationEventListener;
-import android.view.Surface;
-import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.fpnn.sdk.*;
-import com.fpnn.sdk.proto.*;
+import com.fpnn.sdk.ClientEngine;
+import com.fpnn.sdk.ConnectionWillCloseCallback;
+import com.fpnn.sdk.ErrorCode;
+import com.fpnn.sdk.ErrorRecorder;
+import com.fpnn.sdk.FunctionalAnswerCallback;
+import com.fpnn.sdk.TCPClient;
+import com.fpnn.sdk.proto.Answer;
+import com.fpnn.sdk.proto.MessagePayloadUnpacker;
+import com.fpnn.sdk.proto.Quest;
 import com.livedata.rtc.RTCEngine;
-import com.rtcsdk.UserInterface.*;
-import com.rtcsdk.RTMStruct.*;
+import com.rtcsdk.RTMStruct.CaptureLevle;
+import com.rtcsdk.RTMStruct.FileStruct;
+import com.rtcsdk.RTMStruct.MessageType;
+import com.rtcsdk.RTMStruct.RTMAnswer;
+import com.rtcsdk.RTMStruct.RTMMessage;
+import com.rtcsdk.RTMStruct.RoomInfo;
+import com.rtcsdk.RTMStruct.TranslatedInfo;
+import com.rtcsdk.UserInterface.IRTMCallback;
+import com.rtcsdk.UserInterface.IRTMEmptyCallback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -366,6 +377,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
             }
             return ret;
         }
+
 
         void rtmConnectClose() {
             serverPushProcessor.rtmConnectClose(uid);
@@ -826,7 +838,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         Answer pushPullIntoRTCRoom(Quest quest, InetSocketAddress peer) {
             rtmGate.sendAnswer(new Answer(quest));
             final long roomId = rtmUtils.wantLong(quest,"rid");
-            enterRTCRoom(new UserInterface.IRTMCallback<RoomInfo>() {
+            enterRTCRoom(new IRTMCallback<RoomInfo>() {
                 @Override
                 public void onResult(RoomInfo info ,RTMAnswer answer) {
                     serverPushProcessor.pushPullRoom(roomId,info);
@@ -1027,7 +1039,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         }
     }
 
-    public void setErrorRecoder(com.fpnn.sdk.ErrorRecorder value){
+    public void setErrorRecoder(ErrorRecorder value){
         if (value == null)
             return;
         errorRecorder = value;
@@ -1066,7 +1078,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         return uid;
     }
 
-    RTMStruct.RTMAnswer  initRTC(boolean stereo) {
+    RTMAnswer  initRTC(boolean stereo) {
         //        manager = (CameraManager) application.getSystemService(Context.CAMERA_SERVICE);
 //        backgroundThread = new HandlerThread("imageAvailableListener");
 //        backgroundThread.start();
@@ -1100,7 +1112,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
             return genRTMAnswer(errCode, "you must RTMlogin sucessfully at first");
         }
         rtcClear();
-        String ret = RTCEngine.create(this, rtcEndpoint, android.os.Build.VERSION.SDK_INT, stereo, currVideoLevel, pid, uid, application);
+        String ret = RTCEngine.create(this, rtcEndpoint, Build.VERSION.SDK_INT, stereo, currVideoLevel, pid, uid, application);
         if (!ret.isEmpty()) {
             return genRTMAnswer(errCode,"initRTC create error " + ret);
         }
@@ -1119,13 +1131,13 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         return processor.ConnectionIsAlive();
     }
 
-    RTMStruct.RTMAnswer genRTMAnswer(int errCode){
+    RTMAnswer genRTMAnswer(int errCode){
         return genRTMAnswer(errCode,"");
     }
 
-    RTMStruct.RTMAnswer genRTMAnswer(int errCode,String msg)
+    RTMAnswer genRTMAnswer(int errCode,String msg)
     {
-        RTMStruct.RTMAnswer tt = new RTMStruct.RTMAnswer();
+        RTMAnswer tt = new RTMAnswer();
         tt.errorCode = errCode;
         if (msg == null || msg.isEmpty())
             tt.errorMsg = RTMErrorCode.getMsg(errCode);
@@ -1144,10 +1156,10 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     }
 
 
-    RTMStruct.RTMAnswer genRTMAnswer(Answer answer) {
+    RTMAnswer genRTMAnswer(Answer answer) {
         if (answer == null)
-            return new RTMStruct.RTMAnswer(ErrorCode.FPNN_EC_CORE_INVALID_CONNECTION.value(), "invalid connection");
-        return new RTMStruct.RTMAnswer(answer.getErrorCode(),answer.getErrorMessage());
+            return new RTMAnswer(ErrorCode.FPNN_EC_CORE_INVALID_CONNECTION.value(), "invalid connection");
+        return new RTMAnswer(answer.getErrorCode(),answer.getErrorMessage());
     }
 
 
@@ -1159,15 +1171,15 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     }
 
 
-    RTMStruct.RTMAnswer genRTMAnswer(Answer answer,int errcode) {
+    RTMAnswer genRTMAnswer(Answer answer,int errcode) {
         if (answer == null && errcode !=0) {
             if (errcode == ErrorCode.FPNN_EC_CORE_TIMEOUT.value())
-                return new RTMStruct.RTMAnswer(errcode, "FPNN_EC_CORE_TIMEOUT");
+                return new RTMAnswer(errcode, "FPNN_EC_CORE_TIMEOUT");
             else
-                return new RTMStruct.RTMAnswer(errcode,"fpnn  error");
+                return new RTMAnswer(errcode,"fpnn  error");
         }
         else
-            return new RTMStruct.RTMAnswer(answer.getErrorCode(),answer.getErrorMessage());
+            return new RTMAnswer(answer.getErrorCode(),answer.getErrorMessage());
     }
 
     void setCloseType(CloseType type)
@@ -1294,7 +1306,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         }, rtmConfig.globalQuestTimeoutSeconds);
     }
 
-    RTMStruct.RTMAnswer sendQuestEmptyResult(Quest quest){
+    RTMAnswer sendQuestEmptyResult(Quest quest){
         Answer ret =  sendQuest(quest);
         if (ret == null)
             return genRTMAnswer(ErrorCode.FPNN_EC_CORE_INVALID_CONNECTION.value(),"invalid connection");
@@ -1385,13 +1397,17 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     }
 
 
+    public void whoSpeak(long[] uids){
+        serverPushProcessor.voiceSpeak(uids);
+    }
+
     public void printLog(String msg){
         Log.e("sdktest",msg);
         errorRecorder.recordError(msg);
     }
 
     boolean isAirplaneModeOn() {
-        return android.provider.Settings.System.getInt(context.getContentResolver(),
+        return Settings.System.getInt(context.getContentResolver(),
                 Settings.Global.AIRPLANE_MODE_ON,0) != 0;
     }
 
@@ -1549,7 +1565,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     }
 
     //------------voice add---------------//
-    private RTMStruct.RTMAnswer auth(String token, Map<String, String> attr) {
+    private RTMAnswer auth(String token, Map<String, String> attr) {
         String deviceid = Build.BRAND + "-" + Build.MODEL;
         Quest qt = new Quest("auth");
         qt.param("pid", pid);

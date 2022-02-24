@@ -84,6 +84,7 @@ public class RTMPushProcessor
     //     */
     public void pushKickoutRTCRoom(long roomId){} //某人被踢出语音房间
     public void pushPullRoom(long roomId, RTMStruct.RoomInfo info){} //被服务器拉入房间
+    public void voiceSpeak(long[] uid){} //谁正在说话
 }
 
 

@@ -7,11 +7,12 @@
     tools:context=".StartActivity">
 
     <EditText
-        android:text="7788"
         android:id="@+id/editText"
         android:layout_width="176dp"
         android:layout_height="45dp"
         android:hint="请输入房间号"
+        android:inputType="number"
+        android:text="7788"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.544"
@@ -30,4 +31,12 @@
         app:layout_constraintStart_toStartOf="@+id/editText"
         app:layout_constraintTop_toBottomOf="@+id/editText" />
 
+    <Button
+        android:id="@+id/startVideo"
+        android:layout_width="148dp"
+        android:layout_height="68dp"
+        android:layout_marginTop="24dp"
+        android:text="开始视频通话"
+        app:layout_constraintLeft_toLeftOf="@id/startAudio"
+        app:layout_constraintTop_toBottomOf="@id/startAudio" />
 </androidx.constraintlayout.widget.ConstraintLayout>

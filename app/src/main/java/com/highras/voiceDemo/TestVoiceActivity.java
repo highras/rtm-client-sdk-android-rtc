@@ -1,36 +1,25 @@
 package com.highras.voiceDemo;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.drawable.AnimationDrawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
+import android.os.Handler;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.Spinner;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
@@ -43,10 +32,9 @@ import com.rtcsdk.UserInterface;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.StringJoiner;
 
-public class TestvoiceActivity extends AppCompatActivity {
+public class TestVoiceActivity extends AppCompatActivity {
     RTMPushProcessor voicepush = new RTMVoiceProcessor();
     public TestErrorRecorderVoice voicerecoder = new TestErrorRecorderVoice();
     ConstraintLayout alllayout;
@@ -66,6 +54,8 @@ public class TestvoiceActivity extends AppCompatActivity {
     TextView roomdshow;
     RTMClient client;
     Utils utils = Utils.INSTANCE;
+
+    long previousTime = System.currentTimeMillis();
 
     private <T extends View> T $(int resId) {
         return (T) super.findViewById(resId);
@@ -104,7 +94,7 @@ public class TestvoiceActivity extends AppCompatActivity {
         }
 
         public void rtmConnectClose(long uid) {
-            TestvoiceActivity.this.runOnUiThread(new Runnable() {
+            TestVoiceActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                 }
@@ -114,7 +104,31 @@ public class TestvoiceActivity extends AppCompatActivity {
         public void kickout() {
             mylog.log("receive kickout");
         }
+
+        public void voiceSpeak(long[] uid) {
+            myactivity.runOnUiThread(() -> {
+                soundRelayout.setVisibility(View.VISIBLE);
+                previousTime = System.currentTimeMillis();
+                StringJoiner sj = new StringJoiner(",", "正在讲话:", "");
+                for (long l : uid) {
+                    sj.add(String.valueOf(l));
+                }
+                soundText.setText(sj.toString());
+            });
+        }
     }
+
+    Handler handler = new Handler();
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (System.currentTimeMillis() - previousTime > 2000) {
+                soundRelayout.setVisibility(View.INVISIBLE);
+                soundText.setText("");
+            }
+            handler.postDelayed(this, 500);
+        }
+    };
 
 
     @Override
@@ -174,11 +188,14 @@ public class TestvoiceActivity extends AppCompatActivity {
     AudioManager am;
     Toolbar toolbar;
 
+    RelativeLayout soundRelayout;
+    TextView soundText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.testvideo);
+        setContentView(R.layout.testvoice);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -194,10 +211,14 @@ public class TestvoiceActivity extends AppCompatActivity {
 
         activityRoom = getIntent().getIntExtra("roomid", 0);
         speakerImageView.setSelected(true);
+//        startAnimation();
 
+        soundText = $(R.id.nameTextView);
+        soundRelayout = $(R.id.sound_relayout);
         utils.login(new UserInterface.IRTMEmptyCallback() {
             @Override
             public void onResult(RTMStruct.RTMAnswer answer) {
+                mylog.log("void login ret" + answer.getErrInfo());
                 if (answer.errorCode == 0) {
                     client = utils.client;
                     RTMStruct.RTMAnswer jj = client.initRTC(false);
@@ -238,6 +259,7 @@ public class TestvoiceActivity extends AppCompatActivity {
                 setMicStatus(!micStatus);
             }
         });
+        handler.postDelayed(runnable, 500);
     }
 
 
@@ -299,16 +321,17 @@ public class TestvoiceActivity extends AppCompatActivity {
 
 
     void startVoice(long roomId) {
-        startVoice(roomId,false);
+        startVoice(roomId, false);
     }
-        void startVoice(long roomId, boolean relogin) {
+
+    void startVoice(long roomId, boolean relogin) {
         activityRoom = roomId;
         client.setActivityRoom(activityRoom);
         RTMStruct.RTMAnswer ret = client.setVoiceStat(true);
         if (ret.errorCode != 0) {
             return;
         }
-        if (relogin){
+        if (relogin) {
             myactivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -326,7 +349,7 @@ public class TestvoiceActivity extends AppCompatActivity {
 //                speaker.setBackgroundResource(R.drawable.speakon);
                 micStatus = true;
                 usespeaker = true;
-                roomdshow.setText("房间id-" + roomId);
+                roomdshow.setText("房间id-" + roomId + "    用户id-" + client.getUid());
 //                speakerImageView.setSelected(true);
             }
         });
@@ -355,7 +378,7 @@ public class TestvoiceActivity extends AppCompatActivity {
                                 }, roomId);
                             }
                         }
-                    }, roomId, 1,0);
+                    }, roomId, 1, 0);
                 }
             }
         }, roomId);
@@ -390,4 +413,15 @@ public class TestvoiceActivity extends AppCompatActivity {
             pActivity.getWindow().getDecorView().setSystemUiVisibility(pIsDark ? (lFlags & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) : (lFlags | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR));
         }
     }
+
+//    private void startAnimation() {
+//        ImageView laba = findViewById(R.id.laba_image);
+//        AnimationDrawable animationDrawable1 = new AnimationDrawable();
+//        animationDrawable1.addFrame(AppCompatResources.getDrawable(this, R.mipmap.voice_1), 200);
+//        animationDrawable1.addFrame(AppCompatResources.getDrawable(this, R.mipmap.voice_2), 200);
+//        animationDrawable1.addFrame(AppCompatResources.getDrawable(this, R.mipmap.voice_3), 200);
+//        animationDrawable1.setOneShot(false);
+//        laba.setImageDrawable(animationDrawable1);
+//        animationDrawable1.start();
+//    }
 }

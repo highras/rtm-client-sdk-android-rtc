@@ -3,8 +3,14 @@ package com.rtcsdk;
 import androidx.annotation.NonNull;
 
 import com.rtcsdk.DuplicatedMessageFilter.MessageCategories;
-import com.rtcsdk.RTMStruct.*;
-import com.rtcsdk.UserInterface.*;
+import com.rtcsdk.RTMStruct.HistoryMessageResult;
+import com.rtcsdk.RTMStruct.ModifyTimeStruct;
+import com.rtcsdk.RTMStruct.RTMAnswer;
+import com.rtcsdk.RTMStruct.SingleMessage;
+import com.rtcsdk.UserInterface.IRTMCallback;
+import com.rtcsdk.UserInterface.IRTMDoubleValueCallback;
+import com.rtcsdk.UserInterface.IRTMEmptyCallback;
+
 import java.util.List;
 
 class RTMessage extends RTMMessageCore {
@@ -179,7 +185,7 @@ class RTMessage extends RTMMessageCore {
      * @param mtypes    查询的消息类型
      */
     public void getP2PHistoryMessage(@NonNull IRTMCallback<HistoryMessageResult> callback, long peerUid, boolean desc, int count, long beginMsec, long endMsec, long lastId, @NonNull List<Byte> mtypes) {
-        getHistoryMessage(callback, peerUid, desc, count, beginMsec, endMsec, lastId, mtypes,  DuplicatedMessageFilter.MessageCategories.P2PMessage);
+        getHistoryMessage(callback, peerUid, desc, count, beginMsec, endMsec, lastId, mtypes,  MessageCategories.P2PMessage);
     }
 
     /**
@@ -194,7 +200,7 @@ class RTMessage extends RTMMessageCore {
      * @return          HistoryMessageResult
      */
     public HistoryMessageResult getP2PHistoryMessage( long peerUid, boolean desc, int count, long beginMsec, long endMsec, long lastId, @NonNull List<Byte> mtypes){
-        return getHistoryMessage(peerUid, desc, count, beginMsec, endMsec, lastId, mtypes,  DuplicatedMessageFilter.MessageCategories.P2PMessage);
+        return getHistoryMessage(peerUid, desc, count, beginMsec, endMsec, lastId, mtypes,  MessageCategories.P2PMessage);
     }
 
     /**
@@ -268,7 +274,7 @@ class RTMessage extends RTMMessageCore {
      * @param mtypes    查询的消息类型
      */
     public void getBroadcastHistoryMessage(@NonNull IRTMCallback<HistoryMessageResult> callback, boolean desc, int count, long beginMsec, long endMsec, long lastId, @NonNull List<Byte> mtypes) {
-        getHistoryMessage(callback, -1, desc, count, beginMsec, endMsec, lastId, mtypes,  DuplicatedMessageFilter.MessageCategories.BroadcastMessage);
+        getHistoryMessage(callback, -1, desc, count, beginMsec, endMsec, lastId, mtypes,  MessageCategories.BroadcastMessage);
     }
 
     /**
@@ -282,7 +288,7 @@ class RTMessage extends RTMMessageCore {
      * @return          HistoryMessageResult
      */
     public HistoryMessageResult getBroadcastHistoryMessage( boolean desc, int count, long beginMsec, long endMsec, long lastId, @NonNull List<Byte> mtypes){
-        return getHistoryMessage(-1, desc, count, beginMsec, endMsec, lastId, mtypes,  DuplicatedMessageFilter.MessageCategories.BroadcastMessage);
+        return getHistoryMessage(-1, desc, count, beginMsec, endMsec, lastId, mtypes,  MessageCategories.BroadcastMessage);
     }
 
     //===========================[ 获取单条历史记录 ]=========================//

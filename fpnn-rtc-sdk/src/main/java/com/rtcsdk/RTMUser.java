@@ -7,8 +7,8 @@ import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
 import com.rtcsdk.RTMStruct.GroupInfoStruct;
 import com.rtcsdk.RTMStruct.MembersStruct;
-import com.rtcsdk.RTMStruct.RTMAnswer;
 import com.rtcsdk.RTMStruct.PublicInfo;
+import com.rtcsdk.RTMStruct.RTMAnswer;
 import com.rtcsdk.UserInterface.IRTMCallback;
 import com.rtcsdk.UserInterface.IRTMEmptyCallback;
 

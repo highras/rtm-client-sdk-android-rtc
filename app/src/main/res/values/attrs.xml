@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--    <declare-styleable name="IndicatorView">-->
+    <!--        <attr name="indicatorColor" format="color" />-->
+    <!--        <attr name="indicatorColorSelected" format="color" />-->
+    <!--        <attr name="indicatorRadius" format="dimension" />-->
+    <!--        <attr name="indicatorRadiusSelected" format="dimension" />-->
+    <!--        <attr name="indicatorOffset" format="dimension" />-->
+    <!--        <attr name="indicatorCount" format="integer" />-->
+    <!--    </declare-styleable>-->
+
+    <declare-styleable name="roundedimageview">
+        <attr name="border_thickness" format="dimension" />
+        <attr name="border_inside_color" format="color" />
+        <attr name="border_outside_color" format="color"></attr>
+    </declare-styleable>
+
+    <declare-styleable name="CircleRelativeLayoutLayout">
+        <attr name="background_color" format="color" />
+        <attr name="background_alpha" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="OnOffView">
+        <attr name="offColor" format="color" />   <!--开关关闭时颜色-->
+        <attr name="onColor" format="color" />    <!--打开时颜色-->
+        <attr name="backWith" format="dimension" />    <!--可以不要~~-->
+        <attr name="iconSize" format="dimension" />    <!--小图标大小-->
+        <attr name="paddingSize" format="dimension" />    <!--间距-->
+        <attr name="defOff" format="boolean" />      <!--默认状态-->
+    </declare-styleable>
+</resources>

@@ -6,13 +6,13 @@ import com.fpnn.sdk.ErrorCode;
 import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
+import com.rtcsdk.RTMStruct.UnreadNum;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import com.rtcsdk.RTMStruct.UnreadNum;
 
 
 class RTMChat extends RTMRoom {
@@ -146,20 +146,20 @@ class RTMChat extends RTMRoom {
         return audioToText(content, lang,defaultCodec,sample_rate);
     }
 
-    public RTMStruct.UnreadNum getGroupUnread(HashSet<Long>gids) {
+    public UnreadNum getGroupUnread(HashSet<Long>gids) {
         return getGroupUnread(gids, 0, null);
     }
 
 
-    public RTMStruct.UnreadNum getGroupUnread(HashSet<Long>gids, List<Byte> messageTypes) {
+    public UnreadNum getGroupUnread(HashSet<Long>gids, List<Byte> messageTypes) {
         return getGroupUnread(gids,0,messageTypes);
     }
 
-    public RTMStruct.UnreadNum getP2PUnread(HashSet<Long>uids) {
+    public UnreadNum getP2PUnread(HashSet<Long>uids) {
         return getP2PUnread(uids,0, null);
     }
 
-    public RTMStruct.UnreadNum getP2PUnread(HashSet<Long>uids, List<Byte> messageTypes) {
+    public UnreadNum getP2PUnread(HashSet<Long>uids, List<Byte> messageTypes) {
         return getP2PUnread(uids,0, messageTypes);
     }
 
@@ -291,7 +291,7 @@ class RTMChat extends RTMRoom {
      * @param srate     采样率
      */
     public void audioToTextURL(@NonNull UserInterface.IRTMCallback<RTMStruct.AudioTextStruct> callback, @NonNull String url, @NonNull String lang, @NonNull String codec, int srate) {
-        audioToTextAsync(callback, url,CheckSourceType.URL, lang, codec, srate);
+        audioToTextAsync(callback, url, CheckSourceType.URL, lang, codec, srate);
     }
 
     /**语音转文字 sync
@@ -592,7 +592,7 @@ class RTMChat extends RTMRoom {
      * @param messageTypes  消息类型集合(如果不传默认所有聊天和文件相关消息类型，不包含自定义的type)
      *  return UnreadNum结构
      */
-    public RTMStruct.UnreadNum getGroupUnread(@NonNull HashSet<Long> gids, long lastMessageTime, List<Byte> messageTypes) {
+    public UnreadNum getGroupUnread(@NonNull HashSet<Long> gids, long lastMessageTime, List<Byte> messageTypes) {
         Quest quest = new Quest("getgroupunread");
         quest.param("gids",gids);
         if (lastMessageTime != 0)
@@ -602,7 +602,7 @@ class RTMChat extends RTMRoom {
 
         Answer answer = sendQuest(quest);
         RTMStruct.RTMAnswer result = genRTMAnswer(answer);
-        RTMStruct.UnreadNum res = new RTMStruct.UnreadNum();
+        UnreadNum res = new UnreadNum();
         HashMap<String, Integer> groupUnread = new HashMap<>();
         HashMap<String, Integer> p2pLtime = new HashMap<>();
 
@@ -628,7 +628,7 @@ class RTMChat extends RTMRoom {
      * @param lastMessageTime 最后一条消息的时间戳(毫秒)(如果不传默认用户最后一次下线时间,重连建议传入收到消息或者拉取历史的最后一次时间)
      * @param messageTypes  消息类型集合(如果不传默认所有聊天,文件相关消息类型，只要是设置为保存的消息，均可获取未读)
      */
-    public void getP2PUnread(@NonNull final UserInterface.IRTMCallback<RTMStruct.UnreadNum> callback, HashSet<Long> uids, long lastMessageTime, List<Byte> messageTypes) {
+    public void getP2PUnread(@NonNull final UserInterface.IRTMCallback<UnreadNum> callback, HashSet<Long> uids, long lastMessageTime, List<Byte> messageTypes) {
         Quest quest = new Quest("getp2punread");
         quest.param("uids",uids);
         if (lastMessageTime != 0)
@@ -636,7 +636,7 @@ class RTMChat extends RTMRoom {
         if (messageTypes != null)
             quest.param("mtypes",messageTypes);
 
-        final RTMStruct.UnreadNum res = new RTMStruct.UnreadNum();
+        final UnreadNum res = new UnreadNum();
 
         sendQuest(quest, new FunctionalAnswerCallback() {
             @Override
@@ -665,14 +665,14 @@ class RTMChat extends RTMRoom {
      * @param lastMessageTime 最后一条消息的时间戳(毫秒)(如果不传默认用户最后一次下线时间,重连建议传入收到消息或者拉取历史的最后一次时间)
      * @param messageTypes  消息类型集合(如果不传默认所有聊天,文件相关消息类型，只要是设置为保存的消息，均可获取未读)
      */
-    public void getGroupUnread(@NonNull final UserInterface.IRTMCallback<RTMStruct.UnreadNum> callback, HashSet<Long> gids, long lastMessageTime, List<Byte> messageTypes) {
+    public void getGroupUnread(@NonNull final UserInterface.IRTMCallback<UnreadNum> callback, HashSet<Long> gids, long lastMessageTime, List<Byte> messageTypes) {
         Quest quest = new Quest("getgroupunread");
         quest.param("gids", gids);
         if (lastMessageTime != 0)
             quest.param("mtime",lastMessageTime);
         if (messageTypes != null)
             quest.param("mtypes",messageTypes);
-        final RTMStruct.UnreadNum res = new RTMStruct.UnreadNum();
+        final UnreadNum res = new UnreadNum();
         final HashMap<String, Integer> groupUnread = new HashMap<>();
         final HashMap<String, Integer> p2pLtime = new HashMap<>();
         sendQuest(quest, new FunctionalAnswerCallback() {
@@ -751,7 +751,7 @@ class RTMChat extends RTMRoom {
      * @param messageTypes  消息类型集合(如果不传默认所有聊天和文件相关消息类型，不包含自定义的type)
      *return        UnreadNum结构
      */
-    public RTMStruct.UnreadNum getP2PUnread(@NonNull HashSet<Long> uids, long lastMessageTime, List<Byte> messageTypes) {
+    public UnreadNum getP2PUnread(@NonNull HashSet<Long> uids, long lastMessageTime, List<Byte> messageTypes) {
         Quest quest = new Quest("getp2punread");
         quest.param("uids",uids);
         if (lastMessageTime != 0)
@@ -761,7 +761,7 @@ class RTMChat extends RTMRoom {
 
         Answer answer = sendQuest(quest);
         RTMStruct.RTMAnswer result = genRTMAnswer(answer);
-        RTMStruct.UnreadNum res = new RTMStruct.UnreadNum();
+        UnreadNum res = new UnreadNum();
         HashMap<String, Integer> p2pUnread = new HashMap<>();
         HashMap<String, Integer> p2pLtime = new HashMap<>();
 

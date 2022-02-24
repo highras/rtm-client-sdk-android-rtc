@@ -9,16 +9,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
-import static android.view.View.GONE;
+import com.highras.voiceDemo.weight.CustomSwitch;
 
 public class StartActivity extends AppCompatActivity {
     int REQUEST_CODE_CONTACT = 101;
     EditText editText;
     Button startAudio;
+    Button startVideo;
 
     private <T extends View> T $(int resId) {
         return (T) super.findViewById(resId);
@@ -40,40 +43,38 @@ public class StartActivity extends AppCompatActivity {
                 }
             }
         }
-
-
         editText = $(R.id.editText);
-        editText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                if(editText.getText().toString().isEmpty())
-                    startAudio.setVisibility(View.INVISIBLE);
-                else
-                    startAudio.setVisibility(View.VISIBLE);
-            }
-        });
-
         startAudio = $(R.id.startAudio);
         startAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (Utils.isEmpty(editText.getText().toString())) {
+                    Toast.makeText(StartActivity.this, "请输入房间号", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 int roomid = Integer.parseInt(editText.getText().toString());
                 if (roomid == 0)
                     return;
-                Intent intent = new Intent(StartActivity.this, TestvoiceActivity.class);
-                intent.putExtra("roomid",roomid);
+                Intent intent = new Intent(StartActivity.this, TestVoiceActivity.class);
+                intent.putExtra("roomid", roomid);
                 startActivity(intent);
             }
         });
-
+        startVideo = $(R.id.startVideo);
+        startVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Utils.isEmpty(editText.getText().toString())) {
+                    Toast.makeText(StartActivity.this, "请输入房间号", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int roomid = Integer.parseInt(editText.getText().toString());
+                if (roomid == 0)
+                    return;
+                Intent intent = new Intent(StartActivity.this, TestVideoActivity.class);
+                intent.putExtra("roomid", roomid);
+                startActivity(intent);
+            }
+        });
     }
 }

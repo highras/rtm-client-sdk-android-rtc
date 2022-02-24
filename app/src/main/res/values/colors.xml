@@ -7,7 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFF</color><!--白色 -->
-
+    <color name="color_translucent">#00000000</color>
 
     <color name="ivory">#FFFFF0</color><!--象牙色 -->
 
@@ -391,6 +391,7 @@
 
 
     <color name="dodgerblue">#1E90FF</color><!--闪兰色 -->
+    <color name="dodgerblue1">#49ADFF</color><!--闪兰色 -->
 
 
     <color name="midnightblue">#191970</color><!--中灰兰色 -->

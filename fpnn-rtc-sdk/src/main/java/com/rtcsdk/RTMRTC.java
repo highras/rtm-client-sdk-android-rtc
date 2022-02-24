@@ -353,7 +353,7 @@ public class RTMRTC extends RTMChat{
     }
 
 
-    /**
+    /** 需要传入的view 真正建立完成
      * 设置预览view
      * @return
      */

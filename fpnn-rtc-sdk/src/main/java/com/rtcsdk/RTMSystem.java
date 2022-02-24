@@ -5,7 +5,9 @@ import androidx.annotation.NonNull;
 import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
-import com.rtcsdk.RTMStruct.*;
+import com.rtcsdk.RTMStruct.AttrsStruct;
+import com.rtcsdk.RTMStruct.DevicePushOption;
+import com.rtcsdk.RTMStruct.RTMAnswer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,7 +44,7 @@ class RTMSystem extends RTMUser {
      *添加key_value形式的变量（例如设置客户端信息，会保存在当前链接中） async
      * @param attrs     客户端自定义属性值
      */
-    public RTMStruct.RTMAnswer addAttributes(Map<String, String> attrs){
+    public RTMAnswer addAttributes(Map<String, String> attrs){
         Quest quest = new Quest("addattrs");
         quest.param("attrs", attrs);
         return sendQuestEmptyResult(quest);
@@ -73,11 +75,11 @@ class RTMSystem extends RTMUser {
      *获取用户属性 async
      * @return      AttrsStruct
      */
-    public RTMStruct.AttrsStruct getAttributes(){
+    public AttrsStruct getAttributes(){
         Quest quest = new Quest("getattrs");
         Answer answer = sendQuest(quest);
-        RTMStruct.RTMAnswer result = genRTMAnswer(answer);
-        RTMStruct.AttrsStruct ret = new RTMStruct.AttrsStruct();
+        RTMAnswer result = genRTMAnswer(answer);
+        AttrsStruct ret = new AttrsStruct();
         ret.errorCode = result.errorCode;
         ret.errorMsg = result.errorMsg;
         if (ret.errorCode == RTMErrorCode.RTM_EC_OK.value())
@@ -106,7 +108,7 @@ class RTMSystem extends RTMUser {
      * @param attrs     消息属性信息
      * @return          RTMAnswer
      */
-    public RTMStruct.RTMAnswer addDebugLog(@NonNull String message, @NonNull String attrs){
+    public RTMAnswer addDebugLog(@NonNull String message, @NonNull String attrs){
         Quest quest = new Quest("adddebuglog");
         quest.param("msg", message);
         quest.param("attrs", attrs);
@@ -132,7 +134,7 @@ class RTMSystem extends RTMUser {
      * @param appType     应用类型 fcm(android) 或者 apns(ios)
      * @param deviceToken   设备推送token
      */
-    public RTMStruct.RTMAnswer addDevice(String appType, String deviceToken){
+    public RTMAnswer addDevice(String appType, String deviceToken){
         Quest quest = new Quest("adddevice");
         quest.param("apptype", appType);
         quest.param("devicetoken", deviceToken);
@@ -156,7 +158,7 @@ class RTMSystem extends RTMUser {
      * 删除设备， async
      * @param deviceToken   设备推送token
      */
-    public RTMStruct.RTMAnswer removeDevice(String deviceToken){
+    public RTMAnswer removeDevice(String deviceToken){
         Quest quest = new Quest("removedevice");
         quest.param("devicetoken", deviceToken);
         return sendQuestEmptyResult(quest);

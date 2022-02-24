@@ -224,7 +224,7 @@ public class RTMAudio {
     }
 
 
-    public RTMStruct.RTMAudioStruct getAudioInfo() {
+    public RTMAudioStruct getAudioInfo() {
         return getAudioInfo(recordFile);
     }
 
@@ -240,7 +240,7 @@ public class RTMAudio {
         return  true;
     }
 
-    public RTMStruct.RTMAudioStruct getAudioInfo(File file) {
+    public RTMAudioStruct getAudioInfo(File file) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         RTMAudioStruct tt = new RTMAudioStruct();
         byte[] audio = fileToByteArray(file);
