@@ -1,6 +1,6 @@
-### android-rtm-sdk-RTC-audio 使用文档
+### android-rtm-sdk-RTC 使用文档
 
-## <font color="#660000">备注</font>:rtm-rtc-voice基于RTM，RTM的使用文档详见[https://github.com/highras/rtm-client-sdk-android/blob/master/README-zh.md]
+## <font color="#660000">备注</font>:rtm-rtc基于RTM，RTM的使用文档详见[https://github.com/highras/rtm-client-sdk-android/blob/master/README-zh.md]
 
 - [版本支持](#版本支持)
 - [依赖集成](#依赖集成)
@@ -10,7 +10,7 @@
 
 
 ### 版本支持
-- 最低支持Android版本为4.4
+- 最低支持Android版本为7.0
 
 ### 依赖集成
 - Add maventral as your repository in project's build.gradle:
@@ -39,10 +39,11 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     ~~~
 - RTC-audio说明:
-  - 如果使用实时语音功能请在任意activity的oncreate主线程中 初始化RTMClient对象
-  - 开启RTC功能需要RTM先登陆成功，然后调用initRTMVoice初始化实时音频
+  - 开启RTC功能需要RTM先登陆成功，然后调用initRTC初始化实时音频
   - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
-  - RTM链接断开，进入的实时语音房间会自动退出，需要在重连完成后再次进入房间
+  - 视频房间只能进入一个
+  - 需要订阅才能正常接收对方视频
+  - RTM链接断开，进入的实时音视频房间会自动退出，需要在重连完成后再次进入房间 订阅的视频流需要重新订阅
 - 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
      public class TestErrorRecorder extends ErrorRecorder {
@@ -82,9 +83,19 @@
     login成功后可以正常调用rtm聊天相关接口
     client.sendChat/ client.sendMessage.....
 
-    实时语音
-    client.initRTMVoice();
+    实时音视频
+--初始化
+    client.initRTC(false);
+--实时音频
+    client.enterRTCRoom(100);
+    client.setActivityRoom(100);
     client.canSpeak(boolean status) //打开或关闭麦克风
+--实时视频
+    client.enterRTCRoom(100);
+   client.setPreview(previewSurfaceView);//设置预览view
+    client.opencamera() //打开摄像头
+    client.subscribeVideos(100, new HashMap<Long, SurfaceView>() ) //订阅对方视频流
+
 ~~~
 
 ##  接口说明

@@ -74,11 +74,9 @@ public class TestVideoActivity extends AppCompatActivity {
     public AtomicLong videoRoom = new AtomicLong(0);
     private HashMap<Long, View> userSurfaces = new HashMap<>();
     ArrayList<Long> roomMembers = new ArrayList<>();
-    //ProjectInfo info = new ProjectInfo(80000071, "rtm-nx-front.ilivedata.com"); //宁夏
-    //ProjectInfo info = new ProjectInfo(80000087, "rtm-intl-frontgate.ilivedata.com"); //国际
-    ProjectInfo info = new ProjectInfo(11000002, "161.189.171.91");     //测试
+    ProjectInfo info = new ProjectInfo(80000071, "rtm-nx-front.ilivedata.com"); //宁夏
     RTMClient client;
-    String curraddress = "test";
+    String curraddress = "nx";
     long uid = 0;
     //是否启用双声道
     Boolean channelNum = false;
@@ -122,7 +120,7 @@ public class TestVideoActivity extends AppCompatActivity {
         previewSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-                mylog.log("width-" + previewSurfaceView.getWidth() + " hight-" + previewSurfaceView.getHeight());
+//                mylog.log("width-" + previewSurfaceView.getWidth() + " hight-" + previewSurfaceView.getHeight());
                 previewSurfaceView.getLayoutParams();
             }
 
@@ -161,7 +159,7 @@ public class TestVideoActivity extends AppCompatActivity {
             client.setPreview(previewSurfaceView);
             realEnterRoom(activityRoom);
         } else {
-            Log.d(TAG, "login: 登录失败");
+            Log.d(TAG, "login: 登录失败 " + answer.getErrInfo());
         }
     }
 

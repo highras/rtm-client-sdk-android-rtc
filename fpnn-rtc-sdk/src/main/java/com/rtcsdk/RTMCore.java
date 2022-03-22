@@ -932,7 +932,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
                     break;
                 case NetUtils.NETWORK_MOBILE:
                 case NetUtils.NETWORK_WIFI:
-                    Log.e("sdktest","have network");
+//                    Log.e("sdktest","have network");
 
                     if (rtmGate == null)
                         return;
