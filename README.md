@@ -24,7 +24,7 @@
 - Add dependency in your module's build.gradle:
     ~~~
     dependencies {
-        implementation 'com.github.highras:rtc-android-audio:2.7.3'
+        implementation 'com.github.highras:rtc-android-audio:2.7.2'
     }
     ~~~
 
@@ -36,9 +36,11 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     ~~~
-- RTC-audio说明:
+  
+- RTC说明:
   - 开启RTC功能需要RTM先登陆成功，然后调用initRTC初始化实时音频
   - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
   - 视频房间只能进入一个
