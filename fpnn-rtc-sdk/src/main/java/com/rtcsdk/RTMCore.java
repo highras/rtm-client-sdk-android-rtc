@@ -20,6 +20,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.OrientationEventListener;
+import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +38,7 @@ import com.livedata.rtc.RTCEngine;
 import com.rtcsdk.RTMStruct.CaptureLevle;
 import com.rtcsdk.RTMStruct.FileStruct;
 import com.rtcsdk.RTMStruct.MessageType;
+import com.rtcsdk.RTMStruct.P2PRTCEvent;
 import com.rtcsdk.RTMStruct.RTMAnswer;
 import com.rtcsdk.RTMStruct.RTMMessage;
 import com.rtcsdk.RTMStruct.RoomInfo;
@@ -167,6 +169,10 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     boolean cameraStatus = false;
     OrientationEventListener mOrEventListener;
     int currVideoLevel = CaptureLevle.Normal.value();
+
+    long lastCallId = 0; //p2pRTC 用
+    int lastP2Ptype = 0; //1-音频 2-视频
+    long peerUid = 0; //p2p对方uid
 //    int earpieceid = 0;
 //    int speakerid = 0;
     //时间校准
@@ -446,6 +452,64 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
 
             return info;
         }
+
+        Answer pushP2PRTCRequest(Quest quest, InetSocketAddress peer){
+            rtmGate.sendAnswer(new Answer(quest));
+            int pid = rtmUtils.wantInt(quest,"pid");
+            lastCallId = rtmUtils.wantLong(quest,"callId");
+            peerUid = rtmUtils.wantLong(quest,"peerUid");
+            lastP2Ptype = rtmUtils.wantInt(quest,"type");
+            serverPushProcessor.pushRequestP2PRTC(peerUid, lastP2Ptype);
+            return null;
+        }
+
+        Answer pushP2PRTCEvent(Quest quest, InetSocketAddress peer){
+            rtmGate.sendAnswer(new Answer(quest));
+//            int pid = rtmUtils.wantInt(quest,"pid");
+            long callId = rtmUtils.wantLong(quest,"callId");
+            final long calluid = rtmUtils.wantLong(quest,"peerUid");
+            final int type = rtmUtils.wantInt(quest,"type");
+            int ievent = rtmUtils.wantInt(quest,"event");
+//            Log.i("sdktest","receive pushP2PRTCEvent callId " + callId + " peerUid "+ peerUid +  " type " + type + " ievent " + ievent);
+            final P2PRTCEvent event = P2PRTCEvent.intToEnum(ievent);
+
+            if (event == P2PRTCEvent.Accept){
+                String ret = RTCEngine.startP2P(type, calluid, callId);
+                if (ret.isEmpty()){
+                    Log.i("sdktest", "user " + calluid + "accept P2P " + type +" startP2P ok");
+                    if (type == 2) {
+                        Handler mainhandle = new Handler(Looper.getMainLooper());
+                        mainhandle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                SurfaceView view = serverPushProcessor.pushP2PRTCEvent(calluid, type, event);
+                                if (view !=null)
+                                {
+                                    RTCEngine.bindDecodeSurface(calluid, view.getHolder().getSurface());
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        serverPushProcessor.pushP2PRTCEvent(calluid, type, event);
+                    }
+                }
+                else{
+                    Log.i("sdktest", "Accept connect P2P rtc failed " + ret);
+                    errorRecorder.recordError("pushP2PRTCEvent startP2P error " + ret);
+                }
+                return null;
+            }
+            else {
+                lastCallId = 0;
+                peerUid = 0;
+                RTCEngine.closeP2P();
+            }
+
+            serverPushProcessor.pushP2PRTCEvent(calluid, type, event);
+            return null;
+        }
+
 
         //----------------------[ RTM Messagess ]-------------------//
         Answer pushmsg(Quest quest, InetSocketAddress peer){
@@ -1112,7 +1176,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
             return genRTMAnswer(errCode, "you must RTMlogin sucessfully at first");
         }
         rtcClear();
-        String ret = RTCEngine.create(this, rtcEndpoint, Build.VERSION.SDK_INT, stereo, currVideoLevel, pid, uid, application);
+        String ret = RTCEngine.create(this, rtcEndpoint, stereo, currVideoLevel, pid, uid, application);
         if (!ret.isEmpty()) {
             return genRTMAnswer(errCode,"initRTC create error " + ret);
         }

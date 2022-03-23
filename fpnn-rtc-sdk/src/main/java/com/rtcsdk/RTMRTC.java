@@ -3,6 +3,7 @@ import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
+import com.fpnn.sdk.ErrorCode;
 import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
@@ -50,7 +51,6 @@ public class RTMRTC extends RTMChat{
             return genRTMAnswer(videoError,"ret");
         return genRTMAnswer(okRet);
     }
-
 
     /**
      * 关闭摄像头
@@ -151,13 +151,12 @@ public class RTMRTC extends RTMChat{
         super.enterRTCRoom(callback,roomId);
     }
 
-
     /**
      * 订阅视频流
      * @param roomId 房间id
      * @param userViews  key-订阅的用户id value-显示用户的surfaceview(需要 宽高比 3：4)
      */
-    public RTMAnswer subscribeVideo(long roomId, HashMap<Long, SurfaceView> userViews){
+    public RTMAnswer subscribeVideos(long roomId, HashMap<Long, SurfaceView> userViews){
         for (Map.Entry<Long, SurfaceView> it:userViews.entrySet()) {
             SurfaceView tmp = it.getValue();
             float ratio =  (float) tmp.getWidth() / tmp.getHeight();
@@ -179,20 +178,6 @@ public class RTMRTC extends RTMChat{
         }
         return answer;
     }
-
-//    /**
-//     * 打开扬声器
-//     */
-//    public RTMAnswer openSpeaker(){
-//        return setUsespeaker(true);
-//    }
-//
-//    /**
-//     * 打开听筒
-//     */
-//    public RTMAnswer openEarpiece(){
-//        return setUsespeaker(false);
-//    }
 
     /**
      * 邀请用户加入RTC房间(非强制，需要对端确认)(发送成功仅代表收到该请求，至于用户最终是否进入房间结果未知)
@@ -234,10 +219,6 @@ public class RTMRTC extends RTMChat{
                 RTCEngine.switchVoiceOutput(usespeaker);
             }
         }).start();
-//        if (usespeaker)
-//            mAudioManager.setSpeakerphoneOn(true);
-//        else
-//            mAudioManager.setSpeakerphoneOn(false);
     }
 
     /**
@@ -353,12 +334,164 @@ public class RTMRTC extends RTMChat{
     }
 
 
-    /** 需要传入的view 真正建立完成
-     * 设置预览view
+    /**
+     * 设置预览view(需要传入的view 真正建立完成)
      * @return
      */
     public void setPreview(SurfaceView view){
         RTCEngine.setpreview(view.getHolder().getSurface());
+    }
+
+
+    /****************P2P*****************/
+    /**
+     *发起p2p音视频请求(对方是否回应通过 pushP2PRTCEvent接口返回)
+     * @param type 1-实时语音  2-实时音视频
+     * @SurfaceView view(如果为实时频频 自己预览的view 需要view创建完成并可用)
+     * @param toUid 对方id
+     */
+    public void requestP2PRTC(final int type , final long toUid, final SurfaceView view, final IRTMEmptyCallback callback){
+        if (RTCEngine.isInRTCRoom() > 0){
+            callback.onResult(genRTMAnswer(voiceError, "please leaveRTC room first"));
+            return;
+        }
+
+        if (lastCallId > 0){
+            callback.onResult(genRTMAnswer(voiceError, "already in p2p type"));
+            return;
+        }
+
+        Quest quest = new Quest("requestP2PRTC");
+        quest.param("type", type);
+        quest.param("peerUid", toUid);
+        sendQuest(quest, new FunctionalAnswerCallback() {
+            @Override
+            public void onAnswer(Answer answer, int errorCode) {
+                if (errorCode == okRet) {
+                    lastCallId = rtmUtils.wantLong(answer, "callId");
+                    peerUid = toUid;
+                    lastP2Ptype = type;
+                    if (type == 2) {
+                        String msg = RTCEngine.requestP2PVideo(view.getHolder().getSurface());
+                        if (!msg.isEmpty()){
+                            callback.onResult(genRTMAnswer(videoError, msg));
+                            return;
+                        }
+//                        RTCEngine.setpreview(view.getHolder().getSurface());
+//                        RTCEngine.setCameraFlag(true);
+//                        RTCEngine.setVoiceStat(true);
+//                        RTCEngine.canSpeak(true);
+                    }
+                }
+                callback.onResult(genRTMAnswer(answer, errorCode));
+            }
+        });
+    }
+
+    /**
+     * 取消p2p RTC请求
+     * @param callback
+     */
+    public void cancelP2PRTC(final IRTMEmptyCallback callback){
+        if (lastCallId <0) {
+            callback.onResult(genRTMAnswer(0));
+            return;
+        }
+        Quest quest = new Quest("cancelP2PRTC");
+        quest.param("callId", lastCallId);
+        sendQuest(quest, new FunctionalAnswerCallback() {
+            @Override
+            public void onAnswer(Answer answer, int errorCode) {
+                if (errorCode == okRet){
+//                    closeP2P();
+                }
+                callback.onResult(genRTMAnswer(answer, errorCode));
+            }
+        });
+    }
+
+    void closeP2P(){
+        RTCEngine.closeP2P();
+        lastCallId = 0;
+        peerUid = 0;
+        lastP2Ptype = 0;
+    }
+
+
+    /**
+     * 关闭p2p 会话
+     * @param callback
+     */
+    public void closeP2PRTC(final IRTMEmptyCallback callback){
+        if (lastCallId <0) {
+            callback.onResult(genRTMAnswer(0));
+            return;
+        }
+        Quest quest = new Quest("closeP2PRTC");
+        quest.param("callId", lastCallId);
+        sendQuest(quest, new FunctionalAnswerCallback() {
+            @Override
+            public void onAnswer(Answer answer, int errorCode) {
+                closeP2P();
+//                if (errorCode == okRet){
+//                    closeP2P();
+//                }
+                callback.onResult(genRTMAnswer(answer, errorCode));
+            }
+        });
+    }
+
+    /**
+     * 接受p2p 会话
+     * @param callback
+     * @param preview 自己预览的view(仅视频)
+     * @param bindview 对方的view(仅视频)
+     */
+    public void acceptP2PRTC(final IRTMEmptyCallback callback, final SurfaceView preview, final SurfaceView bindview){
+        if (lastCallId <= 0) {
+            callback.onResult(genRTMAnswer(0));
+            return;
+        }
+        Quest quest = new Quest("acceptP2PRTC");
+        quest.param("callId", lastCallId);
+        sendQuest(quest, new FunctionalAnswerCallback() {
+            @Override
+            public void onAnswer(Answer answer, int errorCode) {
+                if (errorCode == 0){
+                    String ret = RTCEngine.startP2P(lastP2Ptype, peerUid, lastCallId);
+                    if (!ret.isEmpty()){
+                        callback.onResult(genRTMAnswer(ErrorCode.FPNN_EC_CORE_UNKNOWN_ERROR.value(),"acceptP2PRTC but startP2P error"));
+                        return;
+                    }
+
+                    if (lastP2Ptype == 2 && preview != null && bindview != null) {
+                        setPreview(preview);
+                        openCamera();
+                        RTCEngine.bindDecodeSurface(peerUid, bindview.getHolder().getSurface());
+                    }
+                }
+                callback.onResult(genRTMAnswer(answer, errorCode));
+            }
+        });
+    }
+
+    /**
+     * 拒绝p2p 会话
+     * @param callback
+     */
+    public void refuseP2PRTC(final IRTMEmptyCallback callback){
+        if (lastCallId <0) {
+            callback.onResult(genRTMAnswer(0));
+            return;
+        }
+        Quest quest = new Quest("refuseP2PRTC");
+        quest.param("callId", lastCallId);
+        sendQuest(quest, new FunctionalAnswerCallback() {
+            @Override
+            public void onAnswer(Answer answer, int errorCode) {
+                callback.onResult(genRTMAnswer(answer, errorCode));
+            }
+        });
     }
 }
 

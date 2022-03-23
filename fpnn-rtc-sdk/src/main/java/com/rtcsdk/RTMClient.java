@@ -83,8 +83,7 @@ public class RTMClient extends RTMRTC {
     /**
      * 初始化实时音视频(必须在RTM登陆成功后调用)
      * @stereo 录音是否采用双声道
-     * @videoQuality 视频质量
-     * @return
+=     * @return
      */
     public RTMStruct.RTMAnswer initRTC(boolean stereo) {
         return super.initRTC(stereo);

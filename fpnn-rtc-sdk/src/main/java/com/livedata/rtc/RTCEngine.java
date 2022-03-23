@@ -2,7 +2,6 @@ package com.livedata.rtc;
 
 import android.content.Context;
 import android.view.Surface;
-import android.view.SurfaceView;
 
 public enum RTCEngine {
     INSTANCE;
@@ -21,7 +20,7 @@ public enum RTCEngine {
 
     // Native methods
 //    public static native String create(Object object, int osversion,boolean stereo, Object view);
-    public static native String create(Object object, String rtcEndpoint, int osversion, boolean stereo, int videoLevel, long pid, long uid, Context mcontext);
+    public static native String create(Object object, String rtcEndpoint, boolean stereo, int videoLevel, long pid, long uid, Context mcontext);
     public static native void switchCamera(boolean front);
 
     public static native String switchVideoCapture(int level);
@@ -44,4 +43,7 @@ public enum RTCEngine {
     public static native void setpreview(Surface view);
     public static native int isInRTCRoom();
     public static native void bindDecodeSurface(long uid, Surface surface);
+    public static native String startP2P(int type, long toUid, long callid);
+    public static native String requestP2PVideo(Surface view);
+    public static native void closeP2P();
 }

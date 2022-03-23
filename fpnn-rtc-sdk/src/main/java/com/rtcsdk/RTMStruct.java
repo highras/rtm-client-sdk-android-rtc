@@ -59,6 +59,44 @@ public class RTMStruct {
         Censor //如果有敏感词 结果用*号代替
     }
 
+
+    //P2PRTC event
+    public enum P2PRTCEvent {
+        CancelRequest(1), //对方取消请求
+        RingOff(2), //对方挂断
+        Accept(3),//对方接受请求
+        Refuse(4),//对方拒绝请求
+        NoResponse(5);//对方无应答
+
+        private int value;
+
+        P2PRTCEvent(int value) {
+            this.value = value;
+        }
+
+        public int value() {
+            return value;
+        }
+
+        public static P2PRTCEvent intToEnum(int type){
+            switch (type) {
+                case 1:
+                    return CancelRequest;
+                case 2:
+                    return RingOff;
+                case 3:
+                    return Accept;
+                case 4:
+                    return Refuse;
+                case 5:
+                    return NoResponse;
+                default:
+                    return NoResponse;
+            }
+        }
+    }
+
+
     public enum FileMessageType
     {
         IMAGEFILE(40),  //图片

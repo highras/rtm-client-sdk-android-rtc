@@ -283,7 +283,7 @@ public class TestVideoActivity extends AppCompatActivity {
                                 userSurfaces.forEach((aLong, view) -> {
                                     map.put(aLong, (SurfaceView) view.findViewById(R.id.member_surface));
                                 });
-                                RTMStruct.RTMAnswer subanswer = client.subscribeVideo(videoRoom.get(), map);
+                                RTMStruct.RTMAnswer subanswer = client.subscribeVideos(videoRoom.get(), map);
                                 Log.d(TAG, "onResult: " + "订阅 " + userSurfaces.keySet().toString() + " 视频流 " + transRet(subanswer));
                             }
                         }
@@ -460,7 +460,7 @@ public class TestVideoActivity extends AppCompatActivity {
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder) {
-                RTMStruct.RTMAnswer jj = client.subscribeVideo(videoRoom.get(), new HashMap<Long, SurfaceView>() {{
+                RTMStruct.RTMAnswer jj = client.subscribeVideos(videoRoom.get(), new HashMap<Long, SurfaceView>() {{
                     put(uid, surfaceView);
                 }});
                 if (jj.errorCode == 0) {
