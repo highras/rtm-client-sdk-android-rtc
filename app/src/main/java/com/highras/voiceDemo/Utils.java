@@ -7,6 +7,7 @@ import com.fpnn.sdk.ErrorRecorder;
 import com.fpnn.sdk.TCPClient;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
+import com.rtcsdk.RTMCenter;
 import com.rtcsdk.RTMClient;
 import com.rtcsdk.RTMPushProcessor;
 import com.rtcsdk.UserInterface;
@@ -36,7 +37,7 @@ public enum Utils {
     public void login(UserInterface.IRTMEmptyCallback callback, Activity activity, RTMPushProcessor _processor){
         uid = getuid();
         serverPush = _processor;
-        client = new RTMClient(rtmEndpoint, rtcEndpoint, 80000071, uid, serverPush, activity);
+        client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint,80000071, uid, serverPush, activity);
         new Thread(new Runnable() {
             @Override
             public void run() {

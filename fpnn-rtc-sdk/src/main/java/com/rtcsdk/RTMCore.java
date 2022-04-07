@@ -10,6 +10,8 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -61,7 +63,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycleCallbacks{
+class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycleCallbacks{
     public enum ClientStatus {
         Closed,
         Connecting,
@@ -165,8 +167,8 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     private WeakReference<Activity> currentActivity;
     private boolean background = false;
     private byte[] encrptyData;
-    private boolean autoConnect;
     boolean cameraStatus = false;
+    private boolean isInitRTC = false;
     OrientationEventListener mOrEventListener;
     int currVideoLevel = CaptureLevle.Normal.value();
 
@@ -309,6 +311,11 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
 //            callback.onResult(ret, genRTMAnswer(videoError,"please exit video room before enter another video room"));
 //            return;
 //        }
+        if (initRTC().errorCode != okRet){
+            ret.errorCode = RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value();
+            callback.onResult(ret, genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+            return;
+        }
 
 
         Quest quest = new Quest("enterRTCRoom");
@@ -476,7 +483,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
             if (event == P2PRTCEvent.Accept){
                 String ret = RTCEngine.startP2P(type, calluid, callId);
                 if (ret.isEmpty()){
-                    Log.i("sdktest", "user " + calluid + "accept P2P " + type +" startP2P ok");
+//                    Log.i("sdktest", "user " + calluid + "accept P2P " + type +" startP2P ok");
                     if (type == 2) {
                         Handler mainhandle = new Handler(Looper.getMainLooper());
                         mainhandle.post(new Runnable() {
@@ -495,7 +502,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
                     }
                 }
                 else{
-                    Log.i("sdktest", "Accept connect P2P rtc failed " + ret);
+//                    Log.i("sdktest", "Accept connect P2P rtc failed " + ret);
                     errorRecorder.recordError("pushP2PRTCEvent startP2P error " + ret);
                 }
                 return null;
@@ -1001,7 +1008,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
                     if (rtmGate == null)
                         return;
                     noNetWorkNotify.set(false);
-                    if (lastNetType != netWorkState && autoConnect) {
+                    if (lastNetType != netWorkState) {
                         if (isRelogin.get())
                             return;
 
@@ -1041,6 +1048,19 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         this.serverPushProcessor = processor;
     }
 
+    public static boolean isH265DecoderSupport(){
+        int count = MediaCodecList.getCodecCount();
+        for(int i=0;i<count;i++){
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            String name = info.getName();
+            if(name.contains("decoder") && name.contains("hevc")){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     void RTMInit(String rtmendpoint, String rtcendpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, final Activity currentActivity, RTMConfig config) {
         if (config == null)
             rtmConfig = new RTMConfig();
@@ -1052,55 +1072,31 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         this.rtmEndpoint = rtmendpoint;
         this.rtcEndpoint = rtcendpoint;
 
-        String errDesc = "";
-        if (rtmEndpoint == null || rtmEndpoint.equals(""))
-            errDesc = "invalid rtmEndpoint:" + rtmEndpoint;
-        if (pid <= 0)
-            errDesc += " pid is invalid:" + pid;
-        if (uid <= 0)
-            errDesc += " uid is invalid:" + uid;
-        if (serverPushProcessor == null)
-            errDesc += " RTMPushProcessor is null";
-
-        if (!errDesc.equals("")) {
-            printLog("rtmclient init error " + errDesc);
-            return;
-        }
-
-//        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1)
-//            apiSelect = 2;
-
-
-
         this.pid = pid;
         this.uid = uid;
         isRelogin.set(false);
         fileGates = new HashMap<>();
         processor = new RTMQuestProcessor();
         this.serverPushProcessor = serverPushProcessor;
-        autoConnect = rtmConfig.autoConnect;
         this.currentActivity = new WeakReference<Activity>(currentActivity);
-
 
         application = currentActivity.getApplication();
         ClientEngine.setMaxThreadInTaskPool(RTMConfig.globalMaxThread);
         application.registerActivityLifecycleCallbacks(this);
 
-        if (autoConnect) {
-            if (currentActivity == null){
-                printLog("currentActivity is null ");
-                return;
-            }
-            context = currentActivity.getApplicationContext();
-
-            mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            //网络监听
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
-            intentFilter.addAction("android.bluetooth.headset.profile.action.CONNECTION_STATE_CHANGED");
-            intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-            context.registerReceiver(this, intentFilter);
+        if (currentActivity == null){
+            printLog("currentActivity is null ");
+            return;
         }
+        context = currentActivity.getApplicationContext();
+
+        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        //网络监听
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        intentFilter.addAction("android.bluetooth.headset.profile.action.CONNECTION_STATE_CHANGED");
+        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+        context.registerReceiver(this, intentFilter);
     }
 
     public void setErrorRecoder(ErrorRecorder value){
@@ -1142,7 +1138,9 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         return uid;
     }
 
-    RTMAnswer  initRTC(boolean stereo) {
+    RTMAnswer  initRTC() {
+        if (isInitRTC)
+            return genRTMAnswer(okRet);
         //        manager = (CameraManager) application.getSystemService(Context.CAMERA_SERVICE);
 //        backgroundThread = new HandlerThread("imageAvailableListener");
 //        backgroundThread.start();
@@ -1171,16 +1169,18 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
                 RTCEngine.setRotation(rotation);
             }
         };
+        mOrEventListener.enable();
         int errCode = RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value();
         if (rtmGateStatus != ClientStatus.Connected) {
             return genRTMAnswer(errCode, "you must RTMlogin sucessfully at first");
         }
-        rtcClear();
-        String ret = RTCEngine.create(this, rtcEndpoint, stereo, currVideoLevel, pid, uid, application);
+//        rtcClear();
+        String ret = RTCEngine.create(this, rtcEndpoint, currVideoLevel, pid, uid, application);
         if (!ret.isEmpty()) {
             return genRTMAnswer(errCode,"initRTC create error " + ret);
         }
 
+        isInitRTC = true;
         return genRTMAnswer(okRet);
     }
 
@@ -1271,7 +1271,7 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     void realClose(){
         closedCase = CloseType.ByUser;
         try {
-            if (autoConnect && context != null)
+            if (context != null)
                 context.unregisterReceiver(this);
             if (application != null)
                 application.unregisterActivityLifecycleCallbacks(this);
@@ -1280,6 +1280,9 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
         }
         close();
         RTCEngine.delete();
+        isInitRTC = false;
+        if (mOrEventListener != null)
+            mOrEventListener.disable();
     }
 
     void sayBye(boolean async) {
@@ -1589,38 +1592,33 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
                     close();
                     processor.rtmConnectClose();
 
-                    if (!autoConnect) {
+                    if (closedCase == CloseType.ByServer || isRelogin.get()) {
                         return;
                     }
-                    else {
-                        if (closedCase == CloseType.ByServer || isRelogin.get()) {
-                            return;
-                        }
 
-                        if (isAirplaneModeOn()) {
-                            return;
-                        }
+                    if (isAirplaneModeOn()) {
+                        return;
+                    }
 
-                        if(getClientStatus() == ClientStatus.Closed){
-                            try {
-                                Thread.sleep(2* 1000);//处理一些特殊情况
-                                if (noNetWorkNotify.get()) {
-                                    return;
-                                }
-                                if (isRelogin.get() || getClientStatus() == ClientStatus.Connected) {
-                                    return;
-                                }
-                                isRelogin.set(true);
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        reloginEvent(1);
-                                    }
-                                }).start();
+                    if(getClientStatus() == ClientStatus.Closed){
+                        try {
+                            Thread.sleep(2* 1000);//处理一些特殊情况
+                            if (noNetWorkNotify.get()) {
+                                return;
                             }
-                            catch (Exception e){
-                                printLog(" relogin error " + e.getMessage());
+                            if (isRelogin.get() || getClientStatus() == ClientStatus.Connected) {
+                                return;
                             }
+                            isRelogin.set(true);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    reloginEvent(1);
+                                }
+                            }).start();
+                        }
+                        catch (Exception e){
+                            printLog(" relogin error " + e.getMessage());
                         }
                     }
                 }
@@ -1716,6 +1714,24 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
             return;
         }
 
+        String errDesc = "";
+        if (rtmEndpoint == null || rtmEndpoint.isEmpty() || rtmEndpoint.lastIndexOf(':') == -1)
+            errDesc = "invalid rtmEndpoint:" + rtmEndpoint;
+        if (rtcEndpoint == null || rtcEndpoint.isEmpty() || rtcEndpoint.lastIndexOf(':') == -1)
+            errDesc = "invalid rtcEndpoint:" + rtcEndpoint;
+        if (pid <= 0)
+            errDesc += " pid is invalid:" + pid;
+        if (uid <= 0)
+            errDesc += " uid is invalid:" + uid;
+        if (serverPushProcessor == null)
+            errDesc += " RTMMPushProcessor is null";
+
+        if (!errDesc.equals("")) {
+            errorRecorder.recordError("rtmclient init error." + errDesc);
+            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(), errDesc));
+            return;
+        }
+
         synchronized (interLocker) {
             if (rtmGateStatus == ClientStatus.Connected || rtmGateStatus == ClientStatus.Connecting) {
                 new Thread(new Runnable() {
@@ -1770,6 +1786,23 @@ class RTMCore  extends BroadcastReceiver implements Application.ActivityLifecycl
     RTMAnswer login(String token, String lang, Map<String, String> attr) {
         if (token == null || token.isEmpty())
             return genRTMAnswer(RTMErrorCode.RTM_EC_INVALID_AUTH_TOEKN.value(), "login failed token  is null or empty");
+
+        String errDesc = "";
+        if (rtmEndpoint == null || rtmEndpoint.isEmpty() || rtmEndpoint.lastIndexOf(':') == -1)
+            errDesc = "invalid rtmEndpoint:" + rtmEndpoint;
+        if (rtcEndpoint == null || rtcEndpoint.isEmpty() || rtcEndpoint.lastIndexOf(':') == -1)
+            errDesc = "invalid rtcEndpoint:" + rtcEndpoint;
+        if (pid <= 0)
+            errDesc += " pid is invalid:" + pid;
+        if (uid <= 0)
+            errDesc += " uid is invalid:" + uid;
+        if (serverPushProcessor == null)
+            errDesc += " RTMMPushProcessor is null";
+
+        if (!errDesc.equals("")) {
+            errorRecorder.recordError("login init error." + errDesc);
+            return genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(), errDesc);
+        }
 
         synchronized (interLocker) {
             if (rtmGateStatus == ClientStatus.Connected || rtmGateStatus == ClientStatus.Connecting)

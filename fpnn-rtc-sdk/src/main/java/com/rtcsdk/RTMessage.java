@@ -3,14 +3,8 @@ package com.rtcsdk;
 import androidx.annotation.NonNull;
 
 import com.rtcsdk.DuplicatedMessageFilter.MessageCategories;
-import com.rtcsdk.RTMStruct.HistoryMessageResult;
-import com.rtcsdk.RTMStruct.ModifyTimeStruct;
-import com.rtcsdk.RTMStruct.RTMAnswer;
-import com.rtcsdk.RTMStruct.SingleMessage;
-import com.rtcsdk.UserInterface.IRTMCallback;
-import com.rtcsdk.UserInterface.IRTMDoubleValueCallback;
-import com.rtcsdk.UserInterface.IRTMEmptyCallback;
-
+import com.rtcsdk.RTMStruct.*;
+import com.rtcsdk.UserInterface.*;
 import java.util.List;
 
 class RTMessage extends RTMMessageCore {

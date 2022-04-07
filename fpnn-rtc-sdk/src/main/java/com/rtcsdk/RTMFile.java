@@ -7,15 +7,10 @@ import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.TCPClient;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
-import com.rtcsdk.RTMStruct.FileMessageType;
-import com.rtcsdk.RTMStruct.MessageType;
-import com.rtcsdk.RTMStruct.ModifyTimeStruct;
-import com.rtcsdk.RTMStruct.RTMAnswer;
-import com.rtcsdk.RTMStruct.RTMAudioStruct;
+import com.rtcsdk.RTMStruct.*;
 import com.rtcsdk.UserInterface.IRTMDoubleValueCallback;
 
 import org.json.JSONObject;
-
 import java.security.MessageDigest;
 
 class RTMFile extends RTMSystem {

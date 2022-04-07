@@ -84,14 +84,14 @@ public class RTMPushProcessor
     //     * 6 关闭他人麦克风
     //     * 7 关闭他人摄像头
     //     */
-    public void pushKickoutRTCRoom(long roomId){} //某人被踢出语音房间
+    public void pushKickoutRTCRoom(long roomId){} //某人被踢出RTC房间
     public void pushPullRoom(long roomId, RTMStruct.RoomInfo info){} //被服务器拉入房间
     public void voiceSpeak(long[] uid){} //谁正在说话
 
     //推送p2p rtc请求
     public void pushRequestP2PRTC(long uid, int type){}
 
-    //推送p2p rtc event 如果是接受对方视频请求 需要返回显示对方的surfaceview
+    //推送p2p rtc event 如果是接受对方视频请求 需要返回显示对方的surfaceview(如果事件为P2PRTCEvent.Accept 自动切换为主线程)
     public SurfaceView pushP2PRTCEvent(long uid, int type, RTMStruct.P2PRTCEvent event){return null;}
 }
 

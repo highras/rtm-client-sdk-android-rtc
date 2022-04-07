@@ -1,23 +1,34 @@
 package com.rtcsdk;
 
 import android.app.Activity;
-
-import com.rtcsdk.UserInterface.IRTMEmptyCallback;
+import android.view.SurfaceView;
 
 import java.util.Map;
 
+import com.rtcsdk.UserInterface.IRTMEmptyCallback;
+
 public class RTMClient extends RTMRTC {
-    public RTMClient(String rtmEndpoint, String rtcEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity) {
+    /**
+     *
+     * @param rtmEndpoint RTM网关地址
+     * @param rtmEndpoint RTC实时视音频网关地址
+     * @param pid      项目id
+     * @param uid       用户id
+     * @param serverPushProcessor serverpush类
+     */
+    protected RTMClient(String rtmEndpoint, String rtcEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity) {
         RTMInit(rtmEndpoint, rtcEndpoint,pid, uid, serverPushProcessor,currentActivity,null);
     }
+
 
     /**
      *
      * @param rtmEndpoint RTM网关地址
-     * @param rtmEndpoint RTC实时语音网关地址
+     * @param rtmEndpoint RTC实时视音频网关地址
      * @param pid      项目id
      * @param uid       用户id
      * @param serverPushProcessor serverpush类
+     * @param config 自定义配置项
      */
     public RTMClient(String rtmEndpoint, String rtcEndpoint,long pid, long uid, RTMPushProcessor serverPushProcessor,Activity currentActivity,RTMConfig config){
         RTMInit(rtmEndpoint, rtcEndpoint,pid, uid, serverPushProcessor,currentActivity,config);
@@ -29,12 +40,13 @@ public class RTMClient extends RTMRTC {
         bye(true);
     }
 
-    /**
-     * 释放RTM和语音资源(如果再次使用RTM 需要重新new RTMclient对象 ,释放资源,网络广播监听会持有RTMClient对象 如果不调用RTMClient对象会一直持有不释放)
+    /** 切换账号或者完全退出不需要再用RTM功能的时候调用(释放资源,网络广播监听会持有RTMClient对象 如果不调用RTMClient对象会一直持有不释放)
      */
     public void closeRTM(){
         realClose();
+        RTMCenter.closeRTM(getPid(), getUid());
     }
+
 
     public long getPid() {
         return super.getPid();
@@ -45,7 +57,6 @@ public class RTMClient extends RTMRTC {
     }
 
     /**获取用户登录状态
-     *
      */
     public boolean isOnline() {
         return getClientStatus() == ClientStatus.Connected?true:false;
@@ -85,7 +96,7 @@ public class RTMClient extends RTMRTC {
      * @stereo 录音是否采用双声道
 =     * @return
      */
-    public RTMStruct.RTMAnswer initRTC(boolean stereo) {
-        return super.initRTC(stereo);
-    }
+//    public RTMStruct.RTMAnswer initRTC(o) {
+//        return super.initRTC(stereo);
+//    }
 }

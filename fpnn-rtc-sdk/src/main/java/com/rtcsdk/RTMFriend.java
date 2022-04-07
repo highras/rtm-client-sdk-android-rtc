@@ -5,10 +5,8 @@ import androidx.annotation.NonNull;
 import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
-import com.rtcsdk.RTMStruct.MembersStruct;
-import com.rtcsdk.RTMStruct.RTMAnswer;
-import com.rtcsdk.UserInterface.IRTMCallback;
-import com.rtcsdk.UserInterface.IRTMEmptyCallback;
+import com.rtcsdk.UserInterface.*;
+import com.rtcsdk.RTMStruct.*;
 
 import java.util.HashSet;
 

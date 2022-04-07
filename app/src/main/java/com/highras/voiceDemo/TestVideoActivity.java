@@ -35,6 +35,7 @@ import com.highras.voiceDemo.adapter.MemberAdapter;
 import com.highras.voiceDemo.common.DisplayUtils;
 import com.highras.voiceDemo.model.Member;
 import com.livedata.rtc.RTCEngine;
+import com.rtcsdk.RTMCenter;
 import com.rtcsdk.RTMClient;
 import com.rtcsdk.RTMPushProcessor;
 import com.rtcsdk.RTMStruct;
@@ -146,16 +147,12 @@ public class TestVideoActivity extends AppCompatActivity {
         String rtmEndpoint = info.host + ":" + rtmPort;
         String rtcEndpoint = info.host + ":" + rtcPort;
         Log.d(TAG, "login: 当前登录用户是" + uid);
-        client = new RTMClient(rtmEndpoint, rtcEndpoint, info.pid, uid, serverPush, this);
+        client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint,info.pid, uid, serverPush, this);
         client.setErrorRecoder(errorRecorder);
         RTMStruct.RTMAnswer answer = client.login(httpGettoken());
         if (answer.errorCode == 0) {
             Log.d(TAG, "login: 登录成功");
-            client.switchVideoQuality(videoQulity);
-            RTMStruct.RTMAnswer jj = client.initRTC(channelNum);
-            if (jj.errorCode != 0) {
-                return;
-            }
+//            client.switchVideoQuality(videoQulity);
             client.setPreview(previewSurfaceView);
             realEnterRoom(activityRoom);
         } else {

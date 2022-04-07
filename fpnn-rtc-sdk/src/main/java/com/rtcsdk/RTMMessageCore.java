@@ -5,15 +5,9 @@ import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
 import com.rtcsdk.DuplicatedMessageFilter.MessageCategories;
-import com.rtcsdk.RTMStruct.FileStruct;
-import com.rtcsdk.RTMStruct.HistoryMessage;
-import com.rtcsdk.RTMStruct.HistoryMessageResult;
-import com.rtcsdk.RTMStruct.MessageType;
-import com.rtcsdk.RTMStruct.ModifyTimeStruct;
-import com.rtcsdk.RTMStruct.RTMAnswer;
-import com.rtcsdk.RTMStruct.SingleMessage;
 import com.rtcsdk.UserInterface.IRTMCallback;
 import com.rtcsdk.UserInterface.IRTMDoubleValueCallback;
+import com.rtcsdk.RTMStruct.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;

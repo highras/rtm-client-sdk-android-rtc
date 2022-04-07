@@ -6,13 +6,13 @@ import com.fpnn.sdk.ErrorCode;
 import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
-import com.rtcsdk.RTMStruct.UnreadNum;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import com.rtcsdk.RTMStruct.UnreadNum;
 
 
 class RTMChat extends RTMRoom {
@@ -291,7 +291,7 @@ class RTMChat extends RTMRoom {
      * @param srate     采样率
      */
     public void audioToTextURL(@NonNull UserInterface.IRTMCallback<RTMStruct.AudioTextStruct> callback, @NonNull String url, @NonNull String lang, @NonNull String codec, int srate) {
-        audioToTextAsync(callback, url, CheckSourceType.URL, lang, codec, srate);
+        audioToTextAsync(callback, url,CheckSourceType.URL, lang, codec, srate);
     }
 
     /**语音转文字 sync

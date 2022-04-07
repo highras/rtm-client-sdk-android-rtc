@@ -10,7 +10,7 @@
 
 
 ### 版本支持
-- 最低支持Android版本为7.0
+- 最低支持Android版本为7.0(api24)
 
 ### 依赖集成
 - Add maventral as your repository in project's build.gradle:
@@ -24,7 +24,7 @@
 - Add dependency in your module's build.gradle:
     ~~~
     dependencies {
-        implementation 'com.github.highras:rtc-android-audio:2.7.3'
+        implementation 'com.github.highras:rtc-android-audio:2.7.4'
     }
     ~~~
 
@@ -41,10 +41,10 @@
     ~~~
   
 - RTC说明:
-  - 开启RTC功能需要RTM先登陆成功，然后调用initRTC初始化实时音频
+  - 开启RTC功能需要RTM先登陆成功
   - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
   - 视频房间只能进入一个
-  - 需要订阅才能正常接收对方视频
+  - 需要订阅才能正常接收对方视频流(不看调用取消订阅)
   - RTM链接断开，进入的实时音视频房间会自动退出，需要在重连完成后再次进入房间 订阅的视频流需要重新订阅
 - 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
@@ -72,29 +72,23 @@
     public class RTMExampleQuestProcessor extends RTMPushProcessor {
         ....//重写自己需要处理的业务接口
     }
-        @Override
-    protected void onCreate(Bundle savedInstanceState) {
-    RTMClient rtmclient  = new RTMClient(rtmEndpoint,rtcEndpoint, pid, uid, new RTMExampleQuestProcessor(), currentActivity);
+ 
+    RTMClient client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint,info.pid, uid, new RTMExampleQuestProcessor(), currentActivity);
     
     rtmclient.setErrorRecoder(new TestErrorRecorder())
-    //-- sync
     client.login(String token)
-    //-- Async
-    client.login(loginCallback callback, String token)
     
     login成功后可以正常调用rtm聊天相关接口
     client.sendChat/ client.sendMessage.....
 
     实时音视频
---初始化
-    client.initRTC(false);
 --实时音频
     client.enterRTCRoom(100);
     client.setActivityRoom(100);
     client.canSpeak(boolean status) //打开或关闭麦克风
 --实时视频
     client.enterRTCRoom(100);
-   client.setPreview(previewSurfaceView);//设置预览view
+    client.setPreview(previewSurfaceView);//设置预览view
     client.opencamera() //打开摄像头
     client.subscribeVideos(100, new HashMap<Long, SurfaceView>() ) //订阅对方视频流
 

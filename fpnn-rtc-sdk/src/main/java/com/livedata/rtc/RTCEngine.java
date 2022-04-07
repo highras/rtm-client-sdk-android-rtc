@@ -2,6 +2,7 @@ package com.livedata.rtc;
 
 import android.content.Context;
 import android.view.Surface;
+import android.view.SurfaceView;
 
 public enum RTCEngine {
     INSTANCE;
@@ -20,7 +21,7 @@ public enum RTCEngine {
 
     // Native methods
 //    public static native String create(Object object, int osversion,boolean stereo, Object view);
-    public static native String create(Object object, String rtcEndpoint, boolean stereo, int videoLevel, long pid, long uid, Context mcontext);
+    public static native String create(Object object, String rtcEndpoint, int videoLevel, long pid, long uid, Context mcontext);
     public static native void switchCamera(boolean front);
 
     public static native String switchVideoCapture(int level);

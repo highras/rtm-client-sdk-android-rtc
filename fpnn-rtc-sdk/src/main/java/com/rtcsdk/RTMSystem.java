@@ -5,9 +5,7 @@ import androidx.annotation.NonNull;
 import com.fpnn.sdk.FunctionalAnswerCallback;
 import com.fpnn.sdk.proto.Answer;
 import com.fpnn.sdk.proto.Quest;
-import com.rtcsdk.RTMStruct.AttrsStruct;
-import com.rtcsdk.RTMStruct.DevicePushOption;
-import com.rtcsdk.RTMStruct.RTMAnswer;
+import com.rtcsdk.RTMStruct.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;

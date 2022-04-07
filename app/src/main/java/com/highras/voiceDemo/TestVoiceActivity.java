@@ -221,11 +221,6 @@ public class TestVoiceActivity extends AppCompatActivity {
                 mylog.log("void login ret" + answer.getErrInfo());
                 if (answer.errorCode == 0) {
                     client = utils.client;
-                    RTMStruct.RTMAnswer jj = client.initRTC(false);
-                    if (jj.errorCode != 0) {
-                        mylog.log("初始化 音频失败 " + jj.getErrInfo());
-                        return;
-                    }
                     realEnterRoom(activityRoom);
                 }
 //                client = utils.client;

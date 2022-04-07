@@ -1,4 +1,6 @@
 package com.rtcsdk;
+import android.media.AudioManager;
+import android.media.MediaRecorder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
@@ -122,6 +124,12 @@ public class RTMRTC extends RTMChat{
         final RoomInfo ret = new RoomInfo();
         ret.roomId = roomId;
         ret.roomTyppe = roomType;
+        if (initRTC().errorCode != okRet){
+            ret.errorCode = RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value();
+            callback.onResult(ret, genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+            return;
+        }
+
         Quest quest = new Quest("createRTCRoom");
         quest.param("rid", roomId);
         quest.param("type", roomType);
@@ -157,6 +165,7 @@ public class RTMRTC extends RTMChat{
      * @param userViews  key-订阅的用户id value-显示用户的surfaceview(需要 宽高比 3：4)
      */
     public RTMAnswer subscribeVideos(long roomId, HashMap<Long, SurfaceView> userViews){
+        initRTC();
         for (Map.Entry<Long, SurfaceView> it:userViews.entrySet()) {
             SurfaceView tmp = it.getValue();
             float ratio =  (float) tmp.getWidth() / tmp.getHeight();
@@ -242,12 +251,10 @@ public class RTMRTC extends RTMChat{
         sendQuest(quest, new FunctionalAnswerCallback() {
             @Override
             public void onAnswer(Answer answer, int errorCode) {
-                if (errorCode == okRet) {
-                    RTCEngine.leaveRTCRoom(roomId);
-                }
                 callback.onResult(genRTMAnswer(answer, errorCode));
             }
         });
+        RTCEngine.leaveRTCRoom(roomId);
     }
 
     /**
@@ -339,6 +346,7 @@ public class RTMRTC extends RTMChat{
      * @return
      */
     public void setPreview(SurfaceView view){
+        initRTC();
         RTCEngine.setpreview(view.getHolder().getSurface());
     }
 
@@ -351,6 +359,11 @@ public class RTMRTC extends RTMChat{
      * @param toUid 对方id
      */
     public void requestP2PRTC(final int type , final long toUid, final SurfaceView view, final IRTMEmptyCallback callback){
+        if (initRTC().errorCode != okRet){
+            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+            return;
+        }
+
         if (RTCEngine.isInRTCRoom() > 0){
             callback.onResult(genRTMAnswer(voiceError, "please leaveRTC room first"));
             return;
@@ -452,6 +465,12 @@ public class RTMRTC extends RTMChat{
             callback.onResult(genRTMAnswer(0));
             return;
         }
+        if (initRTC().errorCode != okRet){
+            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+            return;
+        }
+
+
         Quest quest = new Quest("acceptP2PRTC");
         quest.param("callId", lastCallId);
         sendQuest(quest, new FunctionalAnswerCallback() {
