@@ -172,4 +172,45 @@
         * @return
         */
        public void setPreview(SurfaceView view);
+
+
+  /**
+     *发起p2p音视频请求(对方是否回应通过 pushP2PRTCEvent接口返回)
+     * @param type 1-实时语音  2-实时音视频
+     * @SurfaceView view(如果为实时频频 自己预览的view 需要view创建完成并可用)
+     * @param toUid 对方id
+     */
+    public void requestP2PRTC(final int type , final long toUid, final SurfaceView view, final IRTMEmptyCallback callback)
+
+
+    /**
+     * 取消p2p RTC请求
+     * @param callback
+     */
+    public void cancelP2PRTC(final IRTMEmptyCallback callback)
+
+
+
+    /**
+     * 关闭p2p 会话
+     * @param callback
+     */
+    public void closeP2PRTC(final IRTMEmptyCallback callback)
+
+
+    /**
+     * 接受p2p 会话
+     * @param callback
+     * @param preview 自己预览的view(仅视频)
+     * @param bindview 对方的view(仅视频)
+     */
+    public void acceptP2PRTC(final IRTMEmptyCallback callback, final SurfaceView preview, final SurfaceView bindview)
+
+
+    /**
+     * 拒绝p2p 会话
+     * @param callback
+     */
+    public void refuseP2PRTC(final IRTMEmptyCallback callback)
+
 ~~~
