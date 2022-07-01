@@ -64,6 +64,51 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycleCallbacks{
+
+
+    AudioManager.OnAudioFocusChangeListener afChangeListener =
+            new AudioManager.OnAudioFocusChangeListener() {
+                public void onAudioFocusChange(int focusChange) {
+                    if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+//                        printLog("AudioManager.AUDIOFOCUS_LOSS_TRANSIENT");
+                        RTCEngine.setVoiceStat(false);
+
+                        // Pause playback because your Audio Focus was
+                        // temporarily stolen, but will be back soon.
+                        // i.e. for a phone call
+                    } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+//                        printLog("AudioManager.AUDIOFOCUS_LOSS");
+                        RTCEngine.setVoiceStat(false);
+
+                        // Stop playback, because you lost the Audio Focus.
+                        // i.e. the user started some other playback app
+                        // Remember to unregister your controls/buttons here.
+                        // And release the kra — Audio Focus!
+                        // You’re done.
+                        mAudioManager.abandonAudioFocus(afChangeListener);
+                    } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+//                        printLog("AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
+
+                        // Lower the volume, because something else is also
+                        // playing audio over you.
+                        // i.e. for notifications or navigation directions
+                        // Depending on your audio playback, you may prefer to
+                        // pause playback here instead. You do you.
+                    } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+//                        printLog("AudioManager.AUDIOFOCUS_GAIN");
+                        String  ret = RTCEngine.resumeAudioFocus();
+//                        printLog("AudioManager.AUDIOFOCUS_GAIN resumeAudioFocus ret " + ret);
+
+                        // Resume playback, because you hold the Audio Focus
+                        // again!
+                        // i.e. the phone call ended or the nav directions
+                        // are finished
+                        // If you implement ducking and lower the volume, be
+                        // sure to return it to normal here, as well.
+                    }
+                }
+            };
+
     public enum ClientStatus {
         Closed,
         Connecting,
@@ -126,7 +171,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 //                        mAudioManager.setMode(AudioManager.MODE_NORMAL);
                         RTCEngine.headsetStat(intExtra);
                     }
-                }, 1500L);
+                }, 1000L);
             }
         }
         else if (a == b || (a != null && a.equals(b))) {
@@ -139,6 +184,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         else if (a.equals(Intent.ACTION_HEADSET_PLUG)) {
             if (intent.hasExtra("state")){
                 final int ret = intent.getIntExtra("state", 0);
+                Log.e("sdktest", "ACTION_HEADSET_PLUG " + ret);
                 if (ret ==0 || ret == 1){//0-拔出 1-插入
                     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                         @Override
@@ -146,7 +192,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 //                        mAudioManager.setMode(AudioManager.MODE_NORMAL);
                             RTCEngine.headsetStat(ret);
                         }
-                    }, 1000L);
+                    }, 500L);
                 }
             }
         }
@@ -170,7 +216,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     boolean cameraStatus = false;
     private boolean isInitRTC = false;
     OrientationEventListener mOrEventListener;
-    int currVideoLevel = CaptureLevle.Normal.value();
+    int currVideoLevel = CaptureLevle.MIddle.value();
 
     long lastCallId = 0; //p2pRTC 用
     int lastP2Ptype = 0; //1-音频 2-视频
@@ -266,6 +312,8 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         }
     }
 
+
+
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle bundle) {
     }
@@ -300,10 +348,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 //        return 0;
 //    }
 
-    void rtcClear(){
-        RTCEngine.RTCClear();
-    }
-
     void enterRTCRoom(@NonNull final IRTMCallback<RoomInfo> callback, final long roomId) {
         final RoomInfo ret = new RoomInfo();
 //        ret.roomId = roomId;
@@ -336,7 +380,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
     void enterRTCRoomReal(@NonNull final IRTMCallback callback, final long roomId, final String token, final RoomInfo ret, int roomTyppe) {
-        byte[] enterRet = RTCEngine.enterRTCRoom(token, roomId, roomTyppe);
+        byte[] enterRet = RTCEngine.enterRTCRoom(token, roomId, roomTyppe, "", 0);
         MessagePayloadUnpacker kk = new MessagePayloadUnpacker(enterRet);
         HashMap retmap;
         RTMAnswer rst = new RTMAnswer(0,"");
@@ -351,6 +395,9 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             }
             else
             {
+                if (roomTyppe == 2 && mOrEventListener!=null){ //视频房间
+                    mOrEventListener.enable();
+                }
                 ret.errorCode = 0;
                 ret.errorMsg = "";
                 ret.uids = rtmUtils.longHashSet(retmap.get("uids"));
@@ -411,8 +458,10 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 
         Answer kickout(Quest quest, InetSocketAddress peer) {
             setCloseType(CloseType.ByServer);
-            rtmGate.close();
-            rtcClear();
+            close();
+            if (mOrEventListener!=null){
+                mOrEventListener.disable();
+            }
             serverPushProcessor.kickout();
             return null;
         }
@@ -883,6 +932,9 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             long userId = rtmUtils.wantLong(quest,"uid");
             long time = rtmUtils.wantLong(quest,"mtime");
             RTCEngine.userLeave(userId);
+            if (mOrEventListener!=null){
+                mOrEventListener.disable();
+            }
             serverPushProcessor.pushExitRTCRoom(roomId,  userId, time);
             return null;
         }
@@ -891,7 +943,10 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             rtmGate.sendAnswer(new Answer(quest));
 
             long roomId = rtmUtils.wantLong(quest,"rid");
-            rtcClear();
+            RTCEngine.leaveRTCRoom(roomId);
+            if (mOrEventListener!=null){
+                mOrEventListener.disable();
+            }
             serverPushProcessor.pushRTCRoomClosed(roomId);
             return null;
         }
@@ -921,7 +976,10 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         Answer pushKickOutRTCRoom(Quest quest, InetSocketAddress peer) {
             rtmGate.sendAnswer(new Answer(quest));
             long roomId = rtmUtils.wantLong(quest,"rid");
-            rtcClear();
+            RTCEngine.leaveRTCRoom(roomId);
+            if (mOrEventListener!=null){
+                mOrEventListener.disable();
+            }
             serverPushProcessor.pushKickoutRTCRoom(roomId);
             return null;
         }
@@ -996,7 +1054,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             switch (netWorkState) {
                 case NetUtils.NETWORK_NONE:
                     noNetWorkNotify.set(true);
-                    Log.e("sdktest","no network");
+//                    Log.e("sdktest","no network");
 //                    if (isRelogin.get()){
 //                        isRelogin.set(false);
 //                    }
@@ -1011,30 +1069,41 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                     if (lastNetType != netWorkState) {
                         if (isRelogin.get())
                             return;
-
+                        close();
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+//                        try {
+//                            Thread.sleep(100);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
                         isRelogin.set(true);
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                if (getClientStatus() == ClientStatus.Connected){
-                                    Quest quest = new Quest("bye");
-                                    sendQuest(quest, new FunctionalAnswerCallback() {
-                                        @Override
-                                        public void onAnswer(Answer answer, int errorCode) {
-                                            close();
-                                            try {
-                                                Thread.sleep(200);
-                                            } catch (InterruptedException e) {
-                                                e.printStackTrace();
-                                            }
-                                            reloginEvent(1);
-                                        }
-                                    }, 5);
-                                }
-                                else {
-//                                    voiceClose();
-                                    reloginEvent(1);
-                                }
+                                reloginEvent(1);
+//                                if (getClientStatus() == ClientStatus.Connected){
+//                                    Quest quest = new Quest("bye");
+//                                    sendQuest(quest, new FunctionalAnswerCallback() {
+//                                        @Override
+//                                        public void onAnswer(Answer answer, int errorCode) {
+//                                            close();
+//                                            try {
+//                                                Thread.sleep(200);
+//                                            } catch (InterruptedException e) {
+//                                                e.printStackTrace();
+//                                            }
+//                                            reloginEvent(1);
+//                                        }
+//                                    }, 5);
+//                                }
+//                                else {
+////                                    voiceClose();
+//                                    reloginEvent(1);
+//                                }
                             }
                         }).start();
                     }
@@ -1169,13 +1238,13 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 RTCEngine.setRotation(rotation);
             }
         };
-        mOrEventListener.enable();
+//        mOrEventListener.enable();
         int errCode = RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value();
         if (rtmGateStatus != ClientStatus.Connected) {
             return genRTMAnswer(errCode, "you must RTMlogin sucessfully at first");
         }
-//        rtcClear();
-        String ret = RTCEngine.create(this, rtcEndpoint, currVideoLevel, pid, uid, application);
+
+        String ret = RTCEngine.create(this, rtcEndpoint, currVideoLevel, pid, uid, application, afChangeListener);
         if (!ret.isEmpty()) {
             return genRTMAnswer(errCode,"initRTC create error " + ret);
         }
@@ -1422,11 +1491,9 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                         return;
                     }
 
-                    synchronized (interLocker) {
-                        if (rtmGateStatus != ClientStatus.Closed && !connectionIsAlive()) {
-                            closedCase = CloseType.Timeout;
-                            close();
-                        }
+                    if (rtmGateStatus != ClientStatus.Closed && !connectionIsAlive()) {
+                        closedCase = CloseType.Timeout;
+                        close();
                     }
                 }
             }
@@ -1464,12 +1531,18 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
 
-    public void whoSpeak(long[] uids){
-        serverPushProcessor.voiceSpeak(uids);
+
+    public void whoSpeak(long uid){
+        serverPushProcessor.voiceSpeak(uid);
     }
 
+
+//    public void pushrtt(long rtt){
+//        serverPushProcessor.pushRTCRTT(rtt);
+//    }
+
     public void printLog(String msg){
-        Log.e("sdktest",msg);
+//        Log.e("sdktest",msg);
         errorRecorder.recordError(msg);
     }
 
@@ -1587,9 +1660,9 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             @Override
             public void connectionWillClose(InetSocketAddress peerAddress, int _connectionId,boolean causedByError) {
 //                printLog("closedCase " + closedCase + " getClientStatus() " + getClientStatus());
-                if (connectionId.get() != 0 && connectionId.get() == _connectionId && closedCase != CloseType.ByUser && getClientStatus() != ClientStatus.Connecting) {
-
+                if (connectionId.get() != 0 && connectionId.get() == _connectionId && closedCase != CloseType.ByUser && closedCase !=CloseType.ByServer && getClientStatus() != ClientStatus.Connecting) {
                     close();
+
                     processor.rtmConnectClose();
 
                     if (closedCase == CloseType.ByServer || isRelogin.get()) {
@@ -1732,7 +1805,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             return;
         }
 
-        synchronized (interLocker) {
             if (rtmGateStatus == ClientStatus.Connected || rtmGateStatus == ClientStatus.Connecting) {
                 new Thread(new Runnable() {
                     @Override
@@ -1742,6 +1814,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 }).start();
                 return;
             }
+        synchronized (interLocker) {
             rtmGateStatus = ClientStatus.Connecting;
         }
 
@@ -1841,39 +1914,25 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
     public void close() {
+        if (isRelogin.get()) {
+            return;
+        }
         synchronized (interLocker) {
             initCheckThread.set(false);
             running.set(false);
             fileGates.clear();
-            if (rtmGateStatus == ClientStatus.Closed)
+            if (rtmGateStatus == ClientStatus.Closed) {
                 return;
+            }
             rtmGateStatus = ClientStatus.Closed;
         }
         if (rtmGate !=null)
             rtmGate.close();
-        RTCEngine.RTCClear();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                RTCEngine.RTCClear();
+            }
+        }).start();
     }
-
-//    void voiceDispose(){
-//        RTCEngine.setVoiceFlag(false);
-//        pause.set(false);
-//        RTCEngine.canSpeak(false);
-//        activityRoom.set(-1);
-//
-//        synchronized (rtcLocker) {
-//            for (Long rid: roomInfos.keySet()){
-//                if (rtmGateStatus ==  ClientStatus.Connected){
-//                    leaveRTCRooms();
-//                }
-//            }
-//            roomInfos.clear();
-//        }
-//    }
-
-//    void videoDispose(){
-//        pause.set(false);
-//        videoRoom = 0;
-//        RTCEngine.stopVideo(true);
-//    }
-//
 }

@@ -10,7 +10,7 @@
 
 
 ### 版本支持
-- 最低支持Android版本为7.0(api24)
+- 最低支持Android版本为7.0(api-24)
 
 ### 依赖集成
 - Add maventral as your repository in project's build.gradle:
@@ -44,7 +44,7 @@
   - 开启RTC功能需要RTM先登陆成功
   - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
   - 视频房间只能进入一个
-  - 需要订阅才能正常接收对方视频流(不看调用取消订阅)
+  - 需要订阅才能正常接收对方视频流
   - RTM链接断开，进入的实时音视频房间会自动退出，需要在重连完成后再次进入房间 订阅的视频流需要重新订阅
 - 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
@@ -81,7 +81,7 @@
     login成功后可以正常调用rtm聊天相关接口
     client.sendChat/ client.sendMessage.....
 
-    实时音视频
+ 实时音视频房间:
 --实时音频
     client.enterRTCRoom(100);
     client.setActivityRoom(100);
@@ -91,6 +91,7 @@
     client.setPreview(previewSurfaceView);//设置预览view
     client.opencamera() //打开摄像头
     client.subscribeVideos(100, new HashMap<Long, SurfaceView>() ) //订阅对方视频流
+--发起p2p请求
 
 ~~~
 

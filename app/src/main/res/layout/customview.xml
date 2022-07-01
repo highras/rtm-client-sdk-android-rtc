@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp">
+    <!-- 顶部文本控件-->
+    <TextView
+        android:textColor="@color/colorAccent"
+        android:id="@+id/tv_topmessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:textSize="14sp"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/tv_topmessage"
+        >
+        <!-- 底部文本控件-->
+        <TextView
+            android:textColor="@color/colorAccent"
+            android:id="@+id/tv_bottomMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:visibility="invisible"
+            android:gravity="center_vertical"
+            android:layout_centerVertical="true"
+            android:textSize="16sp"
+            />
+        <!-- 输入框-->
+        <EditText
+            android:id="@+id/edt_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:textColor="@color/white"
+            android:textColorHint="#999999"
+            android:textSize="16sp"/>
+        <!-- 输入框底部view-->
+        <View
+            android:id="@+id/lineview"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:background="#EBEBEB" />
+    </RelativeLayout>
+
+
+</RelativeLayout>

@@ -20,9 +20,9 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="15dp"
-        android:layout_toRightOf="@+id/portraitImageView"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="15dp"
+        android:layout_toEndOf="@+id/portraitImageView"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -45,18 +45,20 @@
             android:gravity="center_vertical"
             android:maxLines="1"
             android:textColor="@color/white"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/subscribe_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOn="" />
+            android:textOn=""
+            android:visibility="gone" />
     </LinearLayout>
 
     <View
         style="@style/Line"
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="2dp"
-        android:layout_toRightOf="@id/portraitImageView" />
+        android:layout_marginStart="2dp"
+        android:layout_toEndOf="@id/portraitImageView" />
 </RelativeLayout>

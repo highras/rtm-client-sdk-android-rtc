@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!--declare-styleable： 表示一个属性组。它的name必须和你自定义view的名字相同。-->
+    <!--attr：表示单独的一个属性。format代表属性的格式。格式包括很多种：比如颜色，数值，枚举等。-->
+    <!-- 自定义输入框属性 -->
+    <declare-styleable name="custome.edittext">
+        <attr name="isShowTopMessage" format="boolean"/> <!-- 是否显示顶部文字 -->
+        <attr name="isPasswdType" format="boolean"/>  <!-- 密码框 -->
+        <attr name="isNumber" format="boolean"/>  <!-- 密码框 -->
+        <attr name="topMessage" format="string"/><!-- 顶部TextView的文字-->
+        <attr name="bottomMessage" format="string"/><!-- 底部提示TextView的文字-->
+    </declare-styleable>
+
     <!--    <declare-styleable name="IndicatorView">-->
     <!--        <attr name="indicatorColor" format="color" />-->
     <!--        <attr name="indicatorColorSelected" format="color" />-->

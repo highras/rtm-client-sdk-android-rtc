@@ -4,58 +4,85 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.drawable.AnimationDrawable;
-import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.fpnn.sdk.ErrorRecorder;
+import com.fpnn.sdk.FunctionalAnswerCallback;
+import com.fpnn.sdk.TCPClient;
+import com.fpnn.sdk.proto.Answer;
+import com.fpnn.sdk.proto.Quest;
+import com.highras.voiceDemo.adapter.VoiceMemberAdapter;
+import com.highras.voiceDemo.model.Member;
+import com.highras.voiceDemo.model.VoiceMember;
+import com.livedata.rtc.RTCEngine;
 import com.rtcsdk.RTMClient;
 import com.rtcsdk.RTMPushProcessor;
 import com.rtcsdk.RTMStruct;
 import com.rtcsdk.UserInterface;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.StringJoiner;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TestVoiceActivity extends AppCompatActivity {
+    private static final String TAG = "TestVoiceActivity";
+    Timer timer;
     RTMPushProcessor voicepush = new RTMVoiceProcessor();
     public TestErrorRecorderVoice voicerecoder = new TestErrorRecorderVoice();
-    ConstraintLayout alllayout;
-    //    private int viewHeght;
-//    private int viewWidth;
-    public static boolean running = false;
-    boolean micStatus = false;
+    boolean micStatus = true;
     boolean usespeaker = true;
+    TCPClient rttcclient = null;
     LinearLayout leave;
     LinearLayout mic;
     LinearLayout speaker;
     ImageView speakerImageView;
     ImageView muteImageView;
+    ImageView back;
     TextView muteTextView;
+    TextView logView;
     long activityRoom = 0;
+    long userid = 0;
     Activity myactivity = this;
-    TextView roomdshow;
+    TextView roomshow;
+    TextView udpRTTshow;
+    TextView tcpRTTshow;
     RTMClient client;
+    Button clear;
     Utils utils = Utils.INSTANCE;
+    String nickName;
 
-    long previousTime = System.currentTimeMillis();
+    Chronometer chronometer;
+
+    VoiceMemberAdapter voiceMemberAdapter;
 
     private <T extends View> T $(int resId) {
         return (T) super.findViewById(resId);
@@ -64,6 +91,7 @@ public class TestVoiceActivity extends AppCompatActivity {
     class RTMVoiceProcessor extends RTMPushProcessor {
         String msg = "";
 
+        @Override
         public boolean reloginWillStart(long uid, int reloginCount) {
             if (reloginCount >= 10) {
                 return false;
@@ -71,49 +99,106 @@ public class TestVoiceActivity extends AppCompatActivity {
             return true;
         }
 
+        @Override
+        public void pushEnterRTCRoom(long roomId, long userId, long time) {
+            if (containsMember(userId) == null) {
+                TestVoiceActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        HashSet<Long> hashSet = new HashSet<>();
+                        hashSet.add(userId);
+                        RTMStruct.PublicInfo userPublicInfo = client.getUserPublicInfo(hashSet);
+                        String name = userPublicInfo.publicInfos.get(String.valueOf(userId));
+                        synchronized (logView) {
+                            logView.append( name + "(" + userId + ")" + " 进入房间" + "\n");
+                        }
 
+                        memberlist.add(new VoiceMember(userId, name));
+                        voiceMemberAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void pushExitRTCRoom(long roomId, long userId, long time) {
+            VoiceMember member = containsMember(userId);
+            if (member!= null) {
+                TestVoiceActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (logView) {
+                            logView.append(member.getNickName() + "(" + userId + ") 离开房间" + "\n");
+                        }
+                        removeMember(userId);
+                        voiceMemberAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }
+
+        @Override
         public void reloginCompleted(long uid, boolean successful, RTMStruct.RTMAnswer answer, int reloginCount) {
             if (successful) {
-                if (activityRoom <= 0)
+                if (activityRoom <= 0 || client == null)
                     return;
                 client.enterRTCRoom(new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
                     @Override
                     public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
                         if (answer.errorCode == 0) {
-                            startVoice(activityRoom, true);
+                            startVoice(activityRoom, true, roomInfo);
                         } else {
-                            mylog.log("重新进入失败");
+                            TestVoiceActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    soundRelayout.setVisibility(View.VISIBLE);
+                                    soundText.setText("重新进入房间" + reloginCount + "次失败");
+                                }
+                            });
                         }
+                        TestVoiceActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                soundRelayout.setVisibility(View.GONE);
+                                soundText.setText("");
+                            }
+                        });
                     }
                 }, activityRoom);
             } else {
-                mylog.log("重新进入失败");
-                mic.setBackgroundResource(R.drawable.micclose);
+                TestVoiceActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        soundRelayout.setVisibility(View.VISIBLE);
+                        soundText.setText("重新进入房间失败");
+                        addLog("重新进入房间失败 " + answer.getErrInfo());
+                    }
+                });
                 micStatus = false;
             }
         }
 
+        @Override
         public void rtmConnectClose(long uid) {
             TestVoiceActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    soundRelayout.setVisibility(View.VISIBLE);
+                    soundText.setText("客户端断开连接");
                 }
             });
         }
 
+        @Override
         public void kickout() {
             mylog.log("receive kickout");
         }
 
-        public void voiceSpeak(long[] uid) {
+        @Override
+        public void voiceSpeak(long uid) {
             myactivity.runOnUiThread(() -> {
-                soundRelayout.setVisibility(View.VISIBLE);
-                previousTime = System.currentTimeMillis();
-                StringJoiner sj = new StringJoiner(",", "正在讲话:", "");
-                for (long l : uid) {
-                    sj.add(String.valueOf(l));
-                }
-                soundText.setText(sj.toString());
+                setVoice(uid);
+                voiceMemberAdapter.notifyDataSetChanged();
             });
         }
     }
@@ -122,31 +207,40 @@ public class TestVoiceActivity extends AppCompatActivity {
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            if (System.currentTimeMillis() - previousTime > 2000) {
-                soundRelayout.setVisibility(View.INVISIBLE);
-                soundText.setText("");
+            if (client != null && client.isOnline()) {
+                voiceMemberAdapter.notifyDataSetChanged();
             }
-            handler.postDelayed(this, 500);
+            handler.postDelayed(this, 1000);
         }
     };
 
 
+    void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopTimer();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         leaveRoom();
     }
 
     private void leaveRoom() {
         if (client == null)
             return;
+        chronometer.stop();
         utils.client.leaveRTCRoom(activityRoom, new UserInterface.IRTMEmptyCallback() {
             @Override
             public void onResult(RTMStruct.RTMAnswer answer) {
-                client.closeRTM();
-                client = null;
             }
         });
+        client.closeRTM();
+        client = null;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -169,72 +263,121 @@ public class TestVoiceActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
     }
 
-    int getLatencyTime() {
-        AudioManager am = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-        Method m = null;
-        try {
-            m = am.getClass().getMethod("getOutputLatency", int.class);
-            return (Integer) m.invoke(am, AudioManager.STREAM_MUSIC);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    AudioManager am;
     Toolbar toolbar;
 
     RelativeLayout soundRelayout;
     TextView soundText;
+    List<VoiceMember> memberlist = new ArrayList<>();
+
+    void addLog(final String msg) {
+        myactivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (logView) {
+                    String realmsg = "[" + (new SimpleDateFormat("MM-dd HH:mm:ss.SSS").format(new Date())) + "] " + msg + "\n";
+                    logView.append(realmsg);
+                }
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.testvoice);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         customToolbarAndStatusBarBackgroundColor(true);
         mic = $(R.id.mic);
+        back = $(R.id.back);
         muteImageView = $(R.id.muteImageView);
         speaker = $(R.id.speaker);
         speakerImageView = $(R.id.speakerImageView);
         leave = $(R.id.leave);
         muteTextView = $(R.id.muteTextView);
-        am = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-        roomdshow = $(R.id.roomnum);
+        roomshow = $(R.id.roomnum);
+        udpRTTshow = $(R.id.UDPRTTshow);
+        tcpRTTshow = $(R.id.TCPRTTshow);
+        logView = $(R.id.logview);
+        logView.setTextSize(14);
+        logView.setTextColor(this.getResources().getColor(R.color.white));
+        logView.setMovementMethod(ScrollingMovementMethod.getInstance());
+        clear = $(R.id.clearlog);
 
-        activityRoom = getIntent().getIntExtra("roomid", 0);
+        chronometer = $(R.id.caltimer);
+        activityRoom = getIntent().getLongExtra("roomid", 0);
+        userid = getIntent().getLongExtra("userid", 0);
         speakerImageView.setSelected(true);
-//        startAnimation();
+        nickName = getIntent().getStringExtra("username");
 
+//        addLog("buffsize "+ AudioTrack.getMinBufferSize(48000, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT));
         soundText = $(R.id.nameTextView);
         soundRelayout = $(R.id.sound_relayout);
-        utils.login(new UserInterface.IRTMEmptyCallback() {
+        Timer timer = new Timer();
+        utils.login("nx", userid, new UserInterface.IRTMEmptyCallback() {
             @Override
             public void onResult(RTMStruct.RTMAnswer answer) {
-                mylog.log("void login ret" + answer.getErrInfo());
+                mylog.log("login ret" + answer.getErrInfo());
                 if (answer.errorCode == 0) {
                     client = utils.client;
+                    client.setErrorRecoder(voicerecoder);
+                    RTMStruct.RTMAnswer rtmAnswer = client.setUserInfo(nickName, "");
+//                    Log.d(TAG, "login: nick = " + nickName + " info = " + rtmAnswer.getErrInfo());
                     realEnterRoom(activityRoom);
+                } else {
+                    TestVoiceActivity.this.runOnUiThread(() -> {
+                        createDialog(answer.errorMsg);
+                    });
                 }
-//                client = utils.client;
             }
         }, myactivity, voicepush);
 
+        clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                synchronized (logView) {
+                    logView.setText("");
+                }
+            }
+        });
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (rttcclient == null)
+                    rttcclient = TCPClient.create(utils.rtmEndpoint);
+                Quest quest = new Quest("*ping");
+                long sendTime = System.currentTimeMillis();
+                rttcclient.sendQuest(quest, new FunctionalAnswerCallback() {
+                    @Override
+                    public void onAnswer(Answer answer, int errorCode) {
+                        long recieveTime = System.currentTimeMillis();
+                        long RTTTime = recieveTime - sendTime;
+                        showRTMRTT(RTTTime);
+//                        tcpRTTshow.setText("RTM:" + RTTTime);
+                    }
+                });
+                long udpTime = RTCEngine.getRTTTime();
+                showRTCRTT(udpTime);
+            }
+        }, 1, 2000);
         leave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                leaveRoom();
+//                leaveRoom();
                 finish();
             }
         });
 
+
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         speaker.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -249,32 +392,57 @@ public class TestVoiceActivity extends AppCompatActivity {
         mic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!client.isOnline() || activityRoom == 0)
+                if (client == null || !client.isOnline() || activityRoom == 0)
                     return;
                 setMicStatus(!micStatus);
             }
         });
-        handler.postDelayed(runnable, 500);
+        handler.postDelayed(runnable, 1000);
+
+        RecyclerView recyclerView = findViewById(R.id.room_member_recycle);
+        recyclerView.setLayoutManager(new MyGridLayoutManager(this, 2));
+        voiceMemberAdapter = new VoiceMemberAdapter(this, memberlist);
+        recyclerView.setAdapter(voiceMemberAdapter);
     }
 
+    private void createDialog(String msg) {
+        try {
+            if (this.isFinishing()) {
+                Log.d(TAG, "activity is finishing");
+                return;
+            }
+            AlertDialog dialog = new AlertDialog.Builder(this).
+                    setTitle("进入房间").
+                    setCancelable(false).setMessage(msg).
+                    setPositiveButton("确 认", (dlg, whichButton) -> {
+                        finish();
+                    }).create();
+            dialog.show();
+        } catch (Exception e) {
+            Log.d(TAG, "createDialog: " + e.getMessage());
+        }
+    }
 
     public class TestErrorRecorderVoice extends ErrorRecorder {
         public TestErrorRecorderVoice() {
             super.setErrorRecorder(this);
         }
 
+        @Override
         public void recordError(Exception e) {
             String msg = "Exception:" + e;
-            mylog.log(msg);
+            addLog(msg);
         }
 
+        @Override
         public void recordError(String message) {
-            mylog.log(message);
+            addLog(message);
         }
 
+        @Override
         public void recordError(String message, Exception e) {
             String msg = String.format("Error: %s, exception: %s", message, e);
-            mylog.log(msg);
+            addLog(msg);
         }
     }
 
@@ -315,37 +483,62 @@ public class TestVoiceActivity extends AppCompatActivity {
     }
 
 
-    void startVoice(long roomId) {
-        startVoice(roomId, false);
+    void startVoice(RTMStruct.RoomInfo info, long roomId) {
+        startVoice(roomId, false, info);
     }
 
-    void startVoice(long roomId, boolean relogin) {
+    void startVoice(long roomId, boolean relogin, RTMStruct.RoomInfo info) {
         activityRoom = roomId;
-        client.setActivityRoom(activityRoom);
-        RTMStruct.RTMAnswer ret = client.setVoiceStat(true);
+        RTMStruct.RTMAnswer ret = client.setActivityRoom(activityRoom);
         if (ret.errorCode != 0) {
+            addLog("set activity error " + ret.getErrInfo());
             return;
         }
-        if (relogin) {
-            myactivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    usespeaker = true;
-                    speakerImageView.setSelected(true);
-                }
-            });
-            return;
+        if (!relogin) {
+            client.openMic();
+        } else {
+            if (!usespeaker) {
+                client.switchOutput(false);
+            }
+            if (micStatus) {
+                client.openMic();
+            } else {
+                client.closeMic();
+            }
         }
-        client.openMic();
+
         myactivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-//                mic.setBackgroundResource(R.drawable.micopen);
-//                speaker.setBackgroundResource(R.drawable.speakon);
-                micStatus = true;
-                usespeaker = true;
-                roomdshow.setText("房间id-" + roomId + "    用户id-" + client.getUid());
-//                speakerImageView.setSelected(true);
+                chronometer.start();
+                memberlist.clear();
+                roomshow.setText("房间id-" + roomId + "    用户-" + nickName + "(" +client.getUid()+")");
+                RTMStruct.PublicInfo userPublicInfo = client.getUserPublicInfo(info.uids);
+                if (info != null && info.uids != null) {
+                    info.uids.forEach(aLong -> {
+                        VoiceMember m = new VoiceMember(aLong, userPublicInfo.publicInfos.get(String.valueOf(aLong)));
+                        if (aLong != userid) memberlist.add(m);
+                    });
+                    voiceMemberAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    public void showRTCRTT(long rtt) {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                udpRTTshow.setText("RTC:" + rtt);
+            }
+        });
+    }
+
+    public void showRTMRTT(long rtt) {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tcpRTTshow.setText("RTM:" + rtt);
             }
         });
     }
@@ -355,19 +548,23 @@ public class TestVoiceActivity extends AppCompatActivity {
             @Override
             public void onResult(RTMStruct.RoomInfo info, RTMStruct.RTMAnswer answer) {
                 if (answer.errorCode == 0) {
-                    startVoice(roomId);
+                    if (info.roomTyppe != 1){//不是音频房间
+                        utils.alertDialog(TestVoiceActivity.this,"房间 " + roomId  + "为视频房间 请重新选择视频通话进入");
+                        return;
+                    }
+                    startVoice(info, roomId);
                 } else {
                     client.createRTCRoom(new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
                         @Override
                         public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
                             if (answer.errorCode == 0) {
-                                startVoice(roomId);
+                                startVoice(info, roomId);
                             } else {
                                 client.enterRTCRoom(new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
                                     @Override
                                     public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
                                         if (answer.errorCode == 0) {
-                                            startVoice(roomId);
+                                            startVoice(info, roomId);
                                         }
                                     }
                                 }, roomId);
@@ -409,14 +606,24 @@ public class TestVoiceActivity extends AppCompatActivity {
         }
     }
 
-//    private void startAnimation() {
-//        ImageView laba = findViewById(R.id.laba_image);
-//        AnimationDrawable animationDrawable1 = new AnimationDrawable();
-//        animationDrawable1.addFrame(AppCompatResources.getDrawable(this, R.mipmap.voice_1), 200);
-//        animationDrawable1.addFrame(AppCompatResources.getDrawable(this, R.mipmap.voice_2), 200);
-//        animationDrawable1.addFrame(AppCompatResources.getDrawable(this, R.mipmap.voice_3), 200);
-//        animationDrawable1.setOneShot(false);
-//        laba.setImageDrawable(animationDrawable1);
-//        animationDrawable1.start();
-//    }
+    private VoiceMember containsMember(long userid) {
+        for (VoiceMember member: memberlist){
+            if (member.getUid() == userid){
+                return member;
+            }
+        }
+        return  null;
+    }
+
+    private void removeMember(long userid) {
+        memberlist.removeIf(item -> item.getUid() == userid);
+    }
+
+    private void setVoice(long userid) {
+        memberlist.forEach(voiceMember -> {
+            if (userid == voiceMember.getUid()) {
+                voiceMember.setPreviousVoiceTime(System.currentTimeMillis());
+            }
+        });
+    }
 }

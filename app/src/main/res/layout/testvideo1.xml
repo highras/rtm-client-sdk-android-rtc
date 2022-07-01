@@ -7,18 +7,11 @@
 
     <include layout="@layout/toolbar" />
 
-    <HorizontalScrollView
+    <LinearLayout
+        android:id="@+id/linearlayout"
         android:layout_width="match_parent"
-        android:layout_height="210dp"
-        android:layout_gravity="center_horizontal"
-        android:scrollbars="none">
-
-        <LinearLayout
-            android:id="@+id/linearlayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" />
-    </HorizontalScrollView>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" />
 
     <RelativeLayout
         android:id="@+id/preview_relayout"
@@ -74,13 +67,40 @@
                 android:src="@mipmap/mic_open" />
 
             <TextView
+                android:text="麦克风"
                 android:id="@+id/mic_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/mic_image"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="5dp"
-                android:text="静音"
+                android:textColor="@color/white" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/output_relayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onclick"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/speaker_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="0dp"
+                android:src="@mipmap/volume_up" />
+
+            <TextView
+                android:text="扬声器"
+                android:id="@+id/speaker_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/speaker_image"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="0dp"
                 android:textColor="@color/white" />
         </RelativeLayout>
 
@@ -101,13 +121,13 @@
                 android:src="@mipmap/camera_open" />
 
             <TextView
+                android:text="摄像头"
                 android:id="@+id/camera_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/camera_image"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="5dp"
-                android:text="关摄像头"
                 android:textColor="@color/white" />
         </RelativeLayout>
 
@@ -128,13 +148,13 @@
                 android:src="@mipmap/users" />
 
             <TextView
+                android:text="成员"
                 android:id="@+id/user_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/user_image"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="5dp"
-                android:text="成员"
                 android:textColor="@color/white" />
         </RelativeLayout>
     </LinearLayout>

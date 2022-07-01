@@ -3,22 +3,23 @@ package com.highras.voiceDemo;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Outline;
 import android.graphics.PixelFormat;
-import android.graphics.Rect;
+import android.icu.text.Edits;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewOutlineProvider;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -31,54 +32,79 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fpnn.sdk.ErrorRecorder;
 import com.highras.voiceDemo.adapter.MemberAdapter;
 import com.highras.voiceDemo.common.DisplayUtils;
+import com.highras.voiceDemo.common.MyUtils;
 import com.highras.voiceDemo.model.Member;
 import com.livedata.rtc.RTCEngine;
-import com.rtcsdk.RTMCenter;
 import com.rtcsdk.RTMClient;
 import com.rtcsdk.RTMPushProcessor;
 import com.rtcsdk.RTMStruct;
 import com.rtcsdk.UserInterface;
+import com.tuzhenlei.crashhandler.BuildConfig;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-/**
- * @author fengzi
- * @date 2022/2/17 19:37
- */
+import android.app.ActivityManager;
+import android.app.Application;
+import android.content.Intent;
+
+import static android.view.View.VISIBLE;
 
 /**
  * @author fengzi
  * @date 2022/2/17 19:37
  */
-public class TestVideoActivity extends AppCompatActivity {
+
+public class TestVideoActivity extends AppCompatActivity implements View.OnClickListener {
+
+    class TestErrorVideoRecorder extends ErrorRecorder {
+        public TestErrorVideoRecorder(){
+            super.setErrorRecorder(this);
+        }
+
+        public void recordError(Exception e) {
+            addlog("Exception:" + e);
+        }
+
+        public void recordError(String message) {
+            addlog("Error:" + message);
+        }
+
+        public void recordError(String message, Exception e) {
+            addlog(String.format("Error: %s, exception: %s", message, e));
+        }
+    }
+
+
     private static final String TAG = "sdktest";
 
-    List<Member> memberList = new ArrayList<>();
+    LinkedHashMap<Long, Member> memberlists = new LinkedHashMap<>();
+    LinkedHashMap<Long, View> userSurfaces = new LinkedHashMap<>();
     MyHandler myHandler = new MyHandler(this);
     long activityRoom = 0;
     private SurfaceView previewSurfaceView = null;
     public AtomicLong videoRoom = new AtomicLong(0);
-    private HashMap<Long, View> userSurfaces = new HashMap<>();
-    ArrayList<Long> roomMembers = new ArrayList<>();
-    ProjectInfo info = new ProjectInfo(80000071, "rtm-nx-front.ilivedata.com"); //宁夏
     RTMClient client;
-    String curraddress = "nx";
-    long uid = 0;
+    long myuid = 0;
+    String mynickName;
     //是否启用双声道
     Boolean channelNum = false;
     //视频质量
@@ -86,43 +112,87 @@ public class TestVideoActivity extends AppCompatActivity {
     //摄像头是否开启
     public boolean cameraOpen = false;
     boolean micStatus = false;
+    boolean usespeaker = true;
     boolean voiceStatus = false;
     boolean useFront = true;
-    Random random = new Random();
     RTMVideoProcessor serverPush = new RTMVideoProcessor();
-    TestErrorRecorder errorRecorder = new TestErrorRecorder();
+    TestErrorVideoRecorder errorRecorder = new TestErrorVideoRecorder();
     LinearLayout linearlayout;
     AudioManager am;
-
+    ImageView back;
     ImageView mic_image;
     ImageView camera_image;
+    ImageView speaker_image;
     TextView mic_text;
     TextView camera_text;
+    TextView roomshow;
+    Chronometer chronometer;
+    int itemWidth = 0;
+    int itemHeight = 0;
+
+    TextView changeView;
+    TextView logview;
+    TextView realLogView;
+
+    TextView alertshow;
+    ArrayList<String> realLog =  new ArrayList<>();
+    private final List<View> viewList = new LinkedList<>();
+    int currentPage = 0;
+    int pageSize = 3;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.testvideo);
-        activityRoom = getIntent().getIntExtra("roomid", 0);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setContentView(R.layout.testvideo1);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        activityRoom = getIntent().getLongExtra("roomid", 0);
+        myuid = getIntent().getLongExtra("userid", 0);
+        mynickName = getIntent().getStringExtra("username");
+        Toolbar toolbar = findViewById(R.id.toolbar);
         am = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
         linearlayout = findViewById(R.id.linearlayout);
         mic_image = findViewById(R.id.mic_image);
         mic_text = findViewById(R.id.mic_text);
         camera_image = findViewById(R.id.camera_image);
+        speaker_image = findViewById(R.id.speaker_image);
         camera_text = findViewById(R.id.camera_text);
         TextView current_member = findViewById(R.id.current_member);
-        uid = getuid();
-        current_member.setText(String.valueOf(uid));
-        toolbar.setTitle("房间-" + activityRoom);
+        current_member.setText(showName(myuid, mynickName ));
+//        toolbar.setTitle("房间-" + activityRoom);
+
+        roomshow = findViewById(R.id.roomnum);
+//        roomshow.setText("房间-" + activityRoom);
+        chronometer = findViewById(R.id.caltimer);
+
+        back = findViewById(R.id.back);
+        back.setOnClickListener(this);
+
+        CrashHandler.getInstance().init(this);
+
+
         previewSurfaceView = findViewById(R.id.preview_surface);
-//        setSurfaceViewCorner(previewSurfaceView, 30);
         previewSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         previewSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-//                mylog.log("width-" + previewSurfaceView.getWidth() + " hight-" + previewSurfaceView.getHeight());
-                previewSurfaceView.getLayoutParams();
+                int width = previewSurfaceView.getWidth();
+                int heigh = previewSurfaceView.getHeight();
+
+                float ratio =  (float) width / heigh;
+                if (ratio < 0.749 ||  ratio> 0.759){
+                    width = Integer.valueOf(heigh * 3 /4);
+
+                }
+
+                RelativeLayout.LayoutParams real = new RelativeLayout.LayoutParams(width, heigh);
+
+                real.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+                real.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+                previewSurfaceView.setLayoutParams(real);
+
+//                ViewGroup.LayoutParams params= previewSurfaceView.getLayoutParams();
+//                mylog.log("width " + previewSurfaceView.getWidth());
+//                mylog.log("heigh " + previewSurfaceView.getHeight());
             }
 
             @Override
@@ -135,29 +205,53 @@ public class TestVideoActivity extends AppCompatActivity {
 
             }
         });
+        changeView = findViewById(R.id.change_btn);
+        changeView.setOnClickListener(this);
+
+        View inflate = LayoutInflater.from(this).inflate(R.layout.logview, null);
+
+        realLogView = inflate.findViewById(R.id.sholog);
+        alertshow = findViewById(R.id.alertshow);
+        alertshow.setTextSize(16);
+        logview = findViewById(R.id.logbtn);
+        logview.setOnClickListener(this);
+        itemWidth = DisplayUtils.getScreenWidth(this) / pageSize;
+        itemHeight = itemWidth * 4 / 3;
+        linearlayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, itemHeight));
         new Thread(() -> login()).start();
     }
 
-    final int rtcPort = 13702;
-    final int rtmPort = 13321;
+    Utils utils = Utils.INSTANCE;
 
+    void addlog(String msg){
+        String realmsg = "[" + (new SimpleDateFormat("MM-dd HH:mm:ss.SSS").format(new Date())) + "] " + msg + "\n";
+        mylog.log(realmsg);
+        synchronized (realLog){
+            realLog.add(0,realmsg);
+        }
+//        this.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                realLogView.append(msg + "\n");
+//            }
+//        });
+    }
     void login() {
         if (client != null)
             client.closeRTM();
-        String rtmEndpoint = info.host + ":" + rtmPort;
-        String rtcEndpoint = info.host + ":" + rtcPort;
-        Log.d(TAG, "login: 当前登录用户是" + uid);
-        client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint,info.pid, uid, serverPush, this);
-        client.setErrorRecoder(errorRecorder);
-        RTMStruct.RTMAnswer answer = client.login(httpGettoken());
-        if (answer.errorCode == 0) {
-            Log.d(TAG, "login: 登录成功");
-//            client.switchVideoQuality(videoQulity);
-            client.setPreview(previewSurfaceView);
-            realEnterRoom(activityRoom);
-        } else {
-            Log.d(TAG, "login: 登录失败 " + answer.getErrInfo());
-        }
+        utils.login("nx", myuid, answer -> {
+            mylog.log("void login ret" + answer.getErrInfo());
+            if (answer.errorCode == 0) {
+                client = utils.client;
+                client.setErrorRecoder(errorRecorder);
+                client.setPreview(previewSurfaceView);
+                RTMStruct.RTMAnswer rtmAnswer = client.setUserInfo(mynickName, "");
+                addlog("log ret " + answer.getErrInfo());
+                realEnterRoom(activityRoom);
+            } else {
+                utils.alertDialog(TestVideoActivity.this,"login failed" + answer.getErrInfo());
+            }
+        }, this, serverPush);
     }
 
     void realEnterRoom(final long roomId) {
@@ -165,9 +259,14 @@ public class TestVideoActivity extends AppCompatActivity {
             @Override
             public void onResult(RTMStruct.RoomInfo info, RTMStruct.RTMAnswer answer) {
                 if (answer.errorCode == 0) {
+                    if (info.roomTyppe != 2)//不是视频房间
+                    {
+                        utils.alertDialog(TestVideoActivity.this,"房间 " + roomId  + "为音频房间 请重新选择音频通话进入");
+                        return;
+                    }
                     videoRoom.set(roomId);
                     voiceStatus = true;
-                    Log.d(TAG, "onResult: 进入房间" + roomId + " " + transRet(answer));
+                    addlog( "onResult: 进入房间" + roomId + " " + transRet(answer));
                     Message message = Message.obtain();
                     message.what = 1;
                     message.obj = info;
@@ -176,7 +275,7 @@ public class TestVideoActivity extends AppCompatActivity {
                     client.createRTCRoom(new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
                         @Override
                         public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
-                            Log.d(TAG, "onResult: 创建房间  " + roomId + " " + transRet(answer));
+                            addlog( "onResult: 创建房间  " + roomId + " " + transRet(answer));
                             if (answer.errorCode == 0) {
                                 videoRoom.set(roomId);
                                 Message message = Message.obtain();
@@ -192,50 +291,6 @@ public class TestVideoActivity extends AppCompatActivity {
     }
 
 
-    public String httpGettoken() {
-        int port = 0;
-        if (curraddress.equals("test"))
-            port = 8099;
-        else if (curraddress.equals("nx"))
-            port = 8090;
-        else if (curraddress.equals("internationnal"))
-            port = 8098;
-
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        String tourl = "http://161.189.171.91:" + port + "?uid=" + uid;
-
-        try {
-            URL url = new URL(tourl);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setDoInput(true); // 同意输入流，即同意下载
-            httpURLConnection.setUseCaches(false); // 不使用缓冲
-            httpURLConnection.setRequestMethod("GET"); // 使用get请求
-            httpURLConnection.setConnectTimeout(20 * 1000);
-            httpURLConnection.setReadTimeout(20 * 1000);
-            httpURLConnection.connect();
-
-            int code = httpURLConnection.getResponseCode();
-
-            if (code == 200) { // 正常响应
-                InputStream inputStream = httpURLConnection.getInputStream();
-
-                byte[] buffer = new byte[4096];
-                int n = 0;
-                while (-1 != (n = inputStream.read(buffer))) {
-                    output.write(buffer, 0, n);
-                }
-
-                inputStream.close();
-            } else {
-                errorRecorder.recordError("http return error " + code);
-                return "";
-            }
-        } catch (Exception e) {
-            errorRecorder.recordError("gettoken error :" + e.getMessage());
-        }
-        return output.toString();
-    }
-
     public void onclick(View view) {
         if (view.getId() == R.id.mic_relayout) {
             setMicStatus();
@@ -246,105 +301,233 @@ public class TestVideoActivity extends AppCompatActivity {
         } else if (view.getId() == R.id.camera_switch_image) {
             cameraSwitch();
         }
+        else if (view.getId() == R.id.output_relayout) {
+            outputSwitch();
+        }
     }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.logbtn){
+            showlog();
+        }
+        else if (v.getId() == R.id.change_btn) {
+            if (memberlists.size() <= linearlayout.getChildCount()){
+                return;
+            }
+            changePage();
+        }
+        else if (v.getId() == R.id.back) {
+            finish();
+        }
+    }
+
+    private void changePage() {
+        changeView.setEnabled(false);
+        HashSet<Long> removeUids = new HashSet<>();
+        List<Long> subscribeUids = new LinkedList<>();
+        List<Long> all = new LinkedList<>(memberlists.keySet());
+        List<Long> usershow = new LinkedList<>(userSurfaces.keySet());
+        all.removeAll(usershow);
+        Collections.shuffle(all);
+        if (all.size() >0 && all.size() <= 2) //还有2个人
+        {
+            long reUid = 0;
+            if (all.size() == 2) {
+                reUid = usershow.get(usershow.size() - 2);
+                removeUids.add(reUid);
+                linearlayout.removeView(userSurfaces.get(reUid));
+                userSurfaces.remove(reUid);
+            }
+            reUid = usershow.get(usershow.size()-1);
+            removeUids.add(reUid);
+            linearlayout.removeView(userSurfaces.get(reUid));
+            userSurfaces.remove(reUid);
+            subscribeUids = all ;
+        }
+        else{
+            removeUids = new HashSet<>(usershow); //删除这页
+            subscribeUids.add(all.get(0));
+            subscribeUids.add(all.get(1));
+            subscribeUids.add(all.get(2));
+
+            linearlayout.removeAllViews();
+            userSurfaces.clear();
+        }
+
+        client.unsubscribeVideo(activityRoom, removeUids, new UserInterface.IRTMEmptyCallback() {
+            @Override
+            public void onResult(RTMStruct.RTMAnswer answer) {
+            }
+        });
+
+        for (Long realid : subscribeUids){
+            realSubscribeVideos(realid);
+        }
+        changeView.setEnabled(true);
+    }
+
+
+    private void removeMember(long removeid) {
+        memberlists.remove(removeid);
+
+        if (userSurfaces.get(removeid) != null){
+            linearlayout.removeView(userSurfaces.get(removeid));
+            userSurfaces.remove(removeid);
+
+            if (memberlists.size() > userSurfaces.size()){
+                List<Long> all = new LinkedList<>(memberlists.keySet());
+                List<Long> usershow = new LinkedList<>(userSurfaces.keySet());
+                all.removeAll(usershow);
+                Collections.shuffle(all);
+                long newUid =  all.get(0);
+                if (newUid >0 && !userSurfaces.containsKey(newUid))
+                    realSubscribeVideos(newUid);
+            }
+        }
+    }
+
+    private String showName(Long userid, String nickname){
+        return nickname + "(" + userid + ")";
+    }
+
 
     class RTMVideoProcessor extends RTMPushProcessor {
         String msg = "";
 
+        @Override
         public boolean reloginWillStart(long uid, int reloginCount) {
             if (reloginCount >= 10) {
                 return false;
             }
-            Log.d(TAG, "reloginWillStart: 用户 " + uid + " 开始重连第 " + reloginCount + "次");
+            addlog( "reloginWillStart: 用户 " + uid + " 开始重连第 " + reloginCount + "次");
             return true;
         }
 
 
+        @Override
         public void reloginCompleted(long uid, boolean successful, RTMStruct.RTMAnswer answer, int reloginCount) {
-            Log.d(TAG, "reloginCompleted: 用户 " + uid + " 重连结束 共 " + reloginCount + "次，结果 " + transRet(answer));
+            addlog( "reloginCompleted: " + showName(myuid,mynickName) + " 重连结束 共 " + reloginCount + "次，结果 " + transRet(answer));
             if (successful) {
+                TestVideoActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        alertshow.setText("");
+                        alertshow.setVisibility(View.GONE);
+                    }
+                });
+
                 final long id = videoRoom.get();
                 if (id <= 0)
                     return;
                 client.enterRTCRoom(new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
                     @Override
                     public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
-                        if (answer.errorCode != 0) {
-                            Log.d(TAG, "reloginCompleted: 用户 " + uid + "重新进入房间 " + id + answer.getErrInfo());
-                        } else {
-                            Log.d(TAG, "reloginCompleted: 用户 " + uid + "重新进入房间 " + id + " 成功");
+                        addlog("reloginCompleted: " + showName(myuid, mynickName) + " 重新进入房间 " + id + answer.getErrInfo());
+
+                        if (answer.errorCode == 0){
                             if (cameraOpen)
                                 client.openCamera();
+
                             if (!userSurfaces.isEmpty()) {
-                                HashMap<Long, SurfaceView> map = new HashMap<>();
+                                HashMap<Long, SurfaceView> subscribeMap = new HashMap<>();
                                 userSurfaces.forEach((aLong, view) -> {
-                                    map.put(aLong, (SurfaceView) view.findViewById(R.id.member_surface));
+                                    subscribeMap.put(aLong, (SurfaceView) view.findViewById(R.id.member_surface));
                                 });
-                                RTMStruct.RTMAnswer subanswer = client.subscribeVideos(videoRoom.get(), map);
-                                Log.d(TAG, "onResult: " + "订阅 " + userSurfaces.keySet().toString() + " 视频流 " + transRet(subanswer));
+
+                                RTMStruct.RTMAnswer subanswer = client.subscribeVideos(videoRoom.get(), subscribeMap);
+                                addlog("onResult: " + "重新订阅 " + userSurfaces.keySet().toString() + " 视频流 " + transRet(subanswer));
                             }
                         }
                     }
                 }, id);
             } else {
+                TestVideoActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String realmsg = "[" + (new SimpleDateFormat("MM-dd HH:mm:ss").format(new Date())) + "] RTM 重连失败 " + answer.getErrInfo() +"\n";
+                        mylog.log(realmsg);
+                        realLog.add(0,realmsg);
+                        alertshow.setText("RTM 重连失败 " + answer.getErrInfo());
+                        alertshow.setVisibility(View.VISIBLE);
+                    }
+                });
+
                 videoRoom.set(0);
             }
         }
 
+        @Override
         public void rtmConnectClose(long uid) {
-
+            addlog("链接已断开 请检查网络!");
+            TestVideoActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    alertshow.setText("链接已断开 请检查网络!");
+                    alertshow.setVisibility(VISIBLE);
+                }
+            });
         }
 
+        @Override
         public void kickout() {
-
+            addlog("用户在另一个设备登陆");
+            TestVideoActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    alertshow.setText("用户在另一个设备登陆 链接已断开!");
+                    alertshow.setVisibility(VISIBLE);
+                }
+            });
         }
+
 
 
         @Override
         public void pushPullRoom(long roomId, RTMStruct.RoomInfo info) {
-            Log.d(TAG, "pushPullRoom: " + uid + "被拉入房间 " + roomId + info.getErrInfo());
+//            addlog( "pushPullRoom: " + uid + "被拉入房间 " + roomId + info.getErrInfo());
         }
 
         @Override
         public void pushEnterRTCRoom(final long roomId, final long userId, long time) {
-            memberList.add(new Member(userId, true));
+            HashSet<Long> tem = new HashSet<>();
+            tem.add(userId);
+            RTMStruct.PublicInfo userPublicInfo = client.getUserPublicInfo(tem);
+            Member m = new Member(userId, userPublicInfo.publicInfos.get(String.valueOf(userId)));
+            memberlists.put(userId, m);
             myHandler.sendEmptyMessage(4);
             Message message = Message.obtain();
             message.what = 2;
-            message.obj = userId;
+            message.obj = m;
             myHandler.sendMessage(message);
-            Log.d(TAG, "pushPullRoom: " + userId + "进入房间 " + roomId);
+            addlog( "pushEnterRTCRoom: " + showName(userId, m.nickName) + "进入房间 " + roomId);
         }
 
         @Override
         public void pushAdminCommand(int command, HashSet<Long> uids) {
-            Log.d(TAG, "pushAdminCommand: " + command + " uids " + uids.toString());
+            addlog( "pushAdminCommand: " + command + " uids " + uids.toString());
         }
 
         @Override
         public void pushExitRTCRoom(final long roomId, final long userId, long time) {
-            Iterator<Member> iterator = memberList.iterator();
-            while (iterator.hasNext()) {
-                Member member = iterator.next();
-                if (member.uid == userId) iterator.remove();
-            }
+            addlog( "pushExitRTCRoom: " + showName(userId, memberlists.get(userId).nickName) + "退出房间 " + roomId);
             myHandler.sendEmptyMessage(4);
             Message message = Message.obtain();
             message.what = 3;
             message.obj = userId;
             myHandler.sendMessage(message);
-            Log.d(TAG, "pushExitRTCRoom: " + userId + "退出房间 " + roomId);
         }
 
         @Override
         public void pushRTCRoomClosed(long roomId) {
-            Log.d(TAG, "pushRTCRoomClosed: 房间" + roomId + "已关闭");
+            realLeaveRoom();
+            addlog( "pushRTCRoomClosed: 房间" + roomId + "已关闭");
         }
 
         @Override
         public void pushKickoutRTCRoom(final long roomId) {
             realLeaveRoom();
-            Log.d(TAG, "pushKickoutRTCRoom: 被踢出语音房间" + roomId);
+            addlog( "pushKickoutRTCRoom: 被踢出语音房间" + roomId);
         }
     }
 
@@ -352,45 +535,51 @@ public class TestVideoActivity extends AppCompatActivity {
         cameraOpen = status;
         if (!cameraOpen) {
             camera_image.setImageResource(R.mipmap.camera_close);
-            camera_text.setText("开摄像头");
+//            camera_text.setText("开摄像头");
             client.closeCamera();
-            Log.d(TAG, "setCameraStatus: 关闭摄像头");
+            addlog( "setCameraStatus: 关闭摄像头");
         } else {
             camera_image.setImageResource(R.mipmap.camera_open);
-            camera_text.setText("关摄像头");
+//            camera_text.setText("关摄像头");
             client.openCamera();
-            Log.d(TAG, "setCameraStatus: 打开摄像头");
+            addlog( "setCameraStatus: 打开摄像头");
         }
     }
 
     void setMicStatus(boolean status) {
         if (!status) {
             mic_image.setImageResource(R.mipmap.mic_close);
-            mic_text.setText("解除静音");
+//            mic_text.setText("解除静音");
             client.closeMic();
-            Log.d(TAG, "setMicStatus:关闭麦克风");
+            addlog( "setMicStatus:关闭麦克风");
         } else {
             mic_image.setImageResource(R.mipmap.mic_open);
-            mic_text.setText("静音");
+//            mic_text.setText("静音");
             client.openMic();
-            Log.d(TAG, "setMicStatus: 打开麦克风");
+            addlog( "setMicStatus: 打开麦克风");
         }
         micStatus = status;
     }
 
     void realLeaveRoom() {
+        if (client == null)
+            return;
+        chronometer.stop();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                linearlayout.removeAllViews();
+                userSurfaces.clear();
+            }
+        });
         client.leaveRTCRoom(videoRoom.get(), new UserInterface.IRTMEmptyCallback() {
             @Override
             public void onResult(RTMStruct.RTMAnswer answer) {
                 if (answer.errorCode == 0) {
-                    Log.d(TAG, "onResult: 离开房间");
+                    addlog( "onResult: 离开房间");
                 }
             }
         });
-    }
-
-    int getuid() {
-        return random.nextInt(20000 - 1 + 1) + 1;
     }
 
     String transRet(RTMStruct.RTMAnswer answer) {
@@ -400,89 +589,97 @@ public class TestVideoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        client.leaveRTCRoom(videoRoom.get(), new UserInterface.IRTMEmptyCallback() {
-            @Override
-            public void onResult(RTMStruct.RTMAnswer answer) {
-                if (answer.errorCode == 0)
-                    realLeaveRoom();
-            }
-        });
+        realLog.clear();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        linearlayout.removeAllViews();
+        userSurfaces.clear();
+        realLeaveRoom();
+//
+//        client.leaveRTCRoom(videoRoom.get(), new UserInterface.IRTMEmptyCallback() {
+//            @Override
+//            public void onResult(RTMStruct.RTMAnswer answer) {
+//                if (answer.errorCode == 0)
+//                    realLeaveRoom();
+//            }
+//        });
     }
 
-    private void initMember(RTMStruct.RoomInfo info) {
-        setCameraStatus();
-        setMicStatus();
-        HashSet<Long> uids = info.uids;
-        Log.d(TAG, "initMember: " + info + " uids:" + uids);
-        if (uids != null) {
-            uids.stream().filter(item -> item != uid).forEach(new Consumer<Long>() {
-                @Override
-                public void accept(Long aLong) {
-                    memberList.add(new Member(aLong, true));
-                    addMember(aLong);
-                }
-            });
-        }
-    }
 
-    void setVoiceStatus(boolean status) {
-        if (status == voiceStatus)
-            return;
-
-        RTMStruct.RTMAnswer ret = client.setVoiceStat(status);
-        if (ret.errorCode != 0) {
-            Log.d(TAG, "setVoiceStatus: " + status + " error " + ret.getErrInfo());
-            return;
-        }
-        if (!status) {
-            micStatus = false;
-            client.closeMic();
-        } else {
-            Log.d(TAG, "setVoiceStatus:打开语音");
-        }
-        voiceStatus = status;
-    }
-
-    private void addMember(Long uid) {
+    private void realSubscribeVideos(long inituid){
         View view = getLayoutInflater().inflate(R.layout.member_item, null);
         TextView textView = view.findViewById(R.id.member_name);
         SurfaceView surfaceView = view.findViewById(R.id.member_surface);
-        setSurfaceViewCorner(surfaceView, 30, uid);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(5, 5, 5, 5);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(itemWidth, itemHeight);
         view.setLayoutParams(lp);
+        surfaceView.setLayoutParams(lp);
+        MyUtils.setSurfaceViewCorner(surfaceView, 30);
+        String initname = memberlists.get(inituid).nickName;
+        textView.setText(showName(inituid,initname ));
         linearlayout.addView(view);
-        textView.setText(String.valueOf(uid));
+
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder) {
                 RTMStruct.RTMAnswer jj = client.subscribeVideos(videoRoom.get(), new HashMap<Long, SurfaceView>() {{
-                    put(uid, surfaceView);
+                    put(inituid, surfaceView);
                 }});
-                if (jj.errorCode == 0) {
-                    userSurfaces.put(uid, view);
+                addlog( "surfaceCreated: 订阅 "  + showName(inituid,initname )+" 视频流" + transRet(jj));
+                if (jj.errorCode == 0){
+                    userSurfaces.put(inituid, view);
+//                    linearlayout.addView(view);
                 }
-                Log.d(TAG, "surfaceCreated: 订阅" + uid + " 视频流 " + transRet(jj));
+                else{
+                    linearlayout.removeView(view);
+                }
             }
 
             @Override
             public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-
+//                addlog("surfaceChanged ");
             }
 
             @Override
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-
+                addlog("surfaceDestroyed ");
             }
         });
-        userSurfaces.put(uid, view);
     }
 
-    private void removeMember(long uid) {
-        if (userSurfaces.containsKey(uid)) {
-            linearlayout.removeView(userSurfaces.get(uid));
-            userSurfaces.remove(uid);
+    private void addMember(Member member){
+        synchronized (userSurfaces) {
+            if (userSurfaces.size() >= 3)
+                return;
+        }
+        realSubscribeVideos(member.uid);
+    }
+
+
+    private void initMember(RTMStruct.RoomInfo info) {
+        roomshow.setText("房间-" + activityRoom);
+        chronometer.start();
+        setCameraStatus();
+        setMicStatus();
+        HashSet<Long> uids = info.uids;
+        RTMStruct.PublicInfo userPublicInfo = client.getUserPublicInfo(uids);
+        addlog( "initMember: " + info + " uids:" + uids);
+        if (uids != null) {
+            for (Long iniuid : uids) {
+                if (iniuid == myuid)
+                    continue;
+                String name = userPublicInfo.publicInfos.get(String.valueOf(iniuid));
+                memberlists.put(iniuid, new Member(iniuid, name));
+            }
+            initview();
+        }
+    }
+
+    private void initview() {
+        for (Long inituid: memberlists.keySet()){
+            synchronized (linearlayout) {
+                if (linearlayout.getChildCount() >= 3)
+                    return;
+            }
+            realSubscribeVideos(inituid);
         }
     }
 
@@ -500,7 +697,7 @@ public class TestVideoActivity extends AppCompatActivity {
                 activity.initMember((RTMStruct.RoomInfo) msg.obj);
             }
             if (msg.what == 2) {
-                activity.addMember((Long) msg.obj);
+                activity.addMember((Member) msg.obj);
             }
             if (msg.what == 3) {
                 activity.removeMember((Long) msg.obj);
@@ -511,37 +708,36 @@ public class TestVideoActivity extends AppCompatActivity {
         }
     }
 
-    int itemWidth = 0;
-
-    private void setSurfaceViewCorner(SurfaceView surfaceView, final float radius, long uid) {
-        surfaceView.setOutlineProvider(new ViewOutlineProvider() {
-            @Override
-            public void getOutline(View view, Outline outline) {
-                Rect rect = new Rect();
-                view.getGlobalVisibleRect(rect);
-                if (itemWidth == 0) {
-                    itemWidth = rect.right - rect.left;
-                }
-                int leftMargin = 0;
-                int topMargin = 0;
-                Rect selfRect = new Rect(leftMargin, topMargin,
-                        itemWidth - leftMargin,
-                        rect.bottom - rect.top - topMargin);
-                outline.setRoundRect(selfRect, radius);
-                Log.d("fengzi", "fengzi: uid:" + uid);
-                Log.d("fengzi", "getOutline: rect left:" + rect.left + " top:" + rect.top + " right:" + rect.right + " bottom:" + rect.bottom);
-                Log.d("fengzi", "selfRect: selfRect left:" + selfRect.left + " top:" + selfRect.top + " right:" + selfRect.right + " bottom:" + selfRect.bottom);
-            }
-        });
-        surfaceView.setClipToOutline(true);
-    }
-
     private void setMicStatus() {
         setMicStatus(!micStatus);
     }
 
     private void setCameraStatus() {
         setCameraStatus(!cameraOpen);
+    }
+
+
+    private void outputSwitch() {
+        usespeaker = !usespeaker;
+        if (!usespeaker) {
+            speaker_image.setImageResource(R.mipmap.volume_off);
+
+//            speakerImageView.setSelected(false);
+        } else {
+            speaker_image.setImageResource(R.mipmap.volume_up);
+//            speakerImageView.setSelected(true);
+        }
+//        camera_image.setImageResource(R.mipmap.camera_close);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (usespeaker)
+                    client.switchOutput(true);
+                else
+                    client.switchOutput(false);
+            }
+        }).start();
     }
 
     private void cameraSwitch() {
@@ -553,6 +749,39 @@ public class TestVideoActivity extends AppCompatActivity {
 
     MemberAdapter memberAdapter;
 
+
+    private void showlog(){
+        Dialog dialog = new Dialog(this, R.style.ActionSheetDialogStyle);
+        //填充对话框的布局
+        View inflate = LayoutInflater.from(this).inflate(R.layout.logview, null);
+//        realLogView.append();
+
+        TextView logview = inflate.findViewById(R.id.sholog);
+        logview.setMovementMethod(ScrollingMovementMethod.getInstance());
+        logview.setVerticalScrollBarEnabled(true);
+        logview.append(realLog.toString());
+        int offset=logview.getLineCount()*logview.getLineHeight();
+        mylog.log("offset " + offset + " logview.getHeight() " + logview.getHeight());
+
+        if(offset>logview.getHeight()){
+            logview.scrollTo(0,offset-logview.getLineHeight());
+        }
+
+//        logview.append("呵呵");
+        //将布局设置给Dialog
+        dialog.setContentView(inflate);
+        //获取当前Activity所在的窗体
+        Window dialogWindow = dialog.getWindow();
+        //设置Dialog从窗体底部弹出
+        dialogWindow.setGravity(Gravity.TOP);
+        //获得窗体的属性
+        WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = DisplayUtils.getScreenHeight(this)*3 / 4;
+        dialogWindow.setAttributes(lp);
+        dialog.show();//显示对话框
+    }
+
     private void showUsersList() {
         Dialog dialog = new Dialog(this, R.style.ActionSheetDialogStyle);
         //填充对话框的布局
@@ -560,21 +789,10 @@ public class TestVideoActivity extends AppCompatActivity {
         //初始化控件
         RecyclerView recyclerView = inflate.findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        memberAdapter = new MemberAdapter(this, memberList);
+        memberAdapter = new MemberAdapter(this, new LinkedList<>(memberlists.values()));
         recyclerView.setAdapter(memberAdapter);
-        memberAdapter.setOnClickListener((position, uid, isOff) -> {
-            Member member = null;
-            for (int i = 0; i < memberList.size(); i++) {
-                if (memberList.get(i).uid == uid) {
-                    memberList.get(i).subscribe = isOff;
-                    member = memberList.get(i);
-                    break;
-                }
-            }
-            if (member != null) {
-                switchItem(member);
-                memberAdapter.notifyDataSetChanged();
-            }
+        memberAdapter.setOnClickListener((position, item) -> {
+
         });
         //将布局设置给Dialog
         dialog.setContentView(inflate);
@@ -594,19 +812,5 @@ public class TestVideoActivity extends AppCompatActivity {
         Optional.ofNullable(memberAdapter).ifPresent(memberAdapter -> {
             memberAdapter.notifyDataSetChanged();
         });
-    }
-
-    /**
-     * 取消或者订阅
-     */
-    private void switchItem(Member member) {
-        if (member.subscribe) {
-            addMember(member.uid);
-        } else {
-            HashSet<Long> hashSet = new HashSet<>();
-            hashSet.add(member.uid);
-            client.unsubscribeVideo(activityRoom, hashSet);
-            removeMember(member.uid);
-        }
     }
 }

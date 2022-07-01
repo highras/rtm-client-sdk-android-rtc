@@ -69,6 +69,8 @@ public class RTMPushProcessor
 
 
     //实时音视频消息
+    public void pushRTCRTT(long rtt){} //RTC延迟时间
+
     public void pushEnterRTCRoom(long roomId, long userId, long time){} //某人进入语音房间
     public void pushExitRTCRoom(long roomId, long userId, long time){} //某人离开语音房间(如果有订阅关系会自动解除)
     public void pushRTCRoomClosed(long roomId){}//语音房间被关闭
@@ -86,7 +88,7 @@ public class RTMPushProcessor
     //     */
     public void pushKickoutRTCRoom(long roomId){} //某人被踢出RTC房间
     public void pushPullRoom(long roomId, RTMStruct.RoomInfo info){} //被服务器拉入房间
-    public void voiceSpeak(long[] uid){} //谁正在说话
+    public void voiceSpeak(long uid){} //谁正在说话
 
     //推送p2p rtc请求
     public void pushRequestP2PRTC(long uid, int type){}

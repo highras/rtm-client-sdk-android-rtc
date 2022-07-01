@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class RTMUtils {
-    ErrorRecorder errorRecorder;
+    public ErrorRecorder errorRecorder = new ErrorRecorder();
     //    private AtomicLong orderId = new AtomicLong();
 //
 //    public long genMid() {

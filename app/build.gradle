@@ -18,8 +18,8 @@ android {
         applicationId "com.highras.voiceDemo"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        versionCode 16
+        versionName "1.1.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -37,9 +37,9 @@ android {
             def fileName
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
                 if (variant.buildType.name.equals('release')) {//如果是release包
-                    fileName = "release_videodemo.apk"
+                    fileName = "rtcdemo_release.apk"
                 } else if (variant.buildType.name.equals('debug')) {//如果是debug包
-                    fileName = "debug_videodemo.apk"
+                    fileName = "rtcdemo_debug.apk"
                 }
                 outputFileName = fileName
             }
@@ -58,7 +58,7 @@ android {
 //            version "3.10.2"
 //        }
 //    }
-//    buildToolsVersion '30.0.3'
+    buildToolsVersion '30.0.3'
 //    ndkVersion '21.3.6528147'
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -74,4 +74,9 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.3.1'
     implementation 'androidx.navigation:navigation-ui:2.3.1'
     implementation project(path: ':fpnn-rtc-sdk')
+
+    implementation 'com.tencent.bugly:crashreport:latest.release'
+    implementation 'me.jessyan:autosize:1.1.2'
+
+    implementation 'com.tuzhenlei:crashhandler:1.0.1'
 }

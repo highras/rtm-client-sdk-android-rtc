@@ -86,6 +86,21 @@ public class RTMRTC extends RTMChat{
 
 
     /**
+     * 打开音频输出
+     */
+    public void openOutput(){
+        RTCEngine.audioOutputFlag(true);
+    }
+
+    /**
+     * 关闭音频输出(静音)
+     */
+    public void closeOutput(){
+        RTCEngine.audioOutputFlag(false);
+    }
+
+
+    /**
      * 设置麦克风增益等级(声音自动增益 取值 范围0-10)
      */
     public void setMicphoneLevel(int level){
@@ -100,17 +115,18 @@ public class RTMRTC extends RTMChat{
      * @param uids 取消订阅的成员列表
      * @return
      */
-    public void unsubscribeVideo(long roomId, HashSet<Long> uids){
+    public void unsubscribeVideo(long roomId, final HashSet<Long> uids, final IRTMEmptyCallback callback){
         Quest quest = new Quest("unsubscribeVideo");
         quest.param("rid", roomId);
         quest.param("uids", uids);
         sendQuestEmptyCallback(new IRTMEmptyCallback() {
             @Override
             public void onResult(RTMAnswer answer) {
+                for (Long id : uids)
+                    RTCEngine.unsubscribeUser(id);
+                callback.onResult(answer);
             }
         },quest);
-        for (Long id : uids)
-            RTCEngine.unsubscribeUser(id);
     }
 
     /**
@@ -143,7 +159,8 @@ public class RTMRTC extends RTMChat{
                 }
                 else {
                     ret.errorCode = errorCode;
-                    ret.errorMsg = answer.getErrorMessage();
+                    if(answer != null)
+                        ret.errorMsg = answer.getErrorMessage();
                     callback.onResult(ret, genRTMAnswer(answer, errorCode));
                 }
             }
@@ -165,13 +182,15 @@ public class RTMRTC extends RTMChat{
      * @param userViews  key-订阅的用户id value-显示用户的surfaceview(需要 宽高比 3：4)
      */
     public RTMAnswer subscribeVideos(long roomId, HashMap<Long, SurfaceView> userViews){
-        initRTC();
+        RTMAnswer initanswer = initRTC();
+        if (initanswer.errorCode != okRet)
+            return initanswer;
         for (Map.Entry<Long, SurfaceView> it:userViews.entrySet()) {
             SurfaceView tmp = it.getValue();
             float ratio =  (float) tmp.getWidth() / tmp.getHeight();
-            if (ratio < 0.749 ||  ratio> 0.759){
-                return genRTMAnswer(videoError,"user " + it.getKey() + " unfitable aspect ratio");
-            }
+//            if (ratio < 0.749 ||  ratio> 0.759){
+//                return genRTMAnswer(videoError,"user " + it.getKey() + " unfitable aspect ratio");
+//            }
             long uid = it.getKey();
         }
 
@@ -230,17 +249,18 @@ public class RTMRTC extends RTMChat{
         }).start();
     }
 
-    /**
-     * 设置语音开关(开启语音功能或者关闭语音功能(备注:默认开启 如果为语音功能关闭则麦克风自动关闭)
-     * @param status
-     */
-    public RTMAnswer setVoiceStat(boolean status){
-        String msg = RTCEngine.setVoiceStat(status);
-        if (msg.isEmpty())
-            return genRTMAnswer(okRet);
-        else
-            return genRTMAnswer(voiceError,msg);
-    }
+//    /**
+//     * 设置语音开关(开启语音功能或者关闭语音功能(备注:默认开启 如果为语音功能关闭则麦克风自动关闭)
+//     * @param status
+//     */
+//    public RTMAnswer setVoiceStat(boolean status){
+//        requestAudiofocus(status);
+//        String msg = RTCEngine.setVoiceStat(status);
+//        if (msg.isEmpty())
+//            return genRTMAnswer(okRet);
+//        else
+//            return genRTMAnswer(voiceError,msg);
+//    }
 
     /**离开RTC房间
      * @param roomId   房间id
@@ -254,6 +274,9 @@ public class RTMRTC extends RTMChat{
                 callback.onResult(genRTMAnswer(answer, errorCode));
             }
         });
+        if (mOrEventListener!=null){
+            mOrEventListener.disable();
+        }
         RTCEngine.leaveRTCRoom(roomId);
     }
 

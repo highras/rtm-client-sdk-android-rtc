@@ -28,6 +28,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyHolderVi
     List<Member> list;
     Context context;
 
+    boolean subscribe = true;
     public MemberAdapter(Context context, List<Member> list) {
         this.list = list;
         this.context = context;
@@ -56,8 +57,9 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyHolderVi
     @Override
     public void onBindViewHolder(@NonNull MemberAdapter.MyHolderView holder, int position) {
         Member item = list.get(position);
-        holder.uidText.setText(String.valueOf(item.uid));
-        if (item.subscribe) {
+        holder.uidText.setText(item.nickName + "(" + item.uid + ")");
+        holder.customSwitch.setOnCheckedChangeListener(null);
+        if (subscribe) {
             holder.customSwitch.setChecked(true);
             holder.statusTextView.setText("取消订阅");
         } else {
@@ -65,7 +67,8 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyHolderVi
             holder.statusTextView.setText("订阅");
         }
         holder.customSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            onClicklistener.clickItem(position, item.uid, isChecked);
+            subscribe = isChecked;
+            onClicklistener.clickItem(position, item);
         });
     }
 
@@ -81,6 +84,6 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyHolderVi
     }
 
     public interface OnClickListener {
-        void clickItem(int position, long uid, Boolean isOff);
+        void clickItem(int position, Member member);
     }
 }

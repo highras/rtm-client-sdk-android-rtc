@@ -11,28 +11,38 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:icon="@drawable/videodemo"
         android:name=".MyApplication"
         android:allowBackup="true"
+        android:icon="@drawable/videodemo"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.CaptureDemo"
         android:usesCleartextTraffic="true">
-        <activity android:name=".StartActivity">
+        <activity android:name=".StartActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".TestVoiceActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".TestVideoActivity"
-            android:screenOrientation="portrait" />
+        <activity android:name=".TestVoiceActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".TestVideoActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"></activity>
+        <activity android:name=".test2.TestActivity2"></activity>
+
+        <meta-data
+            android:name="design_width_in_dp"
+            android:value="411" />
+        <meta-data
+            android:name="design_height_in_dp"
+            android:value="832" />
     </application>
 
 </manifest>
