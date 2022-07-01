@@ -17,7 +17,7 @@ public class TCPClient {
     //-----------------[ Properties ]-------------------
 
     private Object interLocker;
-    private InetSocketAddress peerAddress;
+    public InetSocketAddress peerAddress;
     private String endpoint = "";
     private int questTimeout = 0;
     private boolean autoConnect;

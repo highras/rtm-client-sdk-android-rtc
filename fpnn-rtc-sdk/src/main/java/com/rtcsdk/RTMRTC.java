@@ -1,6 +1,4 @@
 package com.rtcsdk;
-import android.media.AudioManager;
-import android.media.MediaRecorder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
@@ -146,6 +144,16 @@ public class RTMRTC extends RTMChat{
             return;
         }
 
+        if (lastCallId > 0){
+            callback.onResult(ret, genRTMAnswer(voiceError, "in p2pRTC type"));
+            return;
+        }
+
+        if (roomType == 2 && RTCEngine.isInRTCRoom() > 0){
+            callback.onResult(ret, genRTMAnswer(voiceError, "createRTCvideoRoom error please leaveRTC room first"));
+            return;
+        }
+
         Quest quest = new Quest("createRTCRoom");
         quest.param("rid", roomId);
         quest.param("type", roomType);
@@ -176,10 +184,11 @@ public class RTMRTC extends RTMChat{
         super.enterRTCRoom(callback,roomId);
     }
 
+
     /**
      * 订阅视频流
      * @param roomId 房间id
-     * @param userViews  key-订阅的用户id value-显示用户的surfaceview(需要 宽高比 3：4)
+     * @param userViews  key-订阅的用户id value-显示用户的surfaceview(需要view创建完成可用)
      */
     public RTMAnswer subscribeVideos(long roomId, HashMap<Long, SurfaceView> userViews){
         RTMAnswer initanswer = initRTC();
@@ -249,18 +258,19 @@ public class RTMRTC extends RTMChat{
         }).start();
     }
 
-//    /**
+    //    /**
 //     * 设置语音开关(开启语音功能或者关闭语音功能(备注:默认开启 如果为语音功能关闭则麦克风自动关闭)
+//     *
 //     * @param status
 //     */
-//    public RTMAnswer setVoiceStat(boolean status){
-//        requestAudiofocus(status);
+//    public RTMAnswer setVoiceStat(boolean status) {
 //        String msg = RTCEngine.setVoiceStat(status);
 //        if (msg.isEmpty())
 //            return genRTMAnswer(okRet);
 //        else
-//            return genRTMAnswer(voiceError,msg);
+//            return genRTMAnswer(voiceError, msg);
 //    }
+
 
     /**离开RTC房间
      * @param roomId   房间id
@@ -376,9 +386,9 @@ public class RTMRTC extends RTMChat{
 
     /****************P2P*****************/
     /**
-     *发起p2p音视频请求(对方是否回应通过 pushP2PRTCEvent接口返回)
-     * @param type 1-实时语音  2-实时音视频
-     * @SurfaceView view(如果为实时频频 自己预览的view 需要view创建完成并可用)
+     *发起p2p音视频请求(对方是否回应通过 pushP2PRTCEvent接口回调)
+     * @param type 1-语音  2-视频
+     * @SurfaceView view(如果为视频 自己预览的view 需要view创建完成并可用)
      * @param toUid 对方id
      */
     public void requestP2PRTC(final int type , final long toUid, final SurfaceView view, final IRTMEmptyCallback callback){
@@ -468,13 +478,10 @@ public class RTMRTC extends RTMChat{
         sendQuest(quest, new FunctionalAnswerCallback() {
             @Override
             public void onAnswer(Answer answer, int errorCode) {
-                closeP2P();
-//                if (errorCode == okRet){
-//                    closeP2P();
-//                }
                 callback.onResult(genRTMAnswer(answer, errorCode));
             }
         });
+        closeP2P();
     }
 
     /**
@@ -535,6 +542,7 @@ public class RTMRTC extends RTMChat{
             }
         });
     }
+
 }
 
 
