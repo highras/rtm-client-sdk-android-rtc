@@ -3,7 +3,6 @@
 ## <font color="#660000">备注</font>:rtm-rtc基于RTM，RTM的使用文档详见[https://github.com/highras/rtm-client-sdk-android/blob/master/README-zh.md]
 
 - [版本支持](#版本支持)
-- [依赖集成](#依赖集成)
 - [使用说明](#使用说明)
 - [使用示例](#使用示例)
 - [接口说明](#接口说明)
@@ -11,22 +10,6 @@
 
 ### 版本支持
 - 最低支持Android版本为7.0(api-24)
-
-### 依赖集成
-- Add maventral as your repository in project's build.gradle:
-    ~~~
-    allprojects {
-            repositories {
-                maventral()
-            }
-        }
-    ~~~
-- Add dependency in your module's build.gradle:
-    ~~~
-    dependencies {
-        implementation 'com.github.highras:rtc-android-audio:2.7.4'
-    }
-    ~~~
 
 ### 使用说明
 - 需要的权限
@@ -81,18 +64,17 @@
     login成功后可以正常调用rtm聊天相关接口
     client.sendChat/ client.sendMessage.....
 
- 实时音视频房间:
---实时音频
+实时音频房间
     client.enterRTCRoom(100);
     client.setActivityRoom(100);
     client.canSpeak(boolean status) //打开或关闭麦克风
---实时视频
+实时视频房间
     client.enterRTCRoom(100);
     client.setPreview(previewSurfaceView);//设置预览view
     client.opencamera() //打开摄像头
     client.subscribeVideos(100, new HashMap<Long, SurfaceView>() ) //订阅对方视频流
---发起p2p请求
-
+发起p2p请求
+    client.requestP2PRTC(1, 12345, null, callback)
 ~~~
 
 ##  接口说明
