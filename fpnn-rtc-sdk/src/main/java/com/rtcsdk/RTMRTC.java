@@ -1,4 +1,6 @@
 package com.rtcsdk;
+import android.media.AudioManager;
+import android.media.MediaRecorder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
@@ -150,7 +152,7 @@ public class RTMRTC extends RTMChat{
         }
 
         if (roomType == 2 && RTCEngine.isInRTCRoom() > 0){
-            callback.onResult(ret, genRTMAnswer(voiceError, "createRTCvideoRoom error please leaveRTC room first"));
+            callback.onResult(ret, genRTMAnswer(voiceError, "createRTCvideoRoom error you are in rtcroom-" + RTCEngine.isInRTCRoom()));
             return;
         }
 
@@ -248,8 +250,6 @@ public class RTMRTC extends RTMChat{
      * @param usespeaker true-使用扬声器 false-使用听筒
      */
     public void switchOutput(final boolean usespeaker){
-        if (isHeadsetOn())
-            return;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -398,7 +398,7 @@ public class RTMRTC extends RTMChat{
         }
 
         if (RTCEngine.isInRTCRoom() > 0){
-            callback.onResult(genRTMAnswer(voiceError, "please leaveRTC room first"));
+            callback.onResult(genRTMAnswer(voiceError, "requestP2PRTC error you are in rtcroom-" + RTCEngine.isInRTCRoom()));
             return;
         }
 

@@ -37,7 +37,7 @@ public enum RTCEngine {
     public static native String lossAudioFocus();
     public static native void setdiscardable(boolean flag);
     public static native void setpreview(Surface view);
-    public static native int isInRTCRoom();
+    public static native long isInRTCRoom();
     public static native void audioOutputFlag (boolean flag);//开启或者关闭音频输出
     public static native void bindDecodeSurface(long uid, Surface surface);
     public static native String startP2P(int type, long toUid, long callid);
