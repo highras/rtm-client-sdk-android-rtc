@@ -2,4 +2,9 @@
     <string name="app_name">RTM-RTC</string>
     <string name="btnlength">110dp</string>
     <string name="btnwidth">40dp</string>
+    <string name="livedata_1024">云上曲率RTC</string>
+    <string name="user">用户</string>
+    <string name="room">房间</string>
+    <string name="usernick">用户昵称</string>
+    <string name="language">语言</string>
 </resources>

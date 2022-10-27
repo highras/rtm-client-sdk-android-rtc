@@ -1,0 +1,16 @@
+{
+  "userid": "ผู้ใช้",
+  "useridHint": "กรุณากรอก ID ผู้ใช้",
+  "roomid": "ห้อง",
+  "roomidHint": "กรุณากรอกหมายเลขห้อง",
+  "startVoice": "โทรด้วยเสียง",
+  "mic_on": "ไมโครโฟนเปิดอยู่",
+  "mic_off": "ไมโครโฟนปิดอยู่",
+  "leave": "วางสาย",
+  "speaker_on": "ลำโพงเปิดอยู่",
+  "speaker_off": "ลำโพงปิดอยู่",
+  "language": "ภาษา",
+  "currentUser": "ผู้ใช้ปัจจุบัน",
+  "roomUser": "ผู้ใช้ห้อง",
+  "liveCaptioning": "คำบรรยายสด"
+}

@@ -1,0 +1,18 @@
+{
+  "userid": "user",
+  "useridHint": "Please enter user ID",
+  "roomid": "room",
+  "nickName": "nickName",
+  "roomidHint": "Please enter room number",
+  "roomNickname": "Please enter room nickName",
+  "startVoice": "voice call",
+  "mic_on": "mic on",
+  "mic_off": "mic off",
+  "leave": "Hang Up",
+  "speaker_on": "speaker on",
+  "speaker_off": "speaker off",
+  "language": "language",
+  "currentUser": "Current User",
+  "roomUser": "Room Users",
+  "liveCaptioning": "Live Captioning"
+}

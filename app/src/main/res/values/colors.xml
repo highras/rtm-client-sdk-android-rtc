@@ -9,7 +9,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFF</color><!--白色 -->
     <color name="BP50">#80FFFFFF</color>
-    <color name="BP20">#33FFFFFF</color>
     <color name="BP10">#1AFFFFFF</color>
 
     <color name="color_translucent">#00000000</color>
@@ -447,4 +446,22 @@
     <color name="navy">#000080</color><!--海军色 -->
 
 
+    <color name="B50">#DEEBFF</color>
+    <color name="B200">#2684FF</color>
+    <color name="B400">#0052CC</color>
+
+
+    <color name="N900">#091E42</color>
+    <color name="N800">#172B4D</color>
+    <color name="N100">#7A869A</color>
+    <color name="N80">#97A0AF</color>
+    <color name="N50">#E5E7EB</color>
+    <color name="N20">#F4F5F7</color>
+
+
+    <color name="BP80">#CCFFFFFF</color><!--白色 透明度百分之80 -->
+    <color name="BP20">#33FFFFFF</color><!--白色 透明度百分之20 -->
+    <color name="BP70">#B3FFFFFF</color><!--白色 透明度百分之70 -->
+    <color name="BP3">#08FFFFFF</color><!--白色 透明度百分之3 -->
+    <color name="transparent">#00FFFFFF</color><!--白色 全透明 -->
 </resources>

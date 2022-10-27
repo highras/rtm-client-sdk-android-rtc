@@ -24,12 +24,12 @@
     ~~~
   
 - RTC说明:
-  - 开启RTC功能需要RTM先登陆成功
+  - 开启RTC功能需要先登陆成功
   - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
-  - 视频房间只能进入一个
+  - 视频房间和实时翻译语音房间只能进入一个
   - 需要订阅才能正常接收对方视频流
-  - RTM链接断开，进入的实时音视频房间会自动退出，需要在重连完成后再次进入房间 订阅的视频流需要重新订阅
-- 用户可以重写RTM的日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
+  - 链接断开，进入的实时音视频房间会自动退出，需要在重连完成后再次进入房间 订阅的视频流需要重新订阅
+- 用户可以重写日志类 收集和获取sdk内部的错误信息(强烈建议重载日志类) 例如
     ~~~
      public class TestErrorRecorder extends ErrorRecorder {
         public TestErrorRecorder(){
@@ -73,9 +73,11 @@
     client.setPreview(previewSurfaceView);//设置预览view
     client.opencamera() //打开摄像头
     client.subscribeVideos(100, new HashMap<Long, SurfaceView>() ) //订阅对方视频流
+实时翻译语音房间
+    client.createTranslateRTCRoom
 发起p2p请求
     client.requestP2PRTC(1, 12345, null, callback)
 ~~~
 
 ##  接口说明
-- [RTC接口](doc-zh/RTC.md)
+- [RTC接口](doc-zh/RTC-zh.md)

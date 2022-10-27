@@ -160,7 +160,7 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <com.highras.voiceDemo.weight.CircleRelativeLayout
+            <com.highras.videoudp.weight.CircleRelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:background_color="@color/BP10">
@@ -170,7 +170,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/av_mute_selector" />
-            </com.highras.voiceDemo.weight.CircleRelativeLayout>
+            </com.highras.videoudp.weight.CircleRelativeLayout>
 
 
             <TextView
@@ -215,7 +215,7 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <com.highras.voiceDemo.weight.CircleRelativeLayout
+            <com.highras.videoudp.weight.CircleRelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:background_color="@color/BP10">
@@ -225,7 +225,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/av_speaker_selector" />
-            </com.highras.voiceDemo.weight.CircleRelativeLayout>
+            </com.highras.videoudp.weight.CircleRelativeLayout>
 
             <TextView
                 android:layout_width="wrap_content"

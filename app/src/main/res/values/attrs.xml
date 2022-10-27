@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!--declare-styleable： 表示一个属性组。它的name必须和你自定义view的名字相同。-->
     <!--attr：表示单独的一个属性。format代表属性的格式。格式包括很多种：比如颜色，数值，枚举等。-->
     <!-- 自定义输入框属性 -->

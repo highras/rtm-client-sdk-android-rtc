@@ -1,0 +1,16 @@
+{
+  "userid": "Pengguna",
+  "useridHint": "Silakan masuk ID",
+  "roomid": "Ruang",
+  "roomidHint": "Silakan masuk nomor ruang",
+  "startVoice": "Panggilan suara",
+  "mic_on": "Nyalakan mikrofon",
+  "mic_off": "matikan mikrofon",
+  "leave": "Tutup Telepon",
+  "speaker_on": "Nyalakan speaker",
+  "speaker_off": "matikan speaker",
+  "language": "bahasa",
+  "currentUser": "Pengguna saat ini",
+  "roomUser": "pengguna ruangan",
+  "liveCaptioning": "Teks Langsung"
+}

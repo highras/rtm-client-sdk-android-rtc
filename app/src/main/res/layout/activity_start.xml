@@ -29,7 +29,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.highras.voiceDemo.CustomeEdittext
+    <com.highras.videoudp.CustomeEdittext
         android:id="@+id/roomno"
         android:layout_width="0dp"
         android:layout_height="60dp"
@@ -45,7 +45,7 @@
         customeedittext:isShowTopMessage="true"
         customeedittext:topMessage="房间号" />
 
-    <com.highras.voiceDemo.CustomeEdittext
+    <com.highras.videoudp.CustomeEdittext
         android:id="@+id/useridtext"
         android:layout_width="0dp"
         android:layout_height="60dp"
@@ -59,7 +59,7 @@
         customeedittext:isShowTopMessage="true"
         customeedittext:topMessage="用户ID" />
 
-    <com.highras.voiceDemo.CustomeEdittext
+    <com.highras.videoudp.CustomeEdittext
         android:id="@+id/usernametext"
         android:layout_width="0dp"
         android:layout_height="60dp"

@@ -82,4 +82,10 @@
         <item name="android:windowEnterAnimation">@anim/pop_add_show</item>
         <item name="android:windowExitAnimation">@anim/pop_add_hide</item>
     </style>
+
+    <!-- 圆形图片 -->
+    <style name="circleStyle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

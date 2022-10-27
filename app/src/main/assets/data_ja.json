@@ -1,0 +1,16 @@
+{
+  "userid": "ユーザー",
+  "useridHint": "ユーザーIDを入力してください",
+  "roomid": "へや",
+  "roomidHint": "部屋番号を入力してください",
+  "startVoice": "音声通話",
+  "mic_on": "マイクオン",
+  "mic_off": "マイクオフ",
+  "leave": "切断",
+  "speaker_on": "スピーカーオン",
+  "speaker_off": "スピーカーオフ",
+  "language": "言語",
+  "currentUser": "現在のユーザー",
+  "roomUser": "ルームユーザー",
+  "liveCaptioning": "ライブキャプション"
+}

@@ -32,7 +32,7 @@
             android:textColor="@color/white"
             android:textSize="17sp" />
 
-        <com.highras.voiceDemo.weight.CustomSwitch
+        <weight.CustomSwitch
             android:id="@+id/top_switch"
             android:layout_width="45dp"
             android:layout_height="25dp"

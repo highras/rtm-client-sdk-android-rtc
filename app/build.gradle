@@ -15,11 +15,11 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.highras.voiceDemo"
+        applicationId "com.highras.rtc"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 16
-        versionName "1.1.6"
+        versionCode 2
+        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -31,20 +31,6 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            def outputFile = output.outputFile
-            def fileName
-            if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                if (variant.buildType.name.equals('release')) {//如果是release包
-                    fileName = "rtcdemo_release.apk"
-                } else if (variant.buildType.name.equals('debug')) {//如果是debug包
-                    fileName = "rtcdemo_debug.apk"
-                }
-                outputFileName = fileName
-            }
-        }
-    }
     buildTypes {
         release {
             minifyEnabled false
@@ -52,17 +38,24 @@ android {
             signingConfig signingConfigs.release
         }
     }
-//    externalNativeBuild {
-//        cmake {
-//            path 'src/main/cpp/CMakeLists.txt'
-//            version "3.10.2"
-//        }
-//    }
     buildToolsVersion '30.0.3'
-//    ndkVersion '21.3.6528147'
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def outputFile = output.outputFile
+            def fileName
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                if (variant.buildType.name.equals('release')) {//如果是release包
+                    fileName = "rtgdemo.apk"
+                } else if (variant.buildType.name.equals('debug')) {//如果是debug包
+                    fileName = "debug_rtgdemo.apk"
+                }
+                outputFileName = fileName
+            }
+        }
     }
 }
 
@@ -73,10 +66,14 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.navigation:navigation-fragment:2.3.1'
     implementation 'androidx.navigation:navigation-ui:2.3.1'
-    implementation project(path: ':fpnn-rtc-sdk')
+    implementation 'com.github.arcadefire:nice-spinner:1.4'
+//    implementation project(path: ':fpnn-rtc-sdk')
+
 
     implementation 'com.tencent.bugly:crashreport:latest.release'
     implementation 'me.jessyan:autosize:1.1.2'
+    implementation project(':spinner_lib')
 
     implementation 'com.tuzhenlei:crashhandler:1.0.1'
+//    implementation project(path: ':fpnn-rtc-sdk')
 }
