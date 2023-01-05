@@ -59,7 +59,7 @@ public enum Utils {
         }
     }
 
-    public String address;
+    public String address = "";
     public final int rtcPort = 13702;
     public final int rtmPort = 13321;
 
@@ -67,7 +67,8 @@ public enum Utils {
     public String rtcEndpoint;
 
     final HashMap<String, ProjectInfo> testAddress = new HashMap(){{
-        put("test", new ProjectInfo(11000002,"rtm-intl-frontgate-test.ilivedata.com"));
+//        put("test", new ProjectInfo(11000002,"rtm-intl-frontgate-test.ilivedata.com"));
+        put("test", new ProjectInfo(11000002,"161.189.171.91"));
         put("nx",new ProjectInfo(80000071,"rtm-nx-front.ilivedata.com"));
         put("intl",new ProjectInfo(80000087,"rtm-intl-frontgate.ilivedata.com"));
     }
@@ -120,7 +121,7 @@ public enum Utils {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                client.login(callback, getToken(currentUserid));
+                client.login(getToken(currentUserid),"zh",null, callback);
             }
         }).start();
     }

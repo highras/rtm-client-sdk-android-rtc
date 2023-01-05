@@ -70,7 +70,7 @@
      * @roomType 1-voice 2-video(视频房间摄像头默认关闭 麦克风默认开启)
      * @param callback 回调
      */
-    public void createRTCRoom( final long roomId, final int roomType, @NonNull final IRTMCallback<RoomInfo> callback) 
+    public void createRTCRoom( final long roomId, final int roomType,  final IRTMCallback<RoomInfo> callback) 
 
    
    /**
@@ -79,7 +79,7 @@
      * @param language 自己的语言
      * @param callback 回调
      */
-    public void createTranslateRTCRoom( final long roomId,final String language, @NonNull final IRTMCallback<RoomInfo> callback) 
+    public void createTranslateRTCRoom( final long roomId,final String language,  final IRTMCallback<RoomInfo> callback) 
     
     
    /**
@@ -88,7 +88,7 @@
      * @param roomId   房间id
      * @param lang 自己的语言(当为实时语音翻译房间必传)
      */
-    public void enterRTCRoom(final long roomId, String lang, @NonNull final IRTMCallback<RoomInfo> callback) 
+    public void enterRTCRoom(final long roomId, String lang,  final IRTMCallback<RoomInfo> callback) 
 
 
        /**
@@ -157,14 +157,14 @@
         * 获取语RTC房间成员列表
         * @param callback 回调<RoomInfo>
         */
-       public void getRTCRoomMembers(long roomId, @NonNull final IRTMCallback<RoomInfo> callback);
+       public void getRTCRoomMembers(long roomId,  final IRTMCallback<RoomInfo> callback);
 
 
        /**
         * 获取RTC房间成员个数
         * @param callback 回调
         */
-       public void getRTCRoomMemberCount(long roomId, @NonNull final IRTMCallback<Integer> callback);
+       public void getRTCRoomMemberCount(long roomId,  final IRTMCallback<Integer> callback);
 
    
        /**
