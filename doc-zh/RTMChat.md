@@ -241,4 +241,52 @@
      * @param text          需要检测的文本
      */
     public void textCheck(final UserInterface.IRTMCallback<RTMStruct.CheckResult> callback, String text)
+    
+     /**
+     * 发送文件 async
+     * @param callback  IRTMDoubleValueCallback<服务器返回时间,消息id>回调
+     * @param peerUid   目标uid
+     * @param mtype     消息类型
+     * @param fileContent   文件内容
+     * @param filename      文件名字
+     * @param attrs 文件属性信息
+     * @param audioInfo rtm语音结构
+     */
+    public void sendFile(long peerUid, FileMessageType mtype, byte[] fileContent, String filename, JSONObject attrs, RTMAudioStruct audioInfo,IRTMDoubleValueCallback<Long,Long> callback )
+
+    /**
+     * 发送群组文件 async
+     * @param callback  IRTMDoubleValueCallback<服务器返回时间,消息id>回调
+     * @param groupId   群组id
+     * @param mtype     消息类型
+     * @param fileContent   文件内容
+     * @param filename      文件名字
+     * @param attrs 文件属性信息
+     * @param audioInfo rtm语音结构
+     */
+    public void  sendGroupFile(long groupId, FileMessageType mtype, byte[] fileContent, String filename, JSONObject attrs,RTMAudioStruct audioInfo,IRTMDoubleValueCallback<Long,Long> callback)
+
+    /**
+     * 发送房间文件 async
+     * @param callback  IRTMDoubleValueCallback<服务器返回时间,消息id>回调
+     * @param roomId   房间id
+     * @param mtype     消息类型
+     * @param fileContent   文件内容
+     * @param filename      文件名字
+     * @param attrs 文件属性信息
+     * @param audioInfo rtm语音结构
+     */
+    public void  sendRoomFile(long roomId, FileMessageType mtype, byte[] fileContent, String filename, JSONObject attrs, RTMAudioStruct audioInfo, IRTMDoubleValueCallback<Long,Long> callback)
+
+
+    /**
+     * 发送文件并返回url
+     * @param mtype 文件类型
+     * @param fileName 文件名字(需要带后缀)
+     * @param fileContent  文件内容
+     * @param audioInfo  RTM录音完成返回的结构
+     * @param callback IRTMDoubleValueCallback<文件url,文件大小>回调
+     */
+    public void uploadFile(final FileMessageType mtype, final String fileName, final byte[] fileContent, final RTMAudioStruct audioInfo, final IRTMDoubleValueCallback<String,Long> callback)
+    
 ~~~
