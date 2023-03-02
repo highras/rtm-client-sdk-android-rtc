@@ -251,7 +251,7 @@ public class MaterialSpinner extends AppCompatTextView {
      * @return
      */
     @Override
-    public boolean onTouchEvent(@NonNull MotionEvent event) {
+    public boolean onTouchEvent( MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_UP) {
             if (isEnabled() && isClickable()) {
                 if (!popupWindow.isShowing()) {
@@ -394,7 +394,7 @@ public class MaterialSpinner extends AppCompatTextView {
      * @param items A list of items
      * @param <T>   The item type
      */
-    public <T> void setItems(@NonNull T... items) {
+    public <T> void setItems( T... items) {
         setItems(Arrays.asList(items));
     }
 
@@ -404,7 +404,7 @@ public class MaterialSpinner extends AppCompatTextView {
      * @param items A list of items
      * @param <T>   The item type
      */
-    public <T> void setItems(@NonNull List<T> items) {
+    public <T> void setItems( List<T> items) {
         adapter = new MaterialSpinnerAdapter<>(getContext(), items).setBackgroundSelector(backgroundSelector).setTextColor(textColor);
         setAdapterInternal(adapter);
     }
@@ -428,7 +428,7 @@ public class MaterialSpinner extends AppCompatTextView {
      *
      * @param adapter The list adapter
      */
-    public void setAdapter(@NonNull ListAdapter adapter) {
+    public void setAdapter( ListAdapter adapter) {
         this.adapter = new MaterialSpinnerAdapterWrapper(getContext(), adapter).setBackgroundSelector(backgroundSelector)
                 .setTextColor(textColor);
         setAdapterInternal(this.adapter);
@@ -452,7 +452,7 @@ public class MaterialSpinner extends AppCompatTextView {
      *
      * @param adapter
      */
-    private void setAdapterInternal(@NonNull MaterialSpinnerBaseAdapter adapter) {
+    private void setAdapterInternal( MaterialSpinnerBaseAdapter adapter) {
         listView.setAdapter(adapter);
         if (selectedIndex >= adapter.getCount()) {
             selectedIndex = 0;

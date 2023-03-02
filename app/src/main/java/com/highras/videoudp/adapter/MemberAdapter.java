@@ -34,7 +34,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyHolderVi
         TextView uidText;
         TextView statusTextView;
 
-        public MyHolderView(@NonNull View itemView) {
+        public MyHolderView( View itemView) {
             super(itemView);
             customSwitch = itemView.findViewById(R.id.subscribe_switch);
             uidText = itemView.findViewById(R.id.nameTextView);
@@ -42,15 +42,15 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyHolderVi
         }
     }
 
-    @NonNull
+    
     @Override
-    public MyHolderView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MyHolderView onCreateViewHolder( ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.subscrib_item, parent, false);
         return new MyHolderView(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyHolderView holder, int position) {
+    public void onBindViewHolder( MyHolderView holder, int position) {
         Member item = list.get(position);
         holder.uidText.setText(item.nickName + "(" + item.uid + ")");
         holder.customSwitch.setOnCheckedChangeListener(null);

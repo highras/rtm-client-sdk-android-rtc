@@ -41,7 +41,7 @@ import lib.demo.spinner.MaterialSpinner;
 public class LoginActivity extends BaseActivity {
     NiceSpinner checkbutton;
     int REQUEST_CODE_CONTACT = 101;
-    private static final String TAG = "fengzi";
+    private static final String TAG = "rtcsdk";
     MaterialSpinner niceSpinner;
     Utils utils;
 
@@ -163,7 +163,8 @@ public class LoginActivity extends BaseActivity {
         RelativeLayout startTransVoice = $(R.id.startTransVoice);
         RelativeLayout startVoice = $(R.id.startVoice);
         RelativeLayout startVideo = $(R.id.startVideo);
-        
+        RelativeLayout startRTMtest = $(R.id.startRTMtest);
+
         LinkedList<String> data = new LinkedList<>(Constants.LANGUAGE);
         niceSpinner.setItems(data);
         niceSpinner.setBackgroundResource(R.drawable.shape_nicespinner);
@@ -187,6 +188,15 @@ public class LoginActivity extends BaseActivity {
             });
             saveUserData(utils.currentUserid, utils.nickName);
         });
+
+
+        startRTMtest.setOnClickListener(view -> {
+            CItem1 c1 = (CItem1)(checkbutton.getSelectedItem());
+            utils.address = c1.Value;
+            Intent intent = new Intent(this, RTMtestActivity.class);
+            startActivity(intent);
+        });
+
 
         startVoice.setOnClickListener(view -> {
             if (!checkNess()){

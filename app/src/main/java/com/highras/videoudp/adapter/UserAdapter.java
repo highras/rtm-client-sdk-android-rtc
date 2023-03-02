@@ -31,22 +31,22 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyHolderView> 
         TextView nickNameTv;
         CustomSwitch customSwitch;
 
-        public MyHolderView(@NonNull View itemView) {
+        public MyHolderView( View itemView) {
             super(itemView);
             nickNameTv = itemView.findViewById(R.id.nickName_tv);
             customSwitch = itemView.findViewById(R.id.top_switch);
         }
     }
 
-    @NonNull
+    
     @Override
-    public MyHolderView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MyHolderView onCreateViewHolder( ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.user_item, parent, false);
         return new MyHolderView(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyHolderView holder, int position) {
+    public void onBindViewHolder( MyHolderView holder, int position) {
         long uid = list.get(position);
         holder.nickNameTv.setText(String.valueOf(uid));
 

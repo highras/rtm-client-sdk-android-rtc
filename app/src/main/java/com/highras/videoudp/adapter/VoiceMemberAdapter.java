@@ -29,15 +29,15 @@ public class VoiceMemberAdapter extends RecyclerView.Adapter<VoiceMemberAdapter.
         this.context = context;
     }
 
-    @NonNull
+    
     @Override
-    public MyHolderView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MyHolderView onCreateViewHolder( ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.voice_member_item, parent, false);
         return new MyHolderView(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyHolderView holder, int position) {
+    public void onBindViewHolder( MyHolderView holder, int position) {
         if (position < list.size()) {
             VoiceMember member = list.get(position);
             holder.nickNameTv.setText(member.getNickName() + "(" + member.getUid() + ")");
@@ -58,7 +58,7 @@ public class VoiceMemberAdapter extends RecyclerView.Adapter<VoiceMemberAdapter.
         TextView nickNameTv;
         ImageView imageView;
 
-        public MyHolderView(@NonNull View itemView) {
+        public MyHolderView( View itemView) {
             super(itemView);
             nickNameTv = itemView.findViewById(R.id.name_tv);
             imageView = itemView.findViewById(R.id.voice_image);

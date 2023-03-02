@@ -27,13 +27,13 @@ public class TranslateAdapter extends RecyclerView.Adapter<TranslateAdapter.MyVi
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MyViewHolder onCreateViewHolder( ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.translate_content_item, parent, false);
         return new MyViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder( MyViewHolder holder, int position) {
         Map<String, String> item = mapList.get(position);
         holder.userTv.setText(item.get("user"));
         holder.translateTv.setText(item.get("content"));
@@ -48,7 +48,7 @@ public class TranslateAdapter extends RecyclerView.Adapter<TranslateAdapter.MyVi
         TextView userTv;
         TextView translateTv;
 
-        public MyViewHolder(@NonNull View itemView) {
+        public MyViewHolder( View itemView) {
             super(itemView);
             userTv = itemView.findViewById(R.id.user_tv);
             translateTv = itemView.findViewById(R.id.translate_tv);

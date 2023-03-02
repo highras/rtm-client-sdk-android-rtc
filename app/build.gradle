@@ -18,8 +18,8 @@ android {
         applicationId "com.highras.rtc"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 2
-        versionName "1.0"
+        versionCode 3
+        versionName "3.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -67,13 +67,12 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.3.1'
     implementation 'androidx.navigation:navigation-ui:2.3.1'
     implementation 'com.github.arcadefire:nice-spinner:1.4'
-//    implementation project(path: ':fpnn-rtc-sdk')
-
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
 
     implementation 'com.tencent.bugly:crashreport:latest.release'
     implementation 'me.jessyan:autosize:1.1.2'
     implementation project(':spinner_lib')
 
     implementation 'com.tuzhenlei:crashhandler:1.0.1'
-//    implementation project(path: ':fpnn-rtc-sdk')
+    implementation project(path: ':fpnn-rtc-sdk')
 }

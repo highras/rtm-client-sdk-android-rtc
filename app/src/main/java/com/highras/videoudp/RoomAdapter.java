@@ -26,13 +26,13 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MyViewHolder onCreateViewHolder( ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.room_member_item, parent, false);
         return new MyViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder( MyViewHolder holder, int position) {
         String content = list.get(position);
         holder.userTv.setText(content);
     }
@@ -46,7 +46,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
     protected static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView userTv;
 
-        public MyViewHolder(@NonNull View itemView) {
+        public MyViewHolder( View itemView) {
             super(itemView);
             userTv = itemView.findViewById(R.id.user_id);
         }

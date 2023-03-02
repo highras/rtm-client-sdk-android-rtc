@@ -1,3 +1,4 @@
 include ':app'
 rootProject.name = "rtc-video-udp"
+include ':fpnn-rtc-sdk'
 include ':spinner_lib'

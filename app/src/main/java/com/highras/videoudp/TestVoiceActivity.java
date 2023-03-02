@@ -2,8 +2,11 @@ package com.highras.videoudp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,6 +61,7 @@ public class TestVoiceActivity extends AppCompatActivity {
     boolean usespeaker = true;
     TCPClient rttcclient = null;
     LinearLayout leave;
+    MediaPlayer mediaPlayer = new MediaPlayer();
     LinearLayout mic;
     LinearLayout speaker;
     ImageView speakerImageView;
@@ -277,6 +281,18 @@ public class TestVoiceActivity extends AppCompatActivity {
         });
     }
 
+    private void initMediaPlayer() {
+        try {
+            AssetFileDescriptor fd = getAssets().openFd("zh.wav");
+            mediaPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+            mediaPlayer.setLooping(true);//设置为循环播放
+            mediaPlayer.prepare();//初始化播放器MediaPlayer
+            mediaPlayer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -351,6 +367,7 @@ public class TestVoiceActivity extends AppCompatActivity {
                     public void onAnswer(Answer answer, int errorCode) {
                         long recieveTime = System.currentTimeMillis();
                         long RTTTime = recieveTime - sendTime;
+//                        mylog.log("*ping");
                         showRTMRTT(RTTTime);
 //                        tcpRTTshow.setText("RTM:" + RTTTime);
                     }
@@ -378,6 +395,7 @@ public class TestVoiceActivity extends AppCompatActivity {
         speaker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mediaPlayer.stop();
                 if (client == null || !client.isOnline())
                     return;
                 setSpeakerStatus();
@@ -399,6 +417,9 @@ public class TestVoiceActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new MyGridLayoutManager(this, 2));
         voiceMemberAdapter = new VoiceMemberAdapter(this, memberlist);
         recyclerView.setAdapter(voiceMemberAdapter);
+
+//        initMediaPlayer();
+
     }
 
     private void createDialog(String msg) {
@@ -567,6 +588,9 @@ public class TestVoiceActivity extends AppCompatActivity {
                             }
                         }
                     });
+                }
+                else{
+                    utils.alertDialog(TestVoiceActivity.this,"进入音频房间" + roomId + "失败：" + answer.getErrInfo());
                 }
             }
         });

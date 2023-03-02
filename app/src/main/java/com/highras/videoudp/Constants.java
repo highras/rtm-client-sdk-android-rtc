@@ -34,14 +34,4 @@ public class Constants {
     };
     public static JSONObject languageObj = new JSONObject();
     public static List<OnProcessorListener> onProcessorListeners = new ArrayList<>();
-
-    public static String getTokenUrl = "http://161.189.171.91:8097?uid=";
-//    public static String rtcEndpoint = "69.234.232.26:13702";
-//    public static String rtmEndpoint = "69.234.232.26:13321";
-//    public static String rtmEndpoint = "161.189.171.91:13321";
-//    public static String rtcEndpoint = "161.189.171.91:13702";
-    public static String rtmEndpoint = "rtm-nx-front.ilivedata.com:13321";
-    public static String rtcEndpoint = "rtm-nx-front.ilivedata.com:13702";
-    public static long PID = 80000071;
-//    public static long PID = 11000002;
 }

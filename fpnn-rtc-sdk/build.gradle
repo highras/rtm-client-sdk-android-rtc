@@ -1,0 +1,41 @@
+apply plugin: 'com.android.library'
+ext {
+    PUBLISH_GROUP_ID = "com.github.highras"        //项目包名
+    PUBLISH_ARTIFACT_ID = 'rtc-android'            //项目名
+    PUBLISH_VERSION = '2.7.5'                 //版本号
+}
+apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 30
+        versionCode 5
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+/*    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug{            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'}
+    }*/
+
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
+}

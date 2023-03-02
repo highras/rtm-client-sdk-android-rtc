@@ -5,7 +5,7 @@
   "nickName": "用户昵称",
   "roomidHint": "请输入房间号",
   "roomNickname": "请输入用户昵称",
-  "startVoice": "开始语音通话",
+  "startVoice": "语音通话",
   "mic_on": "麦克风开启",
   "mic_off": "麦克风关闭",
   "leave": "挂断",

@@ -21,9 +21,12 @@
         android:theme="@style/Theme.CaptureDemo"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".RTMtestActivity"
+            android:exported="true" />
+        <activity
             android:name=".transVoice"
             android:exported="true"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".LoginActivity"
             android:exported="true"
@@ -34,10 +37,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".StartActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:screenOrientation="portrait"></activity>
         <activity
             android:name=".TestVoiceActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

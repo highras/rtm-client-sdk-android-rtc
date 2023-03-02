@@ -162,7 +162,7 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         previewSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         previewSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+            public void surfaceCreated( SurfaceHolder surfaceHolder) {
                 int width = previewSurfaceView.getWidth();
                 int heigh = previewSurfaceView.getHeight();
 
@@ -184,12 +184,12 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
             }
 
             @Override
-            public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+            public void surfaceChanged( SurfaceHolder surfaceHolder, int i, int i1, int i2) {
 
             }
 
             @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+            public void surfaceDestroyed( SurfaceHolder surfaceHolder) {
 
             }
         });
@@ -224,6 +224,8 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
 //            }
 //        });
     }
+
+
     void login() {
         utils.login(this, serverPush,  answer -> {
             mylog.log("void login ret" + answer.getErrInfo());
@@ -577,9 +579,9 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         super.onDestroy();
         realLog.clear();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        linearlayout.removeAllViews();
-        userSurfaces.clear();
         realLeaveRoom();
+//        linearlayout.removeAllViews();
+//        userSurfaces.clear();
 //
 //        client.leaveRTCRoom(videoRoom.get(), new UserInterface.IRTMEmptyCallback() {
 //            @Override
@@ -605,7 +607,7 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
 
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void surfaceCreated(@NonNull SurfaceHolder holder) {
+            public void surfaceCreated( SurfaceHolder holder) {
                 RTMStruct.RTMAnswer jj = client.subscribeVideos(videoRoom.get(), new HashMap<Long, SurfaceView>() {{
                     put(inituid, surfaceView);
                 }});
@@ -620,12 +622,12 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
             }
 
             @Override
-            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
+            public void surfaceChanged( SurfaceHolder holder, int format, int width, int height) {
 //                addlog("surfaceChanged ");
             }
 
             @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+            public void surfaceDestroyed( SurfaceHolder holder) {
                 addlog("surfaceDestroyed ");
             }
         });
@@ -677,7 +679,7 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         }
 
         @Override
-        public void handleMessage(@NonNull Message msg) {
+        public void handleMessage( Message msg) {
             TestVideoActivity activity = (TestVideoActivity) weakReference.get();
             if (msg.what == 1) {
                 activity.initMember((RTMStruct.RoomInfo) msg.obj);
