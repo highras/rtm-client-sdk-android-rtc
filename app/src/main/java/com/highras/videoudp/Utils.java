@@ -3,18 +3,25 @@ package com.highras.videoudp;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.view.View;
 
 import com.fpnn.sdk.ErrorRecorder;
+import com.highras.videoudp.model.VoiceMember;
 import com.rtcsdk.RTMCenter;
 import com.rtcsdk.RTMClient;
+import com.rtcsdk.RTMErrorCode;
 import com.rtcsdk.RTMPushProcessor;
+import com.rtcsdk.RTMStruct;
 import com.rtcsdk.UserInterface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public enum Utils {
     INSTANCE;
@@ -66,16 +73,23 @@ public enum Utils {
     public String rtmEndpoint;
     public String rtcEndpoint;
 
+
     final HashMap<String, ProjectInfo> testAddress = new HashMap(){{
 //        put("test", new ProjectInfo(11000002,"rtm-intl-frontgate-test.ilivedata.com"));
-        put("test", new ProjectInfo(11000002,"161.189.171.91"));
-        put("nx",new ProjectInfo(80000071,"rtm-nx-front.ilivedata.com"));
-        put("intl",new ProjectInfo(80000087,"rtm-intl-frontgate.ilivedata.com"));
+        put("test", new ProjectInfo(11000001,"161.189.171.91","cXdlcnR5"));
+        put("nx",new ProjectInfo(80000071,"rtm-nx-front.ilivedata.com","cXdlcnR5"));
+//        put("intl",new ProjectInfo(80000087,"rtm-intl-frontgate.ilivedata.com","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
+//        put("intl",new ProjectInfo(80000087,"18.138.19.251","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
+        put("intl",new ProjectInfo(80000087,"18.136.225.133","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
+//        put("intl",new ProjectInfo(80000087,"35.167.66.29","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
     }
     };
 
-
     public static void alertDialog(final Activity activity, final String str){
+        alertDialog(activity, str, false);
+    }
+
+    public static void alertDialog(final Activity activity, final String str, boolean finish){
         //        Looper.prepare();
         //        new AlertDialog.Builder(activity).setMessage(str).setPositiveButton("确定", new DialogInterface.OnClickListener() {
         //            @Override
@@ -94,8 +108,8 @@ public enum Utils {
                 builder.setMessage(str).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //                        if (activity.equals(M))
-//                                                activity.finish();
+                                                if (finish)
+                                                    activity.finish();
                     }
                 });
                 if (activity == null || activity.isDestroyed() || activity.isFinishing()) {
@@ -108,20 +122,34 @@ public enum Utils {
 
 
     public ErrorRecorder errorRecorder = new TestErrorRecorder();
-    public RTMPushProcessor serverPush;
     public RTMClient client;
 
-    public void login(Activity activity, RTMPushProcessor _processor,UserInterface.IRTMEmptyCallback callback) {
+    public void login(Activity activity, UserInterface.IRTMEmptyCallback callback) {
         ProjectInfo info = testAddress.get(address);
         rtmEndpoint = info.host +  ":" + rtmPort;
         rtcEndpoint = info.host +  ":" + rtcPort;
 
-        serverPush = _processor;
-        client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint, info.pid, currentUserid, serverPush, activity);
+        if (client == null)
+            client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint, info.pid, currentUserid, new RTMPushProcessor(), activity);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                client.login(getToken(currentUserid),"zh",null, callback);
+                long ts = System.currentTimeMillis()/1000;
+                String realToken = ApiSecurityExample.genHMACToken(info.pid, currentUserid, ts, info.key);
+                client.login(realToken, "zh", null, ts, new UserInterface.IRTMEmptyCallback() {
+                    @Override
+                    public void onResult(RTMStruct.RTMAnswer answer) {
+                        if (answer.errorCode == 0){
+                            client.setUserInfo(nickName, "", new UserInterface.IRTMEmptyCallback() {
+                                @Override
+                                public void onResult(RTMStruct.RTMAnswer answer) {
+
+                                }
+                            });
+                        }
+                        callback.onResult(answer);
+                    }
+                });
             }
         }).start();
     }
@@ -177,5 +205,65 @@ public enum Utils {
         if (data == null || data.length() == 0)
             return true;
         else return false;
+    }
+
+    //泛型接口 带有一个返回值的回调函数 (请优先判断answer的错误码 泛型值有可能为null)
+    public  interface MyCallback<T> {
+        void onResult(T t);
+    }
+
+
+    public void realEnterRoom(final long roomId, RTMStruct.RTCRoomType roomtype, Activity activity, MyCallback<RTMStruct.RoomInfo> callback) {
+        client.enterRTCRoom(roomId, currentLan, new UserInterface.IRTMEmptyCallback() {
+            @Override
+            public void onResult(RTMStruct.RTMAnswer answer) {
+                if (answer.errorCode == 0) {
+                    client.getRTCRoomMembers(roomId, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                        @Override
+                        public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
+                            callback.onResult(roomInfo);
+                        }
+                    });
+
+                } else if (answer.errorCode == RTMErrorCode.RTM_EC_VOICE_ROOM_NOT_EXIST.value()) {
+                    client.createRTCRoom(roomId, roomtype, currentLan, new UserInterface.IRTMEmptyCallback() {
+                        @Override
+                        public void onResult(RTMStruct.RTMAnswer answer) {
+                            if (answer.errorCode == 0) {
+                                client.getRTCRoomMembers(roomId, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                                    @Override
+                                    public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
+                                        callback.onResult(roomInfo);
+                                    }
+                                });
+                            } else if (answer.errorCode == RTMErrorCode.RTM_EC_VOICE_ROOM_EXIST.value()) {
+                                client.enterRTCRoom(roomId, currentLan, new UserInterface.IRTMEmptyCallback() {
+                                    @Override
+                                    public void onResult(RTMStruct.RTMAnswer answer) {
+                                        if (answer.errorCode == 0) {
+                                            client.getRTCRoomMembers(roomId, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                                                @Override
+                                                public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
+                                                    callback.onResult(roomInfo);
+                                                }
+                                            });
+                                        }
+                                        else{
+                                            alertDialog(activity,"进入RTC房间-" + roomId + "失败：" + answer.getErrInfo(), true);
+                                        }
+                                    }
+                                });
+                            }
+                            else{
+                                alertDialog(activity,"创建RTC房间-" + roomId + "失败：" + answer.getErrInfo(), true);
+                            }
+                        }
+                    });
+                }
+                else{
+                    alertDialog(activity,"进入RTC房间-" + roomId + "失败：" + answer.getErrInfo(), true);
+                }
+            }
+        });
     }
 }

@@ -1,9 +1,5 @@
 package com.highras.videoudp.model;
 
-/**
- * @author fengzi
- * @date 2022/5/17 17:25
- */
 public class VoiceMember {
     private long uid;
     private String nickName;

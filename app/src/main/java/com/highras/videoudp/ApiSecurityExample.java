@@ -99,6 +99,22 @@ public class ApiSecurityExample {
         return token;
     }
 
+    public static String genHMACToken(long pid, long ts, String secret){
+        String token = pid  + ":" + ts;
+//        String token = "11000001:666:1669174320";
+        String realKey = "";
+        try {
+            realKey =new String( Base64.decode(secret, Base64.NO_WRAP), "UTF_8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+//        String md5data = md5string(token);
+
+        String realToken = ApiSecurityExample.hmacSha256(realKey, token);
+        return realToken;
+    }
+
     public static String genHMACToken(long pid, long uid, long ts, String secret){
         String token = pid + ":" + uid + ":" + ts;
 //        String token = "11000001:666:1669174320";

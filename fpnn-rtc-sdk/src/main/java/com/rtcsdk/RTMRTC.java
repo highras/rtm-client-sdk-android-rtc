@@ -86,14 +86,14 @@ public class RTMRTC extends RTMChat{
     /**
      * 打开音频输出
      */
-    public void openOutput(){
+    public void openAudioOutput(){
         RTCEngine.audioOutputFlag(true);
     }
 
     /**
      * 关闭音频输出(静音)
      */
-    public void closeOutput(){
+    public void closeAudioOutput(){
         RTCEngine.audioOutputFlag(false);
     }
 
@@ -130,24 +130,14 @@ public class RTMRTC extends RTMChat{
     /**
      * 创建RTC房间
      * @roomId 房间id
-     * @roomType 1-voice 2-video(视频房间摄像头默认关闭 麦克风默认开启)
+     * @roomType 1-voice 2-video 3-实时翻译语音房间(视频房间摄像头默认关闭 麦克风默认开启)
+     * @lang 语言()
      * @param callback 回调
      */
-    public void createRTCRoom( final long roomId, final int roomType,  final IRTMCallback<RoomInfo> callback) {
-        createRTCRoom(roomId, roomType, 0,"",callback);
+    public void createRTCRoom(final long roomId, final RTMStruct.RTCRoomType roomType, String lang, final IRTMEmptyCallback callback) {
+        createRTCRoom(roomId, roomType.value(), 0,lang,callback);
     }
 
-
-
-    /**
-     * 创建实时翻译RTC房间
-     * @roomId 房间id
-     * @param language 自己的语言
-     * @param callback 回调
-     */
-    public void createTranslateRTCRoom( final long roomId,final String language,  final IRTMCallback<RoomInfo> callback) {
-        createRTCRoom(roomId, 3, 0,language,callback);
-    }
 
     /**
      * 进入RTC房间
@@ -155,7 +145,7 @@ public class RTMRTC extends RTMChat{
      * @param roomId   房间id
      * @param lang 自己的语言(当为实时语音翻译房间必传)
      */
-    public void enterRTCRoom(final long roomId, String lang,  final IRTMCallback<RoomInfo> callback) {
+    public void enterRTCRoom(final long roomId, String lang,  final IRTMEmptyCallback callback) {
         super.enterRTCRoom(callback,roomId, lang);
     }
 
@@ -222,7 +212,7 @@ public class RTMRTC extends RTMChat{
      * 切换扬声器听筒(耳机状态下不操作)(默认扬声器)
      * @param usespeaker true-使用扬声器 false-使用听筒
      */
-    public void switchOutput(final boolean usespeaker){
+    public void switchAudioOutput(final boolean usespeaker){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -291,7 +281,7 @@ public class RTMRTC extends RTMChat{
                 if (errorCode == okRet) {
                     tt.uids = rtmUtils.wantLongHashSet(answer, "uids");
                     tt.managers = rtmUtils.wantLongHashSet(answer, "administrators");
-                    tt.owner = rtmUtils.wantInt(answer,"owner");
+//                    tt.owner = rtmUtils.wantInt(answer,"owner");
                 }
                 callback.onResult(tt, genRTMAnswer(answer, errorCode));
             }

@@ -10,27 +10,24 @@
 
 
     <Button
-        android:visibility="gone"
-        android:text="清除日志"
         android:id="@+id/clearlog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="3dp"
+        android:text="清除日志"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/logview"></Button>
 
     <TextView
         android:id="@+id/logview"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="15dp"
         android:background="@drawable/voice_member_bg"
         android:padding="10dp"
         android:textSize="14dp"
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/room_member_recycle" />
 
@@ -44,40 +41,38 @@
         tools:layout_editor_absoluteX="0dp">
 
         <ImageView
-            android:layout_marginStart="5dp"
             android:id="@+id/back"
-            android:layout_marginTop="8dp"
             android:layout_width="25dp"
             android:layout_height="20dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="8dp"
             android:src="@mipmap/back"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <RelativeLayout
-            android:layout_gravity="center"
-            android:layout_centerInParent="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/roomnum"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="14dp" />
-
-        <Chronometer
-            android:text="时长"
-            android:layout_below="@id/roomnum"
             android:layout_centerInParent="true"
-            android:id="@+id/caltimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/tan"
-            android:textSize="14dp"
-            />
+            android:layout_gravity="center">
+
+            <TextView
+                android:id="@+id/roomnum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="14dp" />
+
+            <Chronometer
+                android:id="@+id/caltimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/roomnum"
+                android:layout_centerInParent="true"
+                android:text="时长"
+                android:textColor="@color/tan"
+                android:textSize="14dp" />
         </RelativeLayout>
-
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -156,7 +151,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="25dp"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -178,16 +173,46 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="麦克风开启"
+                android:text="麦克风关闭"
                 android:textColor="@color/white" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/leave"
+            android:id="@+id/audiooutputlinelayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            android:layout_toRightOf="@+id/mic"
+            android:layout_marginLeft="25dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <com.highras.videoudp.weight.CircleRelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:background_color="@color/BP10">
+
+                <ImageView
+                    android:id="@+id/audiooutputview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/av_speaker_selector" />
+            </com.highras.videoudp.weight.CircleRelativeLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="扬声器"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/leave"
+            android:layout_toRightOf="@+id/audiooutputlinelayout"
+            android:layout_marginLeft="25dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -203,7 +228,6 @@
                 android:layout_marginTop="10dp"
                 android:text="挂断"
                 android:textColor="@color/white" />
-
         </LinearLayout>
 
         <LinearLayout
@@ -211,7 +235,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="30dp"
+            android:layout_marginEnd="25dp"
             android:gravity="center"
             android:orientation="vertical">
 

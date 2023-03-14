@@ -81,14 +81,14 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 public void onAudioFocusChange(int focusChange) {
                     if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
 //                        printLog("AudioManager.AUDIOFOCUS_LOSS_TRANSIENT");
-                        RTCEngine.setVoiceStat(false);
+                        RTCEngine.audioFocusFlag(false);
 
                         // Pause playback because your Audio Focus was
                         // temporarily stolen, but will be back soon.
                         // i.e. for a phone call
                     } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
                         errorRecorder.recordError("AudioManager.AUDIOFOCUS_LOSS");
-                        RTCEngine.setVoiceStat(false);
+                        RTCEngine.audioFocusFlag(false);
 
                         // Stop playback, because you lost the Audio Focus.
                         // i.e. the user started some other playback app
@@ -106,7 +106,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                         // pause playback here instead. You do you.
                     } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
 //                        printLog("AudioManager.AUDIOFOCUS_GAIN");
-                        String  ret = RTCEngine.resumeAudioFocus();
+                        RTCEngine.audioFocusFlag(true);
 //                        printLog("AudioManager.AUDIOFOCUS_GAIN resumeAudioFocus ret " + ret);
 
                         // Resume playback, because you hold the Audio Focus
@@ -174,6 +174,8 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         String b= ConnectivityManager.CONNECTIVITY_ACTION;
         String a= intent.getAction();
         if ("android.bluetooth.headset.profile.action.CONNECTION_STATE_CHANGED".equals(a)) {
+            if (!isInitRTC)
+                return;
             final int intExtra = intent.getIntExtra("android.bluetooth.profile.extra.STATE", Integer.MIN_VALUE);
             if (intExtra == 2 || intExtra == 0) {//2-连接 0-断开
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
@@ -193,6 +195,8 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             }
         }
         else if (a.equals(Intent.ACTION_HEADSET_PLUG)) {
+            if (!isInitRTC)
+                return;
             if (intent.hasExtra("state")){
                 final int ret = intent.getIntExtra("state", 0);
                 Log.e("sdktest", "ACTION_HEADSET_PLUG " + ret);
@@ -278,12 +282,17 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 //        printLog("onActivityCreated");
     }
 
+    public void setServerPush(RTMPushProcessor jj){
+        serverPushProcessor = jj;
+    }
+
     @Override
     public void onActivityStarted( Activity activity) {
         this.currentActivity = new WeakReference<Activity>(activity);
         if (this.background && !activity.isChangingConfigurations()) {
             this.background = false;
-            RTCEngine.setBackground(false);
+            if (isInitRTC)
+                RTCEngine.setBackground(false);
         }
     }
 
@@ -299,7 +308,8 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     public void onActivityStopped( Activity activity) {
         if (!this.background && (this.currentActivity == null || activity == this.currentActivity.get()) && !activity.isChangingConfigurations()) {
             this.background = true;
-            RTCEngine.setBackground(true);
+            if (isInitRTC)
+                RTCEngine.setBackground(true);
         }
     }
 
@@ -318,17 +328,15 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     final Object videoLocker =  new Object();
     private int voiceConnectionId = 0;
 
-    void enterRTCRoom( final IRTMCallback<RoomInfo> callback, final long roomId, final String lang) {
-        final RoomInfo ret = new RoomInfo();
+    void enterRTCRoom( final IRTMEmptyCallback callback, final long roomId, final String lang) {
 
         if (initRTC().errorCode != okRet){
-            ret.errorCode = RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value();
-            callback.onResult(ret, genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
             return;
         }
 
         if (lastCallId > 0){
-            callback.onResult(ret, genRTMAnswer(voiceError, "in p2pRTC type"));
+            callback.onResult(genRTMAnswer(voiceError, "in p2pRTC type"));
             return;
         }
 
@@ -337,41 +345,36 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         sendQuest(quest, new FunctionalAnswerCallback() {
             @Override
             public void onAnswer(Answer answer, int errorCode) {
-                ret.errorCode = errorCode;
                 if (errorCode == okRet) {
                     String roomtoken = rtmUtils.wantString(answer,"token");
-                    ret.roomTyppe = rtmUtils.wantInt(answer,"type");
-                    if (ret.roomTyppe == 2 || ret.roomTyppe == 3){ //视频房间或者带翻译的房间
+                    int type = rtmUtils.wantInt(answer,"type");
+                    if (type == 2 || type == 3){ //视频房间或者带翻译的房间
                         if (RTCEngine.isInRTCRoom() > 0){
-                            callback.onResult(ret, genRTMAnswer(voiceError, "enter video Room error you are in rtcroom-" + RTCEngine.isInRTCRoom() ));
+                            callback.onResult(genRTMAnswer(voiceError, "enter video Room error you are in rtcroom-" + RTCEngine.isInRTCRoom() ));
                             return;
                         }
                     }
-                    enterRTCRoomReal(callback, roomId, roomtoken, ret, ret.roomTyppe, lang);
+                    enterRTCRoomReal(callback, roomId, roomtoken, type, lang);
                 } else {
-                    callback.onResult(ret, genRTMAnswer(answer, errorCode));
+                    callback.onResult(genRTMAnswer(answer, errorCode));
                 }
             }
         });
     }
 
-    void createRTCRoom(final long roomId, final int roomType, int enableRecord, final String language, final IRTMCallback<RoomInfo> callback) {
-        final RoomInfo ret = new RoomInfo();
-        ret.roomId = roomId;
-        ret.roomTyppe = roomType;
+    void createRTCRoom(final long roomId, final int roomType, int enableRecord, final String language, final IRTMEmptyCallback callback) {
         if (initRTC().errorCode != okRet){
-            ret.errorCode = RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value();
-            callback.onResult(ret, genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
             return;
         }
 
         if (lastCallId > 0){
-            callback.onResult(ret, genRTMAnswer(voiceError, "in p2pRTC type"));
+            callback.onResult(genRTMAnswer(voiceError, "in p2pRTC type"));
             return;
         }
 
         if ((roomType == 2 || roomType == 3) && RTCEngine.isInRTCRoom() > 0){
-            callback.onResult(ret, genRTMAnswer(voiceError, "createRTCRoom error you are in rtcroom-" + RTCEngine.isInRTCRoom()));
+            callback.onResult(genRTMAnswer(voiceError, "createRTCRoom error you are in rtcroom-" + RTCEngine.isInRTCRoom()));
             return;
         }
 
@@ -387,20 +390,17 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                     if (bringlang == null)
                         bringlang = "";
                     String roomToken = rtmUtils.wantString(answer,"token");
-                    enterRTCRoomReal(callback,roomId, roomToken,ret, roomType,bringlang);
+                    enterRTCRoomReal(callback,roomId, roomToken, roomType,bringlang);
                 }
                 else {
-                    ret.errorCode = errorCode;
-                    if(answer != null)
-                        ret.errorMsg = answer.getErrorMessage();
-                    callback.onResult(ret, genRTMAnswer(answer, errorCode));
+                    callback.onResult(genRTMAnswer(answer, errorCode));
                 }
             }
         });
     }
 
 
-    void enterRTCRoomReal( final IRTMCallback callback, final long roomId, final String token, final RoomInfo ret, int roomTyppe, String lang) {
+    void enterRTCRoomReal( final IRTMEmptyCallback callback, final long roomId, final String token, int roomTyppe, String lang) {
         byte[] enterRet = RTCEngine.enterRTCRoom(token, roomId, roomTyppe, "", 0, lang);
         MessagePayloadUnpacker kk = new MessagePayloadUnpacker(enterRet);
         HashMap retmap;
@@ -408,27 +408,22 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         try {
             retmap= new HashMap(kk.unpack());
             if (retmap.containsKey("ex")){
-                ret.errorCode = rtmUtils.wantInt(retmap.get("code"));
-                ret.errorMsg = String.valueOf(retmap.get("ex"));
-                rst.errorCode = ret.errorCode;
-                rst.errorMsg = ret.errorMsg;
+                rst.errorCode = rtmUtils.wantInt(retmap.get("code"));
+                rst.errorMsg = String.valueOf(retmap.get("ex"));
             }
             else
             {
                 if (roomTyppe == 2 && mOrEventListener!=null){ //视频房间
                     mOrEventListener.enable();
                 }
-                ret.errorCode = 0;
-                ret.errorMsg = "";
-                ret.uids = rtmUtils.longHashSet(retmap.get("uids"));
-                ret.owner = rtmUtils.wantLong(retmap.get("owner"));
-                ret.managers = rtmUtils.longHashSet(retmap.get("administrators"));
+//                ret.uids = rtmUtils.longHashSet(retmap.get("uids"));
+//                ret.managers = rtmUtils.longHashSet(retmap.get("administrators"));
             }
         }
         catch (Exception e) {
             errorRecorder.recordError("Decoding enterRTCRoomReal package exception");
         }
-        callback.onResult(ret, rst);
+        callback.onResult( rst);
     }
 
     class RTMQuestProcessor{
@@ -981,12 +976,12 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         Answer pushPullIntoRTCRoom(Quest quest, InetSocketAddress peer) {
             rtmGate.sendAnswer(new Answer(quest));
             final long roomId = rtmUtils.wantLong(quest,"rid");
-            enterRTCRoom(new IRTMCallback<RoomInfo>() {
+            enterRTCRoom(new IRTMEmptyCallback() {
                 @Override
-                public void onResult(RoomInfo info ,RTMAnswer answer) {
-                    serverPushProcessor.pushPullRoom(roomId,info);
+                public void onResult(RTMAnswer answer) {
+
                 }
-            },roomId, lang);
+            }, roomId, lang);
             return null;
         }
 
@@ -1010,9 +1005,11 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
     void  internalReloginCompleted(final long uid, final boolean successful, final int reloginCount){
-        if (!successful){
-            RTCEngine.RTCClear();
-            RTCEngine.closeP2P();
+        if (!successful) {
+            if (isInitRTC){
+                RTCEngine.RTCClear();
+                RTCEngine.closeP2P();
+            }
             lastCallId = 0;
             lastP2Ptype = 0;
             peerUid = 0;
@@ -1364,16 +1361,14 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         } catch (IllegalArgumentException e){
         }
 
-        isInitRTC = false;
         if (mOrEventListener != null)
             mOrEventListener.disable();
-        close();
+        close(true);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        RTCEngine.delete();
     }
 
     void sayBye(boolean async) {
@@ -1567,7 +1562,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 
 
     public void printLog(String msg){
-//        Log.e("sdktest",msg);
+        Log.e("sdktest",msg);
         errorRecorder.recordError(msg);
     }
 
@@ -2103,7 +2098,25 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         }
     }
 
-    public void close() {
+    void rtcclear(final boolean delete){
+        if (isInitRTC){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    RTCEngine.RTCClear();
+                    if (delete)
+                        RTCEngine.delete();
+                }
+            }).start();
+        }
+        isInitRTC = false;
+    }
+
+    public void close(){
+        close(false);
+    }
+
+    public void close(boolean deleteRTC) {
         if (isRelogin.get()) {
             return;
         }
@@ -2118,11 +2131,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         }
         if (rtmGate !=null)
             rtmGate.close();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                RTCEngine.RTCClear();
-            }
-        }).start();
+        rtcclear(deleteRTC);
     }
 }

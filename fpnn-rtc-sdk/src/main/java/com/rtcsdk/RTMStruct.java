@@ -328,11 +328,8 @@ public class RTMStruct {
     }
 
     public static class RoomInfo extends RTMAnswer{
-        public int roomTyppe; //房间类型 1-voice 2-video 3-语聊房
-        public long roomId; //房间id
-        public long owner;//房主
-        public HashSet<Long> uids; //房间的成员uid
-        public HashSet<Long> managers; //房间的管理员id
+        public HashSet<Long> uids = new HashSet<>(); //房间的成员uid
+        public HashSet<Long> managers = new HashSet<>(); //房间的管理员id
     }
 
 
@@ -345,7 +342,7 @@ public class RTMStruct {
     }
 
     public static class PublicInfo extends RTMAnswer{
-        public Map<String, String> publicInfos; //群组/房间/个人的公开信息 key -用户id/群组id/房间id
+        public Map<String, String> publicInfos = new HashMap<>(); //群组/房间/个人的公开信息 key -用户id/群组id/房间id
     }
 
 
@@ -387,6 +384,19 @@ public class RTMStruct {
         BroadcastMessage    (4); //广播消息
         private int value;
         MessageTypes (int value) {
+            this.value = value;
+        }
+        public int value() {
+            return value;
+        }
+    }
+
+    public enum RTCRoomType{
+        AUDIO        (1), //普通语音房间
+        VIDEO        (2), //普通视频房间
+        TRANSLATE    (3); //实时翻译语音房间
+        private int value;
+        RTCRoomType (int value) {
             this.value = value;
         }
         public int value() {

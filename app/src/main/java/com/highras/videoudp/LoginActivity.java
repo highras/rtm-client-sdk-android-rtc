@@ -56,11 +56,17 @@ public class LoginActivity extends BaseActivity {
     }
     };
 
-    MyRTMPushProcessor myRTMPushProcessor = new MyRTMPushProcessor();
-
     EditText userID_edit;
     EditText roomID_edit;
     EditText nickname_edit;
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        utils.client.closeRTM();
+        utils.client = null;
+    }
 
     @Override
     protected int contentLayout() {
@@ -142,8 +148,11 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void afterViews() {
         super.afterViews();
-        String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.CAMERA};
+        String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE};
+
+//        String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
         //验证是否许可权限
         for (String str : permissions) {
             if (this.checkSelfPermission(str) != PackageManager.PERMISSION_GRANTED) {
@@ -174,7 +183,7 @@ public class LoginActivity extends BaseActivity {
             if (!checkNess()){
                 return;
             }
-            utils.login(LoginActivity.this, myRTMPushProcessor, new UserInterface.IRTMEmptyCallback() {
+            utils.login(LoginActivity.this, new UserInterface.IRTMEmptyCallback() {
                 @Override
                 public void onResult(RTMStruct.RTMAnswer answer) {
                     if (answer.errorCode == 0){
@@ -202,18 +211,41 @@ public class LoginActivity extends BaseActivity {
             if (!checkNess()){
                 return;
             }
-            Intent intent = new Intent(this, TestVoiceActivity.class);
-            saveUserData(utils.currentUserid, utils.nickName);
-            startActivity(intent);
+            utils.login(this, new UserInterface.IRTMEmptyCallback() {
+                @Override
+                public void onResult(RTMStruct.RTMAnswer answer) {
+                    if (answer.errorCode == 0){
+                        Intent intent = new Intent(LoginActivity.this, TestVoiceActivity.class);
+                        saveUserData(utils.currentUserid, utils.nickName);
+                        startActivity(intent);
+                    }
+                    else {
+                        Utils.alertDialog(LoginActivity.this,"登录失败 " + answer.getErrInfo());
+                    }
+                }
+            });
+
         });
 
         startVideo.setOnClickListener(view -> {
             if (!checkNess()){
                 return;
             }
-            Intent intent = new Intent(this, TestVideoActivity.class);
-            saveUserData(utils.currentUserid, utils.nickName);
-            startActivity(intent);
+
+            utils.login(this, new UserInterface.IRTMEmptyCallback() {
+                @Override
+                public void onResult(RTMStruct.RTMAnswer answer) {
+                    if (answer.errorCode == 0){
+                        Intent intent = new Intent(LoginActivity.this, TestVideoActivity.class);
+                        saveUserData(utils.currentUserid, utils.nickName);
+                        startActivity(intent);
+                    }
+                    else {
+                        Utils.alertDialog(LoginActivity.this,"登录失败 " + answer.getErrInfo());
+                    }
+                }
+            });
+
         });
 
         setLanguage();

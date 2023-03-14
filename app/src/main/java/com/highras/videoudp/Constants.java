@@ -33,5 +33,4 @@ public class Constants {
         }
     };
     public static JSONObject languageObj = new JSONObject();
-    public static List<OnProcessorListener> onProcessorListeners = new ArrayList<>();
 }

@@ -7,9 +7,11 @@ package com.highras.videoudp;
 public class ProjectInfo {
     long pid;
     String host;
+    String key;
 
-    ProjectInfo(long _pid, String _host) {
-        pid = _pid;
-        host = _host;
+    public ProjectInfo(long pid, String host, String key) {
+        this.pid = pid;
+        this.host = host;
+        this.key = key;
     }
 }

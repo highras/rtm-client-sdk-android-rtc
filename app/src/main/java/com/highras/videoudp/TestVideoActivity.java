@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @date 2022/2/17 19:37
  */
 
-public class TestVideoActivity extends AppCompatActivity implements View.OnClickListener {
+public class TestVideoActivity extends BaseActivity implements View.OnClickListener {
 
     class TestErrorVideoRecorder extends ErrorRecorder {
         public TestErrorVideoRecorder(){
@@ -89,7 +89,6 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
     MyHandler myHandler = new MyHandler(this);
     long activityRoom = 0;
     private SurfaceView previewSurfaceView = null;
-    public AtomicLong videoRoom = new AtomicLong(0);
     RTMClient client;
     long myuid = 0;
     String mynickName;
@@ -103,14 +102,12 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
     boolean usespeaker = true;
     boolean voiceStatus = false;
     boolean useFront = true;
-    RTMVideoProcessor serverPush = new RTMVideoProcessor();
     TestErrorVideoRecorder errorRecorder = new TestErrorVideoRecorder();
     LinearLayout linearlayout;
     AudioManager am;
     ImageView back;
     ImageView mic_image;
     ImageView camera_image;
-    ImageView speaker_image;
     TextView mic_text;
     TextView camera_text;
     TextView roomshow;
@@ -129,9 +126,7 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
     int pageSize = 3;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.testvideo1);
+    protected void afterViews() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         activityRoom = utils.currentRoomid;
         myuid = utils.currentUserid;
@@ -142,7 +137,6 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         mic_image = findViewById(R.id.mic_image);
         mic_text = findViewById(R.id.mic_text);
         camera_image = findViewById(R.id.camera_image);
-        speaker_image = findViewById(R.id.speaker_image);
         camera_text = findViewById(R.id.camera_text);
         TextView current_member = findViewById(R.id.current_member);
         current_member.setText(showName(myuid, mynickName ));
@@ -206,7 +200,30 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         itemWidth = DisplayUtils.getScreenWidth(this) / pageSize;
         itemHeight = itemWidth * 4 / 3;
         linearlayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, itemHeight));
-        login();
+
+        client = utils.client;
+        client.setErrorRecoder(errorRecorder);
+        client.setServerPush(new RTMVideoProcessor());
+        client.setPreview(previewSurfaceView);
+        utils.realEnterRoom(activityRoom, RTMStruct.RTCRoomType.VIDEO, this, new Utils.MyCallback<RTMStruct.RoomInfo>() {
+            @Override
+            public void onResult(RTMStruct.RoomInfo roomInfo) {
+                mylog.log("uids " + roomInfo.uids.toString());
+                if (!roomInfo.uids.isEmpty()){
+                    voiceStatus = true;
+                    addlog( "onResult: 进入房间" + activityRoom + " 成功" );
+                    Message message = Message.obtain();
+                    message.what = 1;
+                    message.obj = roomInfo;
+                    myHandler.sendMessage(message);
+                }
+            }
+        });
+    }
+
+    @Override
+    protected int contentLayout() {
+        return R.layout.testvideo1;
     }
 
     Utils utils = Utils.INSTANCE;
@@ -226,59 +243,6 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
     }
 
 
-    void login() {
-        utils.login(this, serverPush,  answer -> {
-            mylog.log("void login ret" + answer.getErrInfo());
-            if (answer.errorCode == 0) {
-                client = utils.client;
-                client.setErrorRecoder(errorRecorder);
-                client.setPreview(previewSurfaceView);
-                RTMStruct.RTMAnswer rtmAnswer = client.setUserInfo(mynickName, "");
-                addlog("log ret " + answer.getErrInfo());
-                realEnterRoom(activityRoom);
-            } else {
-                utils.alertDialog(TestVideoActivity.this,"login failed" + answer.getErrInfo());
-            }
-        });
-    }
-
-    void realEnterRoom(final long roomId) {
-        client.enterRTCRoom(roomId, utils.currentLan, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
-            @Override
-            public void onResult(RTMStruct.RoomInfo info, RTMStruct.RTMAnswer answer) {
-                if (answer.errorCode == 0) {
-                    if (info.roomTyppe != 2)//不是视频房间
-                    {
-                        utils.alertDialog(TestVideoActivity.this,"房间 " + roomId  + "为音频房间 请重新选择音频通话进入");
-                        return;
-                    }
-                    videoRoom.set(roomId);
-                    voiceStatus = true;
-                    addlog( "onResult: 进入房间" + roomId + " " + transRet(answer));
-                    Message message = Message.obtain();
-                    message.what = 1;
-                    message.obj = info;
-                    myHandler.sendMessage(message);
-                } else if (answer.errorCode == RTMErrorCode.RTM_EC_VOICE_ROOM_NOT_EXIST.value())  {
-                    client.createRTCRoom( roomId, 2, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
-                        @Override
-                        public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
-                            addlog( "onResult: 创建房间  " + roomId + " " + transRet(answer));
-                            if (answer.errorCode == 0) {
-                                videoRoom.set(roomId);
-                                Message message = Message.obtain();
-                                message.what = 1;
-                                message.obj = info;
-                                myHandler.sendMessage(message);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-
     public void onclick(View view) {
         if (view.getId() == R.id.mic_relayout) {
             setMicStatus();
@@ -289,9 +253,9 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         } else if (view.getId() == R.id.camera_switch_image) {
             cameraSwitch();
         }
-        else if (view.getId() == R.id.output_relayout) {
-            outputSwitch();
-        }
+//        else if (view.getId() == R.id.output_relayout) {
+//            audioOutputSwitch();
+//        }
     }
 
     @Override
@@ -379,7 +343,6 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         return nickname + "(" + userid + ")";
     }
 
-
     class RTMVideoProcessor extends RTMPushProcessor {
         String msg = "";
 
@@ -391,7 +354,6 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
             addlog( "reloginWillStart: 用户 " + uid + " 开始重连第 " + reloginCount + "次");
             return true;
         }
-
 
         @Override
         public void reloginCompleted(long uid, boolean successful, RTMStruct.RTMAnswer answer, int reloginCount) {
@@ -405,15 +367,10 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
                     }
                 });
 
-                final long id = videoRoom.get();
-                if (id <= 0)
-                    return;
-                client.enterRTCRoom(id, "", new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                client.enterRTCRoom(activityRoom, "", new UserInterface.IRTMEmptyCallback() {
                     @Override
-                    public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
-                        addlog("reloginCompleted: " + showName(myuid, mynickName) + " 重新进入房间 " + id + answer.getErrInfo());
-
-                        if (answer.errorCode == 0){
+                    public void onResult(RTMStruct.RTMAnswer answer) {
+                        if (answer.errorCode == 0) {
                             if (cameraOpen)
                                 client.openCamera();
 
@@ -423,7 +380,7 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
                                     subscribeMap.put(aLong, (SurfaceView) view.findViewById(R.id.member_surface));
                                 });
 
-                                RTMStruct.RTMAnswer subanswer = client.subscribeVideos(videoRoom.get(), subscribeMap);
+                                RTMStruct.RTMAnswer subanswer = client.subscribeVideos(activityRoom, subscribeMap);
                                 addlog("onResult: " + "重新订阅 " + userSurfaces.keySet().toString() + " 视频流 " + transRet(subanswer));
                             }
                         }
@@ -440,8 +397,6 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
                         alertshow.setVisibility(View.VISIBLE);
                     }
                 });
-
-                videoRoom.set(0);
             }
         }
 
@@ -519,6 +474,7 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
+
     void setCameraStatus(boolean status) {
         cameraOpen = status;
         if (!cameraOpen) {
@@ -560,14 +516,16 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
                 userSurfaces.clear();
             }
         });
-        client.leaveRTCRoom(videoRoom.get(), new UserInterface.IRTMEmptyCallback() {
+        new Thread(new Runnable() {
             @Override
-            public void onResult(RTMStruct.RTMAnswer answer) {
-                if (answer.errorCode == 0) {
-                    addlog( "onResult: 离开房间");
-                }
+            public void run() {
+                client.leaveRTCRoom(activityRoom, new UserInterface.IRTMEmptyCallback() {
+                    @Override
+                    public void onResult(RTMStruct.RTMAnswer answer) {
+                    }
+                });
             }
-        });
+        }).start();
     }
 
     String transRet(RTMStruct.RTMAnswer answer) {
@@ -608,7 +566,7 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated( SurfaceHolder holder) {
-                RTMStruct.RTMAnswer jj = client.subscribeVideos(videoRoom.get(), new HashMap<Long, SurfaceView>() {{
+                RTMStruct.RTMAnswer jj = client.subscribeVideos(activityRoom, new HashMap<Long, SurfaceView>() {{
                     put(inituid, surfaceView);
                 }});
                 addlog( "surfaceCreated: 订阅 "  + showName(inituid,initname )+" 视频流" + transRet(jj));
@@ -702,30 +660,6 @@ public class TestVideoActivity extends AppCompatActivity implements View.OnClick
 
     private void setCameraStatus() {
         setCameraStatus(!cameraOpen);
-    }
-
-
-    private void outputSwitch() {
-        usespeaker = !usespeaker;
-        if (!usespeaker) {
-            speaker_image.setImageResource(R.mipmap.volume_off);
-
-//            speakerImageView.setSelected(false);
-        } else {
-            speaker_image.setImageResource(R.mipmap.volume_up);
-//            speakerImageView.setSelected(true);
-        }
-//        camera_image.setImageResource(R.mipmap.camera_close);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (usespeaker)
-                    client.switchOutput(true);
-                else
-                    client.switchOutput(false);
-            }
-        }).start();
     }
 
     private void cameraSwitch() {

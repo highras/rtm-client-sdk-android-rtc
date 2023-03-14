@@ -11,6 +11,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.rtcsdk.RTMClient;
 import com.rtcsdk.RTMErrorCode;
+import com.rtcsdk.RTMPushProcessor;
 import com.rtcsdk.RTMStruct;
 import com.rtcsdk.UserInterface;
 
@@ -33,8 +35,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.rtcsdk.RTMStruct.*;
 
-public class transVoice extends BaseActivity implements OnProcessorListener {
+public class transVoice extends BaseActivity {
     public static boolean running = false;
     boolean micStatus = false;
     boolean usespeaker = true;
@@ -63,89 +66,99 @@ public class transVoice extends BaseActivity implements OnProcessorListener {
     RecyclerView translateRecycler;
 
     @Override
-    public boolean reloginWillStart(long uid, int reloginCount) {
-        return true;
-    }
-
-    @Override
     protected void setToolbar() {
         super.setToolbar();
 //        customToolbarAndStatusBarBackgroundColor(true);
     }
 
-    @Override
-    public void reloginCompleted(long uid, boolean successful, RTMStruct.RTMAnswer answer, int reloginCount) {
-        if (successful) {
-            if (activityRoom <= 0)
-                return;
-            client.enterRTCRoom(activityRoom, utils.currentLan,new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+    class TransPush extends RTMPushProcessor {
+        @Override
+        public boolean reloginWillStart(long uid, int reloginCount) {
+            return true;
+        }
+
+
+
+        @Override
+        public void reloginCompleted(long uid, boolean successful, RTMAnswer answer, int reloginCount) {
+            if (successful) {
+                if (activityRoom <= 0)
+                    return;
+                client.enterRTCRoom(activityRoom, utils.currentLan, new UserInterface.IRTMEmptyCallback() {
+                    @Override
+                    public void onResult(RTMAnswer answer) {
+                        if (answer.errorCode == 0) {
+                            client.getRTCRoomMembers(activityRoom, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                                @Override
+                                public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
+                                    mylog.log("getRTCRoomMembers uids :" + roomInfo.uids.toString() + " :" + answer.getErrInfo());
+                                    startVoice(activityRoom, roomInfo);
+                                }
+                            });
+                        } else {
+                            mylog.log("重新进入失败");
+                        }
+                    }
+                });
+            } else {
+                mylog.log("重新进入失败");
+                micStatus = false;
+            }
+        }
+
+        @Override
+        public void rtmConnectClose(long uid) {
+            Log.d("fengzi", "rtmConnectClose: ");
+        }
+
+        @Override
+        public void kickout() {
+
+        }
+
+        @Override
+        public void pushVoiceTranslate(String text, String slang, long uid) {
+            if (mapList.size() == 2)
+                mapList.remove(0);
+            Map<String, String> map = new HashMap<>();
+            map.put("user", String.valueOf(uid));
+            map.put("content", text);
+            mapList.add(map);
+            myactivity.runOnUiThread(new Runnable() {
                 @Override
-                public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
-                    if (answer.errorCode == 0) {
-                        startVoice(activityRoom, roomInfo, true);
-                    } else {
-                        mylog.log("重新进入失败");
+                public void run() {
+                    translateAdapter.notifyDataSetChanged();
+                    translateRecycler.scrollToPosition(mapList.size() - 1);
+                }
+            });
+        }
+
+        @Override
+        public void pushEnterRTCRoom(long roomId, long userId, long time) {
+            myactivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!userList.contains(String.valueOf(userId))) {
+                        userList.add(String.valueOf(userId));
+                        roomAdapter.notifyDataSetChanged();
                     }
                 }
             });
-        } else {
-            mylog.log("重新进入失败");
-            micStatus = false;
         }
-    }
 
-    @Override
-    public void rtmConnectClose(long uid) {
-        Log.d("fengzi", "rtmConnectClose: ");
-    }
-
-    @Override
-    public void kickout() {
-
-    }
-
-    @Override
-    public void pushVoiceTranslate(String text, String slang, long uid) {
-        if (mapList.size() == 2)
-            mapList.remove(0);
-        Map<String, String> map = new HashMap<>();
-        map.put("user", String.valueOf(uid));
-        map.put("content", text);
-        mapList.add(map);
-        myactivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                translateAdapter.notifyDataSetChanged();
-                translateRecycler.scrollToPosition(mapList.size() - 1);
-            }
-        });
-    }
-
-    @Override
-    public void pushEnterRTCRoom(long roomId, long userId, long time) {
-        myactivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (!userList.contains(String.valueOf(userId))) {
-                    userList.add(String.valueOf(userId));
-                    roomAdapter.notifyDataSetChanged();
+        @Override
+        public void pushExitRTCRoom(long roomId, long userId, long time) {
+            //退出房间
+            myactivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (userList.contains(String.valueOf(userId))) {
+                        userList.remove(String.valueOf(userId));
+                        roomAdapter.notifyDataSetChanged();
+                    }
                 }
-            }
-        });
-    }
-
-    @Override
-    public void pushExitRTCRoom(long roomId, long userId, long time) {
-        //退出房间
-        myactivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (userList.contains(String.valueOf(userId))) {
-                    userList.remove(String.valueOf(userId));
-                    roomAdapter.notifyDataSetChanged();
-                }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -160,20 +173,18 @@ public class transVoice extends BaseActivity implements OnProcessorListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Constants.onProcessorListeners.remove(this);
-    }
-
-    private void leaveRoom() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (client == null)
             return;
         client.leaveRTCRoom(activityRoom, new UserInterface.IRTMEmptyCallback() {
             @Override
-            public void onResult(RTMStruct.RTMAnswer answer) {
-                client.closeRTM();
-                client = null;
-                finish();
+            public void onResult(RTMAnswer answer) {
             }
         });
+    }
+
+    private void leaveRoom() {
+        finish();
     }
 
 
@@ -231,12 +242,13 @@ public class transVoice extends BaseActivity implements OnProcessorListener {
         activityRoom = utils.currentRoomid;
         userId = utils.currentUserid;
         language = utils.currentLan;
+        speakerImageView.setSelected(true);
 
         TextView currentUserIdTv = $(R.id.current_userid_tv);
         currentUserIdTv.setText(String.valueOf(userId));
 
-        Constants.onProcessorListeners.add(this);
         client = utils.client;
+        client.setServerPush(new TransPush());
         leave.setOnClickListener(view -> leaveRoom());
 
 
@@ -252,15 +264,16 @@ public class transVoice extends BaseActivity implements OnProcessorListener {
 
 
         mic.setOnClickListener(view -> {
-            if (!client.isOnline() || activityRoom == 0)
-                return;
-            try {
-                setMicStatus(!micStatus);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            setMicStatus(!micStatus);
+        });
+        utils.realEnterRoom(activityRoom, RTCRoomType.TRANSLATE, this, new Utils.MyCallback<RoomInfo>() {
+            @Override
+            public void onResult(RoomInfo roomInfo) {
+                if (roomInfo.uids.size() > 0){
+                    startVoice(activityRoom, roomInfo);
+                }
             }
         });
-        realEnterRoom(activityRoom);
 
     }
 
@@ -269,17 +282,21 @@ public class transVoice extends BaseActivity implements OnProcessorListener {
         return R.layout.activity_transvoice;
     }
 
-    void setMicStatus(boolean status) throws JSONException {
-        if (!status) {
-            client.closeMic();
-            muteTextView.setText(Constants.languageObj.getString("mic_off"));
-            muteImageView.setSelected(true);
-        } else {
-            client.openMic();
-            muteTextView.setText(Constants.languageObj.getString("mic_on"));
-            muteImageView.setSelected(false);
+    void setMicStatus(boolean status) {
+        try {
+            if (!status) {
+                client.closeMic();
+                muteTextView.setText(Constants.languageObj.getString("mic_off"));
+                muteImageView.setSelected(false);
+            } else {
+                client.openMic();
+                muteTextView.setText(Constants.languageObj.getString("mic_on"));
+                muteImageView.setSelected(true);
+            }
+            micStatus = status;
         }
-        micStatus = status;
+        catch (Exception e){
+        }
     }
 
     void setSpeakerStatus() throws JSONException {
@@ -295,20 +312,20 @@ public class transVoice extends BaseActivity implements OnProcessorListener {
             @Override
             public void run() {
                 if (usespeaker)
-                    client.switchOutput(true);
+                    client.switchAudioOutput(true);
                 else
-                    client.switchOutput(false);
+                    client.switchAudioOutput(false);
             }
         }).start();
     }
 
 
-    void startVoice(long roomId, RTMStruct.RoomInfo info) {
+    void startVoice(long roomId, RoomInfo info) {
         startVoice(roomId, info, false);
     }
 
 
-    void startVoice(long roomId, RTMStruct.RoomInfo roomInfo, boolean relogin) {
+    void startVoice(long roomId, RoomInfo roomInfo, boolean relogin) {
         if (relogin) {
             myactivity.runOnUiThread(new Runnable() {
                 @Override
@@ -318,55 +335,19 @@ public class transVoice extends BaseActivity implements OnProcessorListener {
             });
             return;
         }
-        client.openMic();
         myactivity.runOnUiThread(() -> {
-            micStatus = true;
+            setMicStatus(true);
             usespeaker = true;
             try {
                 roomdshow.setText(Constants.languageObj.getString("roomid") + roomId);
                 roomInfo.uids.forEach(aLong -> {
-                    Log.d("fengzi", "startVoice: uid is " + aLong);
+                    Log.d("sdktest", "startVoice: uid is " + aLong);
                     if (userId != aLong)
                         userList.add(String.valueOf(aLong));
                 });
                 roomAdapter.notifyDataSetChanged();
             } catch (JSONException e) {
                 e.printStackTrace();
-            }
-        });
-    }
-
-    void realEnterRoom(final long roomId) {
-        client.enterRTCRoom(roomId, utils.currentLan, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
-            @Override
-            public void onResult(RTMStruct.RoomInfo info, RTMStruct.RTMAnswer answer) {
-                if (answer.errorCode == 0) {
-                    startVoice(roomId, info);
-                } else if (answer.errorCode == RTMErrorCode.RTM_EC_VOICE_ROOM_NOT_EXIST.value())  {
-                    client.createTranslateRTCRoom(roomId, utils.currentLan, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
-                        @Override
-                        public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
-                            if (answer.errorCode == 0) {
-                                startVoice(roomId, roomInfo);
-                            } else if (answer.errorCode == RTMErrorCode.RTM_EC_VOICE_ROOM_EXIST.value()) {
-                                client.enterRTCRoom(roomId, utils.currentLan, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
-                                    @Override
-                                    public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
-                                        if (answer.errorCode == 0) {
-                                            startVoice(roomId, roomInfo);
-                                        }
-                                    }
-                                });
-                            }
-                            else {
-                                Utils.alertDialog(transVoice.this, "进入房间 " + activityRoom + " 失败:" + answer.getErrInfo());
-                            }
-                        }
-                    });
-                }
-                else {
-                    Utils.alertDialog(transVoice.this, "进入房间 " + activityRoom + " 失败:" + answer.getErrInfo());
-                }
             }
         });
     }

@@ -2142,12 +2142,8 @@ public class TestClass {
     final HashMap<String, RTMProjectInfo> testAddress = new HashMap(){{
         put("test", new RTMProjectInfo(11000001,"161.189.171.91:13321"));
         put("nx",new RTMProjectInfo(80000219,"rtm-nx-front.ilivedata.com:13321"));
-//        put("test", new ProjectInfo(11000001,"161.189.171.91:13321"));
-//        put("nx",new RTMProjectInfo(80000071,"rtm-nx-front.ilivedata.com:13321"));
-//        put("intl",new ProjectInfo(80000336,"rtm-intl-frontgate.ilivedata.com:13321"));
-            put("intl",new RTMProjectInfo(80000087,"rtm-ms-frontgate.ilivedata.com:13321"));
-    }
-    };
+        put("intl",new RTMProjectInfo(80000087,"rtm-ms-frontgate.ilivedata.com:13321"));
+    }};
 
     public String getToken(String address) {
         int port = 0;
