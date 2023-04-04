@@ -49,6 +49,7 @@ import com.rtcsdk.RTMPushProcessor;
 import com.rtcsdk.RTMStruct;
 import com.rtcsdk.UserInterface;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -84,7 +85,9 @@ public class TestVoiceActivity extends AppCompatActivity {
     TextView tcpRTTshow;
     RTMClient client;
     Button clear;
-    Utils utils = Utils.INSTANCE;
+    Button startaudio;
+    Button closeaudio;
+    Utils utils;
     String nickName;
 
     Chronometer chronometer;
@@ -130,8 +133,10 @@ public class TestVoiceActivity extends AppCompatActivity {
         client.leaveRTCRoom(activityRoom, new UserInterface.IRTMEmptyCallback() {
             @Override
             public void onResult(RTMStruct.RTMAnswer answer) {
+                client.closeRTM();
             }
         });
+        activityRoom = 0;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -177,8 +182,6 @@ public class TestVoiceActivity extends AppCompatActivity {
             AssetFileDescriptor fd = getAssets().openFd("zh.wav");
             mediaPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
             mediaPlayer.setLooping(true);//设置为循环播放
-            mediaPlayer.prepare();//初始化播放器MediaPlayer
-            mediaPlayer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -191,6 +194,7 @@ public class TestVoiceActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.testvoice);
+        utils = Utils.INSTANCE;
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -214,6 +218,8 @@ public class TestVoiceActivity extends AppCompatActivity {
         logView.setTextColor(this.getResources().getColor(R.color.white));
         logView.setMovementMethod(ScrollingMovementMethod.getInstance());
         clear = $(R.id.clearlog);
+        startaudio = $(R.id.startaudio);
+        closeaudio = $(R.id.closeaudio);
         audiooutputlinelayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -221,6 +227,23 @@ public class TestVoiceActivity extends AppCompatActivity {
             }
         });
 
+        startaudio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    mediaPlayer.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mediaPlayer.start();
+            }
+        });
+        closeaudio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.stop();
+            }
+        });
         chronometer = $(R.id.caltimer);
         activityRoom = utils.currentRoomid;
         userid = utils.currentUserid;
@@ -228,7 +251,7 @@ public class TestVoiceActivity extends AppCompatActivity {
         speakerImageView.setSelected(true);
         nickName = utils.nickName;
 
-//        initMediaPlayer();
+        initMediaPlayer();
 
 //        addLog("buffsize "+ AudioTrack.getMinBufferSize(48000, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT));
         soundText = $(R.id.nameTextView);
@@ -313,7 +336,6 @@ public class TestVoiceActivity extends AppCompatActivity {
         utils.realEnterRoom(activityRoom, RTMStruct.RTCRoomType.AUDIO,this, new Utils.MyCallback<RTMStruct.RoomInfo>() {
             @Override
             public void onResult(RTMStruct.RoomInfo roomInfo) {
-                mylog.log("realEnterRoom " + roomInfo.uids.toString());
                 if (roomInfo.uids.size()>0){
                     startVoice(roomInfo, activityRoom);
                 }
@@ -441,7 +463,6 @@ public class TestVoiceActivity extends AppCompatActivity {
             }
         }
 
-        mylog.log("uids " + info.uids.toString());
         myactivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -587,10 +608,12 @@ public class TestVoiceActivity extends AppCompatActivity {
             if (successful) {
                 if (activityRoom <= 0 || client == null)
                     return;
+                addLog("RTM重连成功");
                 client.enterRTCRoom(activityRoom, "", new UserInterface.IRTMEmptyCallback() {
                     @Override
                     public void onResult(RTMStruct.RTMAnswer answer) {
                         if (answer.errorCode == 0) {
+                            addLog("重新进入RTC房间成功");
                             client.getRTCRoomMembers(activityRoom, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
                                 @Override
                                 public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {

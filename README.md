@@ -62,7 +62,7 @@
         ....//重写自己需要处理的业务接口
     }
  
-    RTMClient client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint,info.pid, uid, new RTMExampleQuestProcessor(), currentActivity);
+    RTMClient client = RTMCenter.initRTMClient(rtmEndpoint,info.pid, uid, new RTMExampleQuestProcessor(), currentActivity);
     
     rtmclient.setErrorRecoder(new TestErrorRecorder())
     client.login(String token)

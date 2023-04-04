@@ -341,8 +341,10 @@ public class RTMRTC extends RTMChat{
      * @param toUid 对方id
      */
     public void requestP2PRTC(final int type , final long toUid, final SurfaceView view, final IRTMEmptyCallback callback){
-        if (initRTC().errorCode != okRet){
-            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+        RTMAnswer tanswer = initRTC();
+        if (tanswer.errorCode != okRet){
+            tanswer.errorMsg += " requestP2PRTC";
+            callback.onResult(tanswer);
             return;
         }
 
@@ -398,7 +400,7 @@ public class RTMRTC extends RTMChat{
             @Override
             public void onAnswer(Answer answer, int errorCode) {
                 if (errorCode == okRet){
-//                    closeP2P();
+                    closeP2P();
                 }
                 callback.onResult(genRTMAnswer(answer, errorCode));
             }
@@ -444,11 +446,12 @@ public class RTMRTC extends RTMChat{
             callback.onResult(genRTMAnswer(0));
             return;
         }
-        if (initRTC().errorCode != okRet){
-            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+        RTMAnswer tanswer = initRTC();
+        if (tanswer.errorCode != okRet){
+            tanswer.errorMsg += " acceptP2PRTC";
+            callback.onResult(tanswer);
             return;
         }
-
 
         Quest quest = new Quest("acceptP2PRTC");
         quest.param("callId", lastCallId);

@@ -29,7 +29,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import com.highras.videoudp.Utils.CItem1;
 import com.rtcsdk.RTMStruct;
@@ -41,7 +44,7 @@ import lib.demo.spinner.MaterialSpinner;
 public class LoginActivity extends BaseActivity {
     NiceSpinner checkbutton;
     int REQUEST_CODE_CONTACT = 101;
-    private static final String TAG = "rtcsdk";
+    private static final String TAG = "livedatasdk";
     MaterialSpinner niceSpinner;
     Utils utils;
 
@@ -59,14 +62,6 @@ public class LoginActivity extends BaseActivity {
     EditText userID_edit;
     EditText roomID_edit;
     EditText nickname_edit;
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        utils.client.closeRTM();
-        utils.client = null;
-    }
 
     @Override
     protected int contentLayout() {
@@ -138,6 +133,15 @@ public class LoginActivity extends BaseActivity {
         return true;
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (utils.client == null)
+            return;
+        utils.client.closeRTM();
+        utils.client = null;
+    }
+
     private void saveUserData(long uid, String name) {
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();//获取编辑器
@@ -187,7 +191,8 @@ public class LoginActivity extends BaseActivity {
                 @Override
                 public void onResult(RTMStruct.RTMAnswer answer) {
                     if (answer.errorCode == 0){
-                        Intent intent = new Intent(LoginActivity.this, transVoice.class);
+//                        Intent intent = new Intent(LoginActivity.this, transVoice.class);
+                        Intent intent = new Intent(LoginActivity.this, testp2p.class);
                         startActivity(intent);
                     }
                     else {
@@ -247,9 +252,10 @@ public class LoginActivity extends BaseActivity {
             });
 
         });
-
         setLanguage();
         checkbutton.setSelectedIndex(1);
+
+
     }
 
     private void setLanguage() {

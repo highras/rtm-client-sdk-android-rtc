@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".testp2p">
+
+    <Button
+        android:id="@+id/requestp2p"
+        android:layout_width="129dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="32dp"
+        android:text="请求p2p"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.531"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"></Button>
+
+    <Button
+        android:id="@+id/cancelp2p"
+        android:layout_width="129dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="8dp"
+        android:text="取消p2p请求"
+        app:layout_constraintEnd_toEndOf="@+id/requestp2p"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/requestp2p"
+        app:layout_constraintTop_toBottomOf="@+id/requestp2p"></Button>
+
+    <Button
+        android:id="@+id/closep2p"
+        android:layout_width="129dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="20dp"
+        android:text="挂断p2p"
+        app:layout_constraintEnd_toEndOf="@+id/cancelp2p"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/cancelp2p"
+        app:layout_constraintTop_toBottomOf="@+id/cancelp2p"></Button>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

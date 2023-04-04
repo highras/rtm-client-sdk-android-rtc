@@ -1219,7 +1219,7 @@ public class TestClass {
                 return;
             String realp2pbeizhu = " to user " + peerUid;
 
-            long sendtime = System.currentTimeMillis();
+/*            long sendtime = System.currentTimeMillis();
             client.uploadFile( FileMessageType.VIDEOFILE,"ct4.jpeg", piccontent, null, new IRTMDoubleValueCallback<String, Long>() {
                 @Override
                 public void onResult(String s, Long aLong, RTMAnswer answer) {
@@ -1230,7 +1230,7 @@ public class TestClass {
             });
 
             if (true)
-                return;
+                return;*/
             /***************************发送file类************************************/
             client.sendFile(peerUid, FileMessageType.NORMALFILE, piccontent, picName, fileattrs, null, new IRTMDoubleValueCallback<Long, Long>() {
                 @Override
@@ -1239,6 +1239,7 @@ public class TestClass {
                 }
             });
 
+/*
             client.sendGroupFile(groupId, FileMessageType.NORMALFILE, piccontent, picName, fileattrs, null, new IRTMDoubleValueCallback<Long, Long>() {
                 @Override
                 public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
@@ -1253,6 +1254,7 @@ public class TestClass {
                     asyncOutPutMsg(answer, "sendFile", roomBeizhu, aLong, aLong2);
                 }
             });
+*/
 
             mylog.log("======== End file test case =========\n");
         }
@@ -1902,7 +1904,7 @@ public class TestClass {
 //        loginToken = "279206AC83D0617079954CC9C7E12E5A1B394585E5CA78F776BEF7A";
 
 
-        client  = RTMCenter.initRTMClient(info.host, info.host.split(":")[0] + ":13702" , info.pid, loginUid, new RTMExampleQuestProcessor(loginUid),activityWeakReference.get());
+        client  = RTMCenter.initRTMClient(info.host, info.pid, loginUid, new RTMExampleQuestProcessor(loginUid),activityWeakReference.get());
         client.setErrorRecoder(mylogRecoder);
 
 //        for(int i= 0;i<1;i++) {
@@ -2141,7 +2143,8 @@ public class TestClass {
 
     final HashMap<String, RTMProjectInfo> testAddress = new HashMap(){{
         put("test", new RTMProjectInfo(11000001,"161.189.171.91:13321"));
-        put("nx",new RTMProjectInfo(80000219,"rtm-nx-front.ilivedata.com:13321"));
+//        put("nx",new RTMProjectInfo(80000071,"rtm-nx-front.ilivedata.com:13321"));
+        put("nx",new RTMProjectInfo(80000071,"52.83.245.22:13092"));
         put("intl",new RTMProjectInfo(80000087,"rtm-ms-frontgate.ilivedata.com:13321"));
     }};
 

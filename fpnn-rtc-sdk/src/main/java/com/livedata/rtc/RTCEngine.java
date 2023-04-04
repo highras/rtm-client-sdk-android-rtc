@@ -23,7 +23,6 @@ public enum RTCEngine {
 //    public static native String create(Object object, int osversion,boolean stereo, Object view);
     public static native String create(Object object, String rtcEndpoint, int videoLevel, long pid, long uid, Context mcontext, Object audiofocusobject);
     public static native void switchCamera(boolean front);
-    public static native void inputswitch(int output);
     public static native String switchVideoCapture(int level);
     public static native String setCameraFlag(boolean flag);
     public static native void canSpeak(boolean flag);

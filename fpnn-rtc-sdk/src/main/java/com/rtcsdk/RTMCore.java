@@ -166,8 +166,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 
     //for network change
     private int LAST_TYPE = NetUtils.NETWORK_NOTINIT;
-    SharedPreferences addressSp;
-
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -178,13 +176,12 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 return;
             final int intExtra = intent.getIntExtra("android.bluetooth.profile.extra.STATE", Integer.MIN_VALUE);
             if (intExtra == 2 || intExtra == 0) {//2-连接 0-断开
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-//                        mAudioManager.setMode(AudioManager.MODE_NORMAL);
                         RTCEngine.headsetStat(intExtra);
                     }
-                }, 1000L);
+                }).start();
             }
         }
         else if (a == b || (a != null && a.equals(b))) {
@@ -199,15 +196,14 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 return;
             if (intent.hasExtra("state")){
                 final int ret = intent.getIntExtra("state", 0);
-                Log.e("sdktest", "ACTION_HEADSET_PLUG " + ret);
+//                Log.e("sdktest", "ACTION_HEADSET_PLUG " + ret);
                 if (ret ==0 || ret == 1){//0-拔出 1-插入
-                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    new Thread(new Runnable() {
                         @Override
                         public void run() {
-//                        mAudioManager.setMode(AudioManager.MODE_NORMAL);
                             RTCEngine.headsetStat(ret);
                         }
-                    }, 500L);
+                    }).start();
                 }
             }
         }
@@ -223,7 +219,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     private long logints;
     private String curve;
     private String rtmEndpoint;
-    private String rtcEndpoint;
+    private String rtcEndpoint = "";
     private Context context;
     private Application application;
     private WeakReference<Activity> currentActivity;
@@ -271,6 +267,15 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
 
+    private void setBackground(final boolean flag){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                RTCEngine.setBackground(flag);
+            }
+        }).start();
+    }
+
     private ArrayList<Integer> finishCodeList = new ArrayList<Integer>(){{
         add(RTMErrorCode.RTM_EC_INVALID_AUTH_TOEKN.value());
         add(RTMErrorCode.RTM_EC_PROJECT_BLACKUSER.value()); }};
@@ -282,17 +287,26 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 //        printLog("onActivityCreated");
     }
 
-    public void setServerPush(RTMPushProcessor jj){
-        serverPushProcessor = jj;
+    public void setServerPush(RTMPushProcessor rtmPushProcessor){
+        serverPushProcessor = rtmPushProcessor;
     }
 
     @Override
     public void onActivityStarted( Activity activity) {
+//        Log.i("sdktest","onActivityStarted " + activity.getLocalClassName() );
         this.currentActivity = new WeakReference<Activity>(activity);
         if (this.background && !activity.isChangingConfigurations()) {
             this.background = false;
+            if (rtmGateStatus == ClientStatus.Closed){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        reloginEvent(1);
+                    }
+                }).start();
+            }
             if (isInitRTC)
-                RTCEngine.setBackground(false);
+                setBackground(false);
         }
     }
 
@@ -306,10 +320,11 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 
     @Override
     public void onActivityStopped( Activity activity) {
+//        Log.i("sdktest","onActivityStopped " + activity.getLocalClassName() );
         if (!this.background && (this.currentActivity == null || activity == this.currentActivity.get()) && !activity.isChangingConfigurations()) {
             this.background = true;
             if (isInitRTC)
-                RTCEngine.setBackground(true);
+                setBackground(true);
         }
     }
 
@@ -329,12 +344,12 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     private int voiceConnectionId = 0;
 
     void enterRTCRoom( final IRTMEmptyCallback callback, final long roomId, final String lang) {
-
-        if (initRTC().errorCode != okRet){
-            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+        RTMAnswer tanswer = initRTC();
+        if (tanswer.errorCode != okRet){
+            tanswer.errorMsg += " enterRTCRoom";
+            callback.onResult(tanswer);
             return;
         }
-
         if (lastCallId > 0){
             callback.onResult(genRTMAnswer(voiceError, "in p2pRTC type"));
             return;
@@ -363,8 +378,9 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
     void createRTCRoom(final long roomId, final int roomType, int enableRecord, final String language, final IRTMEmptyCallback callback) {
-        if (initRTC().errorCode != okRet){
-            callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_UNKNOWN_ERROR.value(),"init RTC error"));
+        RTMAnswer tanswer = initRTC();
+        if (tanswer.errorCode != okRet){
+            callback.onResult(tanswer);
             return;
         }
 
@@ -1093,25 +1109,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                             @Override
                             public void run() {
                                 reloginEvent(1);
-//                                if (getClientStatus() == ClientStatus.Connected){
-//                                    Quest quest = new Quest("bye");
-//                                    sendQuest(quest, new FunctionalAnswerCallback() {
-//                                        @Override
-//                                        public void onAnswer(Answer answer, int errorCode) {
-//                                            close();
-//                                            try {
-//                                                Thread.sleep(200);
-//                                            } catch (InterruptedException e) {
-//                                                e.printStackTrace();
-//                                            }
-//                                            reloginEvent(1);
-//                                        }
-//                                    }, 5);
-//                                }
-//                                else {
-////                                    voiceClose();
-//                                    reloginEvent(1);
-//                                }
                             }
                         }).start();
                     }
@@ -1138,7 +1135,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
 
-    void RTMInit(String rtmendpoint, String rtcendpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, final Activity currentActivity, RTMConfig config) {
+    void RTMInit(String rtmendpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, final Activity currentActivity, RTMConfig config) {
         if (config == null)
             rtmConfig = new RTMConfig();
         else
@@ -1147,7 +1144,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         errorRecorder = rtmConfig.defaultErrorRecorder;
         rtmUtils.errorRecorder = errorRecorder;
         this.rtmEndpoint = rtmendpoint;
-        this.rtcEndpoint = rtcendpoint;
 
         this.pid = pid;
         this.uid = uid;
@@ -1175,8 +1171,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             intentFilter.addAction("android.bluetooth.headset.profile.action.CONNECTION_STATE_CHANGED");
             intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
             context.registerReceiver(this, intentFilter);
-
-            addressSp = context.getSharedPreferences("Logindb",context.MODE_PRIVATE);
         }
         catch (Exception ex){
             ex.printStackTrace();
@@ -1229,12 +1223,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         if (isInitRTC)
             return genRTMAnswer(okRet);
 
-        if (rtcEndpoint == null || rtcEndpoint.isEmpty())
-            return genRTMAnswer(errCode, "rtcEndpoint is null or empty");
-
-        if ( rtcEndpoint.lastIndexOf(':') == -1)
-            return genRTMAnswer(errCode, "invalid rtcEndpoint " + rtcEndpoint);
-
         mOrEventListener = new OrientationEventListener(currentActivity.get()) {
             @Override
             public void onOrientationChanged(int rotation) {
@@ -1256,6 +1244,31 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         if (rtmGateStatus != ClientStatus.Connected) {
             return genRTMAnswer(errCode, "you must RTMlogin sucessfully at first");
         }
+
+        if (rtcEndpoint.isEmpty()){
+            Quest quest = new Quest("getRTCGateEndpoint");
+            try {
+                Answer answer  = rtmGate.sendQuest(quest);
+                if (answer.getErrorCode() != okRet){
+                    return genRTMAnswer(errCode, "get getRTCGateEndpoint error " + answer.getErrorCode() + answer.getErrorMessage());
+                }
+                rtcEndpoint = rtmUtils.wantString(answer, "endpoint");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return genRTMAnswer(errCode, "get getRTCGateEndpoint error " + e.getMessage());
+            }
+
+            RTMAnswer answer = sendQuestEmptyResult(quest);
+            if (answer.errorCode !=0){
+                return genRTMAnswer(errCode, "get getRTCGateEndpoint error " + answer.getErrInfo());
+            }
+
+            if (rtcEndpoint.isEmpty()){
+                return genRTMAnswer(errCode, "get getRTCGateEndpoint error rtcEndpoint is empty");
+            }
+        }
+
+
 
         String ret = RTCEngine.create(this, rtcEndpoint, currVideoLevel, pid, uid, application, afChangeListener);
         if (!ret.isEmpty()) {
@@ -1562,7 +1575,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 
 
     public void printLog(String msg){
-        Log.e("sdktest",msg);
+//        Log.e("sdktest",msg);
         errorRecorder.recordError(msg);
     }
 
@@ -1580,6 +1593,19 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 isConnected = true;
         }
         return isConnected;
+    }
+
+
+    private void getRTCgate(){
+        Quest quest = new Quest("getRTCGateEndpoint");
+        rtmGate.sendQuest(quest, new FunctionalAnswerCallback() {
+            @Override
+            public void onAnswer(Answer answer, int errorCode) {
+                if (errorCode == 0){
+                    rtcEndpoint = rtmUtils.wantString(answer, "endpoint");
+                }
+            }
+        });
     }
 
     //-------------[ Auth(Login) utilies functions ]--------------------------//
@@ -1637,161 +1663,6 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         });
     }
 
-    public void httpRequest(final String url){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int resultCode = -1;
-                try {
-                    URL sendurl = new URL(url);
-                    HttpsURLConnection conn = (HttpsURLConnection) sendurl.openConnection();
-                    conn.setConnectTimeout(15 * 1000);//超时时间
-                    conn.setReadTimeout(15 * 1000);
-                    conn.setDoInput(true);
-                    conn.setUseCaches(false);
-                    conn.connect();
-                    resultCode = conn.getResponseCode();
-                }catch (Exception ex){
-                    Log.i("rtmsdk","httprequest error " + resultCode);
-                }
-            }
-        }).start();
-    }
-
-
-    private void test80(String ipaddres, final IRTMEmptyCallback callback){
-        String realhost = ipaddres;
-        if (ipaddres.isEmpty()) {
-            realhost = endpoint.split(":")[0];
-            if (realhost == null || realhost.isEmpty()) {
-                callback.onResult(genRTMAnswer(ErrorCode.FPNN_EC_CORE_UNKNOWN_ERROR.value()));
-                return;
-            }
-        }
-
-        rtmGate = new TCPClient(realhost, 80);
-        ConfigRtmGateClient(rtmGate);
-        String deviceid = Build.BRAND + "-" + Build.MODEL;
-        Quest qt = new Quest("auth");
-        qt.param("pid", pid);
-        qt.param("uid", uid);
-        qt.param("token", token);
-        qt.param("lang", lang);
-        qt.param("version", "Android-" + rtmConfig.SDKVersion);
-        qt.param("device", deviceid);
-
-        if (loginAttrs != null)
-            qt.param("attrs", loginAttrs);
-
-        Answer answer = null;
-        try {
-            answer = rtmGate.sendQuest(qt, rtmConfig.globalQuestTimeoutSeconds);
-//            answer = new Answer(qt);
-//            answer.fillErrorCode(FPNN_EC_CORE_INVALID_CONNECTION.value());
-            if (answer.getErrorCode() != ErrorCode.FPNN_EC_OK.value()){
-                String url = "https://" + endpoint.split(":")[0] + "/service/tcp-13321-fail-tcp-80-fail" + pid + "-" + uid;
-                httpRequest(url);
-                callback.onResult(genRTMAnswer(answer));
-            }
-            else{
-                Quest quest = new Quest("adddebuglog");
-                String msg = "pid:" + pid + " uid:"+uid +  " link 80 port ok";
-                quest.param("msg",msg);
-                quest.param("attrs","");
-                rtmGate.sendQuest(quest, new FunctionalAnswerCallback() {
-                    @Override
-                    public void onAnswer(Answer answer, int errorCode) {
-//                        Log.i("sdktest","hehehehe " + errorCode);
-                    }
-                });
-                synchronized (interLocker) {
-                    rtmGateStatus = ClientStatus.Connected;
-                }
-
-                synchronized (addressSp){
-                    SharedPreferences.Editor editor = addressSp.edit();
-                    editor.putString("addressip",rtmGate.peerAddress.getAddress().getHostAddress());
-                    editor.commit();
-                }
-
-                processor.setLastPingTime(Genid.getCurrentSeconds());
-                checkRoutineInit();
-                connectionId.set(rtmGate.getConnectionId());
-                callback.onResult(genRTMAnswer(ErrorCode.FPNN_EC_OK.value()));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            callback.onResult(genRTMAnswer(ErrorCode.FPNN_EC_CORE_UNKNOWN_METHOD.value()));
-        }
-    }
-
-
-    private RTMAnswer test80(String ipaddres){
-        String realhost = ipaddres;
-        if (ipaddres.isEmpty()) {
-            String linkEndpoint = rtmGate.endpoint();
-            realhost = linkEndpoint.split(":")[0];
-            if (realhost == null || realhost.isEmpty())
-                return genRTMAnswer(ErrorCode.FPNN_EC_CORE_UNKNOWN_ERROR.value());
-        }
-
-        rtmGate = new TCPClient(realhost, 80);
-        ConfigRtmGateClient(rtmGate);
-        String deviceid = Build.BRAND + "-" + Build.MODEL;
-        Quest qt = new Quest("auth");
-        qt.param("pid", pid);
-        qt.param("uid", uid);
-        qt.param("token", token);
-        qt.param("lang", lang);
-        qt.param("version", "Android-" + rtmConfig.SDKVersion);
-        qt.param("device", deviceid);
-
-        if (loginAttrs != null)
-            qt.param("attrs", loginAttrs);
-
-        Answer answer = null;
-        try {
-            answer = rtmGate.sendQuest(qt, rtmConfig.globalQuestTimeoutSeconds);
-//            answer = new Answer(qt);
-//            answer.fillErrorCode(ErrorCode.FPNN_EC_CORE_INVALID_CONNECTION.value());
-            if (answer.getErrorCode() != ErrorCode.FPNN_EC_OK.value()){
-                String url = "https://" + endpoint.split(":")[0] + "/service/tcp-13321-fail-tcp-80-fail" + pid + "-" + uid;
-                httpRequest(url);
-                return genRTMAnswer(answer);
-            }
-            else {
-                Quest quest = new Quest("adddebuglog");
-                String msg = "pid:" + pid + " uid:"+uid +  "link 80 port ok";
-                quest.param("msg",msg);
-                quest.param("attrs","");
-                rtmGate.sendQuest(quest, new FunctionalAnswerCallback() {
-                    @Override
-                    public void onAnswer(Answer answer, int errorCode) {
-
-                    }
-                });
-
-                synchronized (interLocker) {
-                    rtmGateStatus = ClientStatus.Connected;
-                }
-                processor.setLastPingTime(Genid.getCurrentSeconds());
-                checkRoutineInit();
-                connectionId.set(rtmGate.getConnectionId());
-                synchronized (addressSp){
-                    SharedPreferences.Editor editor = addressSp.edit();
-                    editor.putString("addressip",rtmGate.peerAddress.getAddress().getHostAddress());
-                    editor.commit();
-                }
-                return genRTMAnswer(ErrorCode.FPNN_EC_OK.value());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return genRTMAnswer(ErrorCode.FPNN_EC_CORE_UNKNOWN_METHOD.value());
-        }
-    }
-
     //------------voice add---------------//
     private RTMAnswer auth(String token, Map<String, String> attr, boolean retry, long ts) {
         String deviceid = Build.BRAND + "-" + Build.MODEL;
@@ -1820,40 +1691,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
 //            answer.fillErrorCode(ErrorCode.FPNN_EC_CORE_INVALID_CONNECTION.value());
             if (answer  == null || answer.getErrorCode() != ErrorCode.FPNN_EC_OK.value()) {
                 closeStatus();
-                if (retry)
-                    return test80(sharedip);
-                if (answer != null && answer.getErrorMessage().indexOf("Connection open channel failed") != -1){
-                    InetSocketAddress peeraddres = rtmGate.peerAddress;
-                    if (peeraddres != null){
-                        boolean isnetwork = isNetWorkConnected();
-                        String hostname = endpoint.split(":")[0];
-                        if (peeraddres.getHostString().equals(hostname) && isnetwork && addressSp != null){
-                            synchronized (addressSp){
-                                sharedip = addressSp.getString("addressip", "");
-                            }
-                            if (!sharedip.isEmpty()) {
-                                rtmGate = new TCPClient(sharedip, peeraddres.getPort());
-                                ConfigRtmGateClient(rtmGate);
-                                return auth(token, attr,true,ts);
-                            }
-                        }
-                        if (!isnetwork)
-                            return genRTMAnswer(answer,"when send sync auth  failed:no network ");
-                        else {
-                            return genRTMAnswer(answer, "when send sync auth  rtmGate parse endpoint " + peeraddres.getHostString());
-                        }
-                    }
-                    else
-                        return genRTMAnswer(answer,"when send sync auth  parse address is null");
-                }
-                else if (answer != null && answer.getErrorCode() == FPNN_EC_CORE_INVALID_CONNECTION.value())
-                {
-                    return test80(sharedip);
-//                    return genRTMAnswer(answer,"when send sync auth ");
-                }
-                else
-                    return genRTMAnswer(answer,"when send sync auth ");
-
+                return genRTMAnswer(answer,"when send sync auth ");
             }
             else if (!rtmUtils.wantBoolean(answer,"ok")) {
                 closeStatus();
@@ -1865,12 +1703,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             processor.setLastPingTime(Genid.getCurrentSeconds());
             checkRoutineInit();
             connectionId.set(rtmGate.getConnectionId());
-            synchronized (addressSp){
-                SharedPreferences.Editor editor = addressSp.edit();
-                editor.putString("addressip",rtmGate.peerAddress.getAddress().getHostAddress());
-                editor.commit();
-            }
-
+            getRTCgate();
             return genRTMAnswer(answer);
         }
         catch (Exception  ex){
@@ -1903,43 +1736,9 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             @Override
             public void onAnswer(Answer answer, int errorCode) {
                 try {
-                    String sharedip = "";
-
                     if (answer == null || errorCode != ErrorCode.FPNN_EC_OK.value()) {
                         closeStatus();
-                        if (retry) {
-                            test80(sharedip, callback);
-//                            callback.onResult(genRTMAnswer(answer, "retry failed when send async auth "));
-                            return;
-                        }
-                        if (answer!= null && answer.getErrorMessage().indexOf("Connection open channel failed") != -1){
-                            InetSocketAddress peeraddres = rtmGate.peerAddress;
-                            if (peeraddres != null){
-                                boolean isnetwork = isNetWorkConnected();
-                                String hostname = endpoint.split(":")[0];
-                                if (peeraddres.getHostString().equals(hostname) && isnetwork && addressSp != null){
-                                    synchronized (addressSp){
-                                        sharedip = addressSp.getString("addressip", "");
-                                    }
-                                    rtmGate.peerAddress = new InetSocketAddress(sharedip, peeraddres.getPort());
-                                    auth(callback, token, attr, true,ts);
-                                    return;
-                                }
-                                if (!isnetwork)
-                                    callback.onResult(genRTMAnswer( errorCode, "when send async auth   failed:no network "  + answer.getErrorMessage()));
-                                else
-                                    callback.onResult(genRTMAnswer( errorCode, "when send async auth " + answer.getErrorMessage() + " parse address:" + peeraddres.getHostString()));
-                            }
-                            else
-                                callback.onResult(genRTMAnswer( errorCode, "when send async auth " + answer.getErrorMessage() + "peeraddres is null"));
-                            return;
-                        }
-                        else
-                        {
-                            test80(sharedip, callback);
-//                            callback.onResult(genRTMAnswer( answer, "when send async auth " + answer.getErrorMessage()));
-                            return;
-                        }
+                        callback.onResult(genRTMAnswer( answer, "when send async auth " + answer.getErrorMessage()));
                     } else if (!rtmUtils.wantBoolean(answer,"ok")) {
                         closeStatus();
                         callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_INVALID_AUTH_TOEKN.value(), "async auth failed token maybe expired"));
@@ -1948,15 +1747,10 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                             rtmGateStatus = ClientStatus.Connected;
                         }
 
-                        synchronized (addressSp){
-                            SharedPreferences.Editor editor = addressSp.edit();
-                            editor.putString("addressip",rtmGate.peerAddress.getAddress().getHostAddress());
-                            editor.commit();
-                        }
-
                         processor.setLastPingTime(Genid.getCurrentSeconds());
                         checkRoutineInit();
                         connectionId.set(rtmGate.getConnectionId());
+                        getRTCgate();
                         callback.onResult(genRTMAnswer(errorCode));
                     }
                 }
@@ -1990,15 +1784,15 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             return;
         }
 
-            if (rtmGateStatus == ClientStatus.Connected || rtmGateStatus == ClientStatus.Connecting) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_OK.value()));
-                    }
-                }).start();
-                return;
-            }
+        if (rtmGateStatus == ClientStatus.Connected || rtmGateStatus == ClientStatus.Connecting) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_OK.value()));
+                }
+            }).start();
+            return;
+        }
         synchronized (interLocker) {
             rtmGateStatus = ClientStatus.Connecting;
         }
@@ -2016,6 +1810,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 return;
             }
             catch (Exception e){
+                e.printStackTrace();
                 String msg = "create rtmgate error orginal error:" + e.getMessage() + " endpoint: " + rtmEndpoint;
                 if (rtmGate != null)
                     msg = msg + " parse endpoint " + rtmGate.endpoint();
@@ -2112,7 +1907,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         isInitRTC = false;
     }
 
-    public void close(){
+    void close(){
         close(false);
     }
 

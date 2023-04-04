@@ -5,26 +5,26 @@ import java.util.HashMap;
 
 public class RTMCenter {
     static HashMap<String, RTMClient> clients = new HashMap<>();
-    public  static RTMClient initRTMClient(String rtmEndpoint, String rtcEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity){
+    public  static RTMClient initRTMClient(String rtmEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity){
         synchronized (clients){
             String findkey = pid + ":" + uid;
             if (clients.containsKey(findkey)){
                 return clients.get(findkey);
             }
         }
-        RTMClient client = new RTMClient( rtmEndpoint, rtcEndpoint,pid, uid, serverPushProcessor,currentActivity,null);
+        RTMClient client = new RTMClient( rtmEndpoint,pid, uid, serverPushProcessor,currentActivity,null);
         return client;
     }
 
 
-    public  static RTMClient initRTMClient(String rtmEndpoint, String rtcEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity, RTMConfig config){
+    public  static RTMClient initRTMClient(String rtmEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity, RTMConfig config){
         synchronized (clients){
             String findkey = pid + ":" + uid;
             if (clients.containsKey(findkey)){
                 return clients.get(findkey);
             }
         }
-        RTMClient client = new RTMClient( rtmEndpoint, rtcEndpoint,pid, uid, serverPushProcessor,currentActivity,config);
+        RTMClient client = new RTMClient( rtmEndpoint,pid, uid, serverPushProcessor,currentActivity,config);
         return client;
     }
 

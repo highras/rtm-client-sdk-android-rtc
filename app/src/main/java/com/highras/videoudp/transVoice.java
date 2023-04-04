@@ -179,8 +179,10 @@ public class transVoice extends BaseActivity {
         client.leaveRTCRoom(activityRoom, new UserInterface.IRTMEmptyCallback() {
             @Override
             public void onResult(RTMAnswer answer) {
+                client.closeRTM();
             }
         });
+        activityRoom = 0;
     }
 
     private void leaveRoom() {
@@ -188,7 +190,6 @@ public class transVoice extends BaseActivity {
     }
 
 
-    Toolbar toolbar;
     List<String> userList = new ArrayList<>();
     List<Map<String, String>> mapList = new ArrayList<>();
 

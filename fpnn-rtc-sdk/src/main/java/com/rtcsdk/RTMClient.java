@@ -16,8 +16,8 @@ public class RTMClient extends RTMRTC {
      * @param uid       用户id
      * @param serverPushProcessor serverpush类
      */
-    protected RTMClient(String rtmEndpoint, String rtcEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity) {
-        RTMInit(rtmEndpoint, rtcEndpoint,pid, uid, serverPushProcessor,currentActivity,null);
+    protected RTMClient(String rtmEndpoint, long pid, long uid, RTMPushProcessor serverPushProcessor, Activity currentActivity) {
+        RTMInit(rtmEndpoint,pid, uid, serverPushProcessor,currentActivity,null);
     }
 
     /**
@@ -29,8 +29,8 @@ public class RTMClient extends RTMRTC {
      * @param serverPushProcessor serverpush类
      * @param config 自定义配置项
      */
-    protected RTMClient(String rtmEndpoint, String rtcEndpoint,long pid, long uid, RTMPushProcessor serverPushProcessor,Activity currentActivity,RTMConfig config){
-        RTMInit(rtmEndpoint, rtcEndpoint,pid, uid, serverPushProcessor,currentActivity,config);
+    protected RTMClient(String rtmEndpoint,long pid, long uid, RTMPushProcessor serverPushProcessor,Activity currentActivity,RTMConfig config){
+        RTMInit(rtmEndpoint,pid, uid, serverPushProcessor,currentActivity,config);
     }
 
     /** 用户下线(单纯的用户下线)
@@ -39,7 +39,7 @@ public class RTMClient extends RTMRTC {
         bye(true);
     }
 
-    /** 切换账号或者完全退出不需要再用RTM功能的时候调用(释放资源,网络广播监听会持有RTMClient对象 如果不调用RTMClient对象会一直持有不释放)
+    /** 切换账号或者完全退出时候调用(释放资源,网络广播监听会持有RTMClient对象 如果不调用RTMClient对象会一直持有不释放)
      */
     public void closeRTM(){
         realClose();

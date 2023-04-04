@@ -22,13 +22,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public enum Utils {
     INSTANCE;
     public long currentUserid;
     public long currentRoomid;
-    public String  currentLan;
-    public String  nickName;
+    public String  currentLan = "";
+    public String  nickName = "";
 
     static class CItem1 {
         public String ID = "";
@@ -78,9 +79,12 @@ public enum Utils {
 //        put("test", new ProjectInfo(11000002,"rtm-intl-frontgate-test.ilivedata.com"));
         put("test", new ProjectInfo(11000001,"161.189.171.91","cXdlcnR5"));
         put("nx",new ProjectInfo(80000071,"rtm-nx-front.ilivedata.com","cXdlcnR5"));
+//        put("nx",new ProjectInfo(80000071,"52.83.245.22","cXdlcnR5"));
 //        put("intl",new ProjectInfo(80000087,"rtm-intl-frontgate.ilivedata.com","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
 //        put("intl",new ProjectInfo(80000087,"18.138.19.251","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
-        put("intl",new ProjectInfo(80000087,"18.136.225.133","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
+//        put("intl",new ProjectInfo(80000087,"18.136.225.133","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
+//        put("intl",new ProjectInfo(80000087,"18.195.228.81","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
+        put("intl",new ProjectInfo(80000087,"rtm-intl-frontgate.ilivedata.com","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
 //        put("intl",new ProjectInfo(80000087,"35.167.66.29","OTRjMDRhYTMtOWExMi00MmFhLTg2NGQtMWU4OTI4YTg2ZGVk"));
     }
     };
@@ -124,13 +128,15 @@ public enum Utils {
     public ErrorRecorder errorRecorder = new TestErrorRecorder();
     public RTMClient client;
 
+    public HashMap<Long,RTMClient> testclients = new HashMap<>();
+
     public void login(Activity activity, UserInterface.IRTMEmptyCallback callback) {
         ProjectInfo info = testAddress.get(address);
         rtmEndpoint = info.host +  ":" + rtmPort;
         rtcEndpoint = info.host +  ":" + rtcPort;
+        client = RTMCenter.initRTMClient(rtmEndpoint, info.pid, currentUserid, new RTMPushProcessor(), activity);
 
-        if (client == null)
-            client = RTMCenter.initRTMClient(rtmEndpoint, rtcEndpoint, info.pid, currentUserid, new RTMPushProcessor(), activity);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -249,7 +255,7 @@ public enum Utils {
                                             });
                                         }
                                         else{
-                                            alertDialog(activity,"进入RTC房间-" + roomId + "失败：" + answer.getErrInfo(), true);
+                                            alertDialog(activity,"进入RTC房间-" + roomId + " 失败：" + answer.getErrInfo(), true);
                                         }
                                     }
                                 });
@@ -266,4 +272,67 @@ public enum Utils {
             }
         });
     }
+
+
+
+
+    public void testrealEnterRoom(RTMClient testclient, final long roomId, RTMStruct.RTCRoomType roomtype) {
+        testclient.enterRTCRoom(roomId, currentLan, new UserInterface.IRTMEmptyCallback() {
+            @Override
+            public void onResult(RTMStruct.RTMAnswer answer) {
+                if (answer.errorCode == 0) {
+                    mylog.log(testclient.getUid() + " 进入房间" + roomId + "成功" );
+
+                    testclient.getRTCRoomMembers(roomId, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                        @Override
+                        public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
+                            mylog.log(testclient.getUid() + " getRTCRoomMembers " + roomId + (answer.errorCode==0?" 成功":" 失败 " + answer.getErrInfo()));
+
+                        }
+                    });
+
+                } else if (answer.errorCode == RTMErrorCode.RTM_EC_VOICE_ROOM_NOT_EXIST.value()) {
+                    testclient.createRTCRoom(roomId, roomtype, currentLan, new UserInterface.IRTMEmptyCallback() {
+                        @Override
+                        public void onResult(RTMStruct.RTMAnswer answer) {
+                            if (answer.errorCode == 0) {
+                                mylog.log(testclient.getUid() + " 创建房间" + roomId + "成功" );
+                                testclient.getRTCRoomMembers(roomId, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                                    @Override
+                                    public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
+                                        mylog.log(testclient.getUid() + " getRTCRoomMembers " + roomId + (answer.errorCode==0?" 成功":" 失败 " + answer.getErrInfo()));
+                                    }
+                                });
+                            } else if (answer.errorCode == RTMErrorCode.RTM_EC_VOICE_ROOM_EXIST.value()) {
+                                testclient.enterRTCRoom(roomId, currentLan, new UserInterface.IRTMEmptyCallback() {
+                                    @Override
+                                    public void onResult(RTMStruct.RTMAnswer answer) {
+                                        if (answer.errorCode == 0) {
+                                            mylog.log(testclient.getUid() + " 进入房间" + roomId + "成功" );
+                                            testclient.getRTCRoomMembers(roomId, new UserInterface.IRTMCallback<RTMStruct.RoomInfo>() {
+                                                @Override
+                                                public void onResult(RTMStruct.RoomInfo roomInfo, RTMStruct.RTMAnswer answer) {
+                                                    mylog.log(testclient.getUid() + " getRTCRoomMembers " + roomId + (answer.errorCode==0?" 成功":" 失败 " + answer.getErrInfo()));
+                                                }
+                                            });
+                                        }
+                                        else{
+                                            mylog.log(testclient.getUid() + " 进入房间" + roomId + "失败"+answer.getErrInfo() );
+                                        }
+                                    }
+                                });
+                            }
+                            else{
+                                mylog.log(testclient.getUid() + " 创建房间" + roomId + "失败"+answer.getErrInfo() );
+                            }
+                        }
+                    });
+                }
+                else{
+                    mylog.log(testclient.getUid() + " 进入房间" + roomId + "失败"+answer.getErrInfo() );
+                }
+            }
+        });
+    }
+
 }

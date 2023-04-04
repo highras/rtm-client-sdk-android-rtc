@@ -21,6 +21,11 @@
         android:theme="@style/Theme.CaptureDemo"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".testp2p"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".RTMtestActivity"
             android:exported="true" />
         <activity

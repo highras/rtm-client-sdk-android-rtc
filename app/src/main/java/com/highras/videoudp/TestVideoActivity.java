@@ -516,16 +516,13 @@ public class TestVideoActivity extends BaseActivity implements View.OnClickListe
                 userSurfaces.clear();
             }
         });
-        new Thread(new Runnable() {
+        client.leaveRTCRoom(activityRoom, new UserInterface.IRTMEmptyCallback() {
             @Override
-            public void run() {
-                client.leaveRTCRoom(activityRoom, new UserInterface.IRTMEmptyCallback() {
-                    @Override
-                    public void onResult(RTMStruct.RTMAnswer answer) {
-                    }
-                });
+            public void onResult(RTMStruct.RTMAnswer answer) {
+                client.closeRTM();
             }
-        }).start();
+        });
+        activityRoom = 0;
     }
 
     String transRet(RTMStruct.RTMAnswer answer) {
