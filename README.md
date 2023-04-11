@@ -12,7 +12,7 @@
 
 ### 依赖集成
 dependency in Gradle
-- Add maventral as your repository in project's build.gradle:
+  - Add maventral as your repository in project's build.gradle:
   ~~~
     allprojects {
         repositories {
@@ -20,7 +20,7 @@ dependency in Gradle
         }
     }
 ~~~
-- Add dependency in your module's build.gradle:
+  - Add dependency in your module's build.gradle:
 ~~~
     使用RTC:
     dependencies {
@@ -44,7 +44,7 @@ dependency in Gradle
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     ~~~
-
+  
 - RTM说明:
   - 服务器push消息:请继承RTMPushProcessor类,重写自己需要的push系列函数(所有push函数在子线程执行，如需更新ui请自行切回主线程 RTM的push回调函数和收发线程在一起 如果用户在push的回调函数中有耗时操作 建议请独开启线程处理)
   - RTM的各项服务配置和增值服务可以在后台配置，请登陆管理后台预览详细的配置参数
@@ -52,7 +52,7 @@ dependency in Gradle
   - RTM的room和group的区别 group在服务端会持久化 room是非持久化(用户下线或者RTM链接断开会自动离开room)
   - room默认不支持多房间（当用户进入第二个房间会自动退出第一个房间） 用户可以在控制台开启支持多房间配置
   - RTMConfig是RTM的全局配置参数，所有配置均已有默认值，使用者如需要重新设置默认值，请在初始化RTMclient调用带RTMConfig的构造函数。
-
+  
 - RTC说明:
   - 开启RTC功能需要先登陆成功
   - 可以进入多个实时语音房间 但必须只有一个当前活跃的房间(必须调用setActivityRoom设置当前活跃房间才能正常接收和发送语音)
