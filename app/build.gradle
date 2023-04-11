@@ -16,7 +16,11 @@ android {
 
     defaultConfig {
         applicationId "com.highras.rtc"
-        minSdkVersion 24
+        if (needRTC.toBoolean()) {
+            minSdkVersion 24
+        }else{
+            minSdkVersion 21
+        }
         targetSdkVersion 30
         versionCode 3
         versionName "3.0"
