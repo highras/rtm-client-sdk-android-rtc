@@ -2,6 +2,8 @@ package com.highras.videoudp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -22,7 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 
 import org.angmarch.views.NiceSpinner;
 import org.json.JSONException;
@@ -216,6 +217,7 @@ public class LoginActivity extends BaseActivity {
             if (!checkNess()){
                 return;
             }
+
             utils.login(this, new UserInterface.IRTMEmptyCallback() {
                 @Override
                 public void onResult(RTMStruct.RTMAnswer answer) {

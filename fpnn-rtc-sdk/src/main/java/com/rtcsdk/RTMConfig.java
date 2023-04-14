@@ -6,7 +6,7 @@ public class RTMConfig {
     final static int lostConnectionAfterLastPingInSeconds = 60;
     final static int globalMaxThread = 8;
 
-    public final static String SDKVersion = "2.7.5";
+    public final static String SDKVersion = "2.7.6";
 //    public final static String InterfaceVersion = "2.7.0";
     public ErrorRecorder defaultErrorRecorder = new ErrorRecorder();
     public int globalQuestTimeoutSeconds = 30;   //请求超时时间

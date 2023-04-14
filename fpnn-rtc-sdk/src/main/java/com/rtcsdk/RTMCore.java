@@ -622,6 +622,11 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
             if (mtype == MessageType.CHAT) {
                 StringBuilder orginialMessage = new StringBuilder();
                 userMsg.translatedInfo = processChatMessage(quest, orginialMessage);
+                if (userMsg.translatedInfo.source.isEmpty())
+                    userMsg.stringMessage = userMsg.translatedInfo.sourceText;
+                else {
+                    userMsg.stringMessage = userMsg.translatedInfo.targetText;
+                }
                 serverPushProcessor.pushChat(userMsg);
                 return null;
             }
@@ -1258,11 +1263,11 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 return genRTMAnswer(errCode, "get getRTCGateEndpoint error " + e.getMessage());
             }
 
-            RTMAnswer answer = sendQuestEmptyResult(quest);
+/*            RTMAnswer answer = sendQuestEmptyResult(quest);
             if (answer.errorCode !=0){
                 return genRTMAnswer(errCode, "get getRTCGateEndpoint error " + answer.getErrInfo());
             }
-
+            rtcEndpoint = rtmUtils.wantString(answer, "endpoint");*/
             if (rtcEndpoint.isEmpty()){
                 return genRTMAnswer(errCode, "get getRTCGateEndpoint error rtcEndpoint is empty");
             }

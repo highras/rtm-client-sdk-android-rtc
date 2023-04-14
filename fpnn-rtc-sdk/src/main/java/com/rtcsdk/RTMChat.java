@@ -261,7 +261,7 @@ class RTMChat extends RTMRoom {
                     ArrayList<Integer> p2pUnreads = new ArrayList<>();
                     rtmUtils.wantLongList(answer, "p2pConversations", p2pConversations);
                     rtmUtils.wantIntList(answer, "p2pUnreads", p2pUnreads);
-                    unreadConversationInfo.p2pUnreads = parseHis(groupmsgs, groupconversations, groupUnreads);
+                    unreadConversationInfo.p2pUnreads = parseHis(p2pMsgs, p2pConversations, p2pUnreads);
                 }
                 callback.onResult(unreadConversationInfo, genRTMAnswer(answer,errorCode));
             }
@@ -587,78 +587,4 @@ class RTMChat extends RTMRoom {
             }
         });
     }
-
-
-//
-//    /**
-//     *获取p2p未读条目数(async)
-//     * @param callback   IRTMCallback<UnreadNum> 用户id，未读消息条目数
-//     * @param uids      用户id集合(建议通过getSession接口获取)
-//     * @param lastMessageTime 最后一条消息的时间戳(毫秒)(如果不传默认用户最后一次下线时间,重连建议传入收到消息或者拉取历史的最后一次时间)
-//     * @param messageTypes  消息类型集合(如果不传默认所有聊天,文件相关消息类型，只要是设置为保存的消息，均可获取未读)
-//     */
-//    public void getP2PUnread(final UserInterface.IRTMCallback<UnreadNum> callback, HashSet<Long> uids, long lastMessageTime, List<Byte> messageTypes) {
-//        Quest quest = new Quest("getp2punread");
-//        quest.param("uids",uids);
-//        if (lastMessageTime != 0)
-//            quest.param("mtime",lastMessageTime);
-//        if (messageTypes != null)
-//            quest.param("mtypes",messageTypes);
-//
-//        final UnreadNum res = new UnreadNum();
-//
-//        sendQuest(quest, new FunctionalAnswerCallback() {
-//            @Override
-//            public void onAnswer(Answer answer, int errorCode) {
-//                if (errorCode == ErrorCode.FPNN_EC_OK.value()) {
-//                    HashMap<String, Integer> p2pUnread = new HashMap<>();
-//                    HashMap<String, Integer> p2pLtime = new HashMap<>();
-//                    Map<String, Integer> ob = (Map<String, Integer>)answer.want("p2p");
-//                    Map<String, Integer> oc = (Map<String, Integer>)answer.want("ltime");
-//                    for (String uid:ob.keySet())
-//                        p2pUnread.put(uid,ob.get(uid));
-//                    for (String session: oc.keySet())
-//                        p2pLtime.put(session,oc.get(session));
-//                    res.unreadInfo = p2pUnread;
-//                    res.latestTime = p2pLtime;
-//                }
-//                callback.onResult(res, genRTMAnswer(answer,errorCode));
-//            }
-//        });
-//    }
-//
-//    /**
-//     *获取群组未读条目数(async)
-//     * @param callback   IRTMCallback<UnreadNum> 群组id，未读消息条目数
-//     * @param gids      群组id集合(建议通过getSession接口获取)
-//     * @param lastMessageTime 最后一条消息的时间戳(毫秒)(如果不传默认用户最后一次下线时间,重连建议传入收到消息或者拉取历史的最后一次时间)
-//     * @param messageTypes  消息类型集合(如果不传默认所有聊天,文件相关消息类型，只要是设置为保存的消息，均可获取未读)
-//     */
-//    public void getGroupUnread(final UserInterface.IRTMCallback<UnreadNum> callback, HashSet<Long> gids, long lastMessageTime, List<Byte> messageTypes) {
-//        Quest quest = new Quest("getgroupunread");
-//        quest.param("gids", gids);
-//        if (lastMessageTime != 0)
-//            quest.param("mtime",lastMessageTime);
-//        if (messageTypes != null)
-//            quest.param("mtypes",messageTypes);
-//        final UnreadNum res = new UnreadNum();
-//        final HashMap<String, Integer> groupUnread = new HashMap<>();
-//        final HashMap<String, Integer> p2pLtime = new HashMap<>();
-//        sendQuest(quest, new FunctionalAnswerCallback() {
-//            @Override
-//            public void onAnswer(Answer answer, int errorCode) {
-//                if (errorCode == ErrorCode.FPNN_EC_OK.value()) {
-//                    Map<String, Integer> ob = (Map<String, Integer>)answer.want("group");
-//                    Map<String, Integer> oc = (Map<String, Integer>)answer.want("ltime");
-//                    for (String uid:ob.keySet())
-//                        groupUnread.put(uid,ob.get(uid));
-//                    for (String session: oc.keySet())
-//                        p2pLtime.put(session,oc.get(session));
-//                }
-//                res.unreadInfo = groupUnread;
-//                res.latestTime = p2pLtime;
-//                callback.onResult(res, genRTMAnswer(answer,errorCode));
-//            }
-//        });
-//    }
 }

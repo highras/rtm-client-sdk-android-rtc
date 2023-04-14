@@ -20,7 +20,7 @@ public class RTMUser extends com.rtcsdk.RTMessage {
      * @param callback IRTMCallback回调
      * @param uids     待查询的用户id集合
      */
-    public void getOnlineUsers(  HashSet<Long> uids,  final IRTMCallback<HashSet<Long>> callback) {
+    public void getOnlineUsers( HashSet<Long> uids,  final IRTMCallback<HashSet<Long>> callback) {
         Quest quest = new Quest("getonlineusers");
         quest.param("uids", uids);
 
