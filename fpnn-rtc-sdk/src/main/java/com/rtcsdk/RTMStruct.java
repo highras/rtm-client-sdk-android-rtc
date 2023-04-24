@@ -294,6 +294,7 @@ public class RTMStruct {
     public static class ModifyTimeStruct extends RTMAnswer{
         public long  modifyTime; //服务器返回时间
         public long  messageId = 0; //消息id
+        public String  messages= ""; //返回过滤后的消息(基于审核需求 自己发送后的审核文本)
     }
 
     //历史消息结果 需要循环调用

@@ -217,14 +217,19 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     private String lang;
     private String token;
     private long logints;
-    private String curve;
     private String rtmEndpoint;
     private String rtcEndpoint = "";
     private Context context;
     private Application application;
     private WeakReference<Activity> currentActivity;
     private boolean background = false;
-    private byte[] encrptyData;
+    private boolean encrptyFlag = false;
+    private String curve = "secp256k1";
+    private byte[] encrptyData = new byte[]{48,86,48,16,6,0,42,-122,72,-50,61,2,1,
+            6,5,43,-127,4,0,10,3,66,0,4,-5,43,-54,-28,37,-40,-49,25,-128,2,-58,115,51,
+            -71,64,8,63,101,33,-71,-102,-27,45,-53,68,125,-20,62,50,-73,38,-94,3,118,
+            -28,46,-70,-96,-60,-80,26,-38,124,-41,121,126,-23,-91,35,38,-127,-109,42,
+            -52,70,-48,-115,-95,-46,63,-21,41,50,-1};
     private String endpoint;
     boolean cameraStatus = false;
     private boolean isInitRTC = false;
@@ -642,6 +647,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 try {
                     JSONObject kk = new JSONObject(fileRecieve);
                     fileInfo.url = kk.optString("url");
+                    userMsg.stringMessage = fileInfo.url;
                     fileInfo.fileSize = kk.getLong("size");
                     if (kk.has("surl"))
                         fileInfo.surl = kk.optString("surl");
@@ -1190,28 +1196,8 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
         rtmUtils.errorRecorder = errorRecorder;
     }
 
-    public void enableEncryptorByDerData(String curve, byte[] peerPublicKey) {
-        this.curve = curve;
-        encrptyData = peerPublicKey;
-    }
-
-    public void enableEncryptorByDerFile(String curve, String file) {
-        this.curve = curve;
-        try {
-            FileInputStream fis = new FileInputStream(new File(file));
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-            int len;
-            byte[] buffer = new byte[1024];
-            while ((len = fis.read(buffer)) != -1) {
-                baos.write(buffer, 0, len);
-            }
-            encrptyData = baos.toByteArray();
-            fis.close();
-            baos.close();
-        } catch (Exception e) {
-            printLog("RTMInit error " + e.getMessage());
-        }
+    public void enableEncryptor() {
+        encrptyFlag = true;
     }
 
     long getPid() {
@@ -1369,6 +1355,7 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     }
 
     void realClose(){
+        encrptyFlag = false;
         closedCase = CloseType.ByUser;
         try {
             if (context != null)
@@ -1617,8 +1604,8 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
     private void ConfigRtmGateClient(final TCPClient client) {
         client.setQuestTimeout(rtmConfig.globalQuestTimeoutSeconds);
 
-        if (encrptyData != null && curve!=null && !curve.equals(""))
-            client.enableEncryptorByDerData(curve, encrptyData);
+        if (encrptyFlag)
+            client.enableEncryptorByDerData(curve, encrptyData,false,false);
 
         if (errorRecorder != null)
             client.setErrorRecorder(errorRecorder);
@@ -1743,7 +1730,10 @@ class RTMCore extends BroadcastReceiver implements Application.ActivityLifecycle
                 try {
                     if (answer == null || errorCode != ErrorCode.FPNN_EC_OK.value()) {
                         closeStatus();
-                        callback.onResult(genRTMAnswer( answer, "when send async auth " + answer.getErrorMessage()));
+                        if (answer != null)
+                            callback.onResult(genRTMAnswer( answer, "when send async auth " + answer.getErrorMessage()));
+                        else
+                            callback.onResult(genRTMAnswer( answer, errorCode));
                     } else if (!rtmUtils.wantBoolean(answer,"ok")) {
                         closeStatus();
                         callback.onResult(genRTMAnswer(RTMErrorCode.RTM_EC_INVALID_AUTH_TOEKN.value(), "async auth failed token maybe expired"));

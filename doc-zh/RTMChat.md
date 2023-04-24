@@ -79,13 +79,13 @@
 
     /**
      *发送聊天消息
-     * @param callback  IRTMDoubleValueCallback<服务器返回时间,消息id>回调
+     * @param callback 
      * @param uid       目标用户id
      * @param message   聊天消息
      * @param attrs     用户自定义附加信息(可空)
      * @param messageTypes   消息类别
      */
-    public void sendChat(long uid, String message, MessageTypes messageTypes, String attrs, UserInterface.IRTMDoubleValueCallback<Long,Long> callback) 
+    public void sendChat(long uid, String message, MessageTypes messageTypes, String attrs, UserInterface.ISendMsgCallBack<Long,Long> callback) 
 
 
     /**
@@ -101,13 +101,13 @@
 
     /**
      *发送指令消息
-     * @param callback  IRTMDoubleValueCallback<服务器返回时间,消息id>回调(服务器返回时间,消息id)
+     * @param callback 
      * @param uid       目标用户id
      * @param message   指令消息
      * @param attrs     附加信息
      * @param messageTypes   消息类别
      */
-    public void sendCmd(long uid, String message, MessageTypes messageTypes,String attrs, UserInterface.IRTMDoubleValueCallback<Long,Long> callback) 
+    public void sendCmd(long uid, String message, MessageTypes messageTypes,String attrs, UserInterface.ISendMsgCallBack<Long,Long> callback) 
 
     /**
      *发送指令消息
@@ -120,29 +120,80 @@
     public ModifyTimeStruct sendCmd(long uid, String message, MessageTypes messageTypes,String attrs) 
 
 
+  /**
+     * mtype MUST 51-127, else this interface will return false or erroeCode-RTM_EC_INVALID_MTYPE.
+     */
     /**
-     *获得历史聊天消息(async)
-     * @param toUid   目标id(对于Broadcast类消息 可传任意值)
+     *发送指定类型消息(async)
+     * @param uid       目标用户id
+     * @param mtype     消息类型
+     * @param message   消息内容
+     * @param messageTypes   消息类别
+     * @param attrs     客户端自定义信息(可空)
+     * @param callback 
+     */
+    public void sendMessage(long uid, int mtype,  String message, MessageTypes messageTypes, String attrs,  ISendMsgCallBack callback) 
+
+    /**
+     *发送指定类型消息(sync)
+     * @param uid       目标用户id
+     * @param mtype     消息类型
+     * @param message   消息内容
+     * @param messageTypes   消息类别
+     * @param attrs     客户端自定义信息
+     * @return          ModifyTimeStruct结构
+     */
+    public ModifyTimeStruct sendMessage(long uid, int mtype,  String message, MessageTypes messageTypes,String attrs)
+
+
+    /**
+     *发送指定类型消息(二进制数据)
+     * @param uid       目标用户id
+     * @param mtype     消息类型
+     * @param message   消息内容
+     * @param attrs     客户端自定义信息(可空)
+     * @param callback
+     */
+    public void sendMessage(long uid, int mtype,  byte[] message, MessageTypes messageTypes, String attrs,  ISendMsgCallBack callback) 
+
+    /**
+     *发送指定类型消息(二进制数据)(sync)
+     * @param uid       目标用户id
+     * @param mtype     消息类型
+     * @param message   消息内容
+     * @param attrs     客户端自定义信息
+     * @return          ModifyTimeStruct结构
+     */
+    public ModifyTimeStruct sendMessage(long uid, int mtype,  byte[] message, MessageTypes messageTypes,String attrs)
+
+
+    /**
+     *分页获得历史聊天消息(async)
+     * @param targetId   目标id(对于Broadcast类消息 可传任意值)
      * @param desc      是否按时间倒叙排列
-     * @param count     显示条目数
-     * @param beginMsec 开始时间戳(毫秒)
-     * @param endMsec   结束时间戳(毫秒)
-     * @param lastId    最后一条消息索引id(第一次默认填0)
+     * @param count     获取条数(后台配置 最多建议20条)
+     * @param beginMsec 开始时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.beginMsec)
+     * @param endMsec   结束时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.endMsec)
+     * @param lastId    索引id(可选默认0，第一次获取传入0 第二次查询传入上次结果HistoryMessageResult的lastId)
      * @param messageTypes   消息类别
      * @param callback  HistoryMessageResult类型回调
+     * 注意: 建议时间和id不要同时传入 通过时间查询是左右闭区间(beginMsec<=x<=endMsec)
+     *       通过id查询是开区间lastId<x
      */
     public void getHistoryChat(long toUid, boolean desc, int count, long beginMsec, long endMsec, long lastId, MessageTypes messageTypes, UserInterface.IRTMCallback<RTMStruct.HistoryMessageResult> callback) 
 
 
     /**
-     * 获得历史聊天消息(sync)
-     * @param toUid   目标id(对于Broadcast类消息 可传任意值)
+     *分页获得历史聊天消息(sync)
+     * @param targetId   目标id(对于Broadcast类消息 可传任意值)
      * @param desc      是否按时间倒叙排列
-     * @param count     显示条目数
-     * @param beginMsec 开始时间戳(毫秒)
-     * @param endMsec   结束时间戳(毫秒)
-     * @param lastId    最后一条消息索引id(第一次默认填0)
-     * return   HistoryMessageResult
+     * @param count     获取条数(后台配置 最多建议20条)
+     * @param beginMsec 开始时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.beginMsec)
+     * @param endMsec   结束时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.endMsec)
+     * @param lastId    索引id(可选默认0，第一次获取传入0 第二次查询传入上次结果HistoryMessageResult的lastId)
+     * @param messageTypes   消息类别
+     * 注意: 建议时间和id不要同时传入 通过时间查询是左右闭区间(beginMsec<=x<=endMsec)
+     *       通过id查询是开区间lastId<x
      */
     public HistoryMessageResult getHistoryChat(long toUid, boolean desc, int count, long beginMsec, long endMsec, long lastId, MessageTypes messageTypes) 
 

@@ -18,4 +18,13 @@ public class UserInterface {
     public interface IRTMDoubleValueCallback<T,V> {
         void onResult(T t, V v, RTMAnswer answer);
     }
+
+    /**
+     * mtime 消息处理时间
+     * messageId 消息id
+     * message 发送消息将审核后的结果带回(只有sendchat接口返回)
+     */
+    public interface ISendMsgCallBack {
+        void onResult( long mtime, long messageId, String message, RTMAnswer answer);
+    }
 }

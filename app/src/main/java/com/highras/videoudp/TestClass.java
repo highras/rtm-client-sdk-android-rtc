@@ -51,7 +51,7 @@ public class TestClass {
     public Map<Long, RTMClient> pushClients = new HashMap<>();
     public Map<Long, String> pushUserTokens;
     public File audioSave;
-    public String textMessage = "chat test";
+    public String textMessage = "fuckyou，拉拉";
 
     JSONObject fileattrs = new JSONObject(){{
         try {
@@ -141,7 +141,7 @@ public class TestClass {
             RTMAnswer answer = client.enterRoom(roomId);
             outPutMsg(answer, "enterRoom", "enterroom " + roomId);
 
-            if (answer.errorCode !=0)
+            if (answer.errorCode != 0)
                 return;
             String realp2pbeizhu = " to user " + peerUid;
             String val = fileattrs.toString();
@@ -151,7 +151,7 @@ public class TestClass {
 
             DataInfo info = client.dataGet("hehe");
             try {
-                JSONObject jj  = new JSONObject(info.info);
+                JSONObject jj = new JSONObject(info.info);
                 mylog.log(jj.toString());
 
             } catch (JSONException e) {
@@ -160,139 +160,121 @@ public class TestClass {
 
 
             /***************************发送聊天类************************************/
-            ModifyTimeStruct modifyTimeStruct = client.sendChat(peerUid, textMessage,MessageTypes.P2PMessage,"");
-            outPutMsg(modifyTimeStruct, "sendChat", realp2pbeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendChat(peerUid, textMessage, MessageTypes.P2PMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            ModifyTimeStruct modifyTimeStruct = client.sendChat(peerUid, "fuckyou", MessageTypes.P2PMessage, "");
+            outPutMsg(modifyTimeStruct, "sendChat", realp2pbeizhu +modifyTimeStruct.messages, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
+
+            modifyTimeStruct = client.sendChat(peerUid, "fuckyou", MessageTypes.P2PMessage, "");
+            outPutMsg(modifyTimeStruct, "sendChat", realp2pbeizhu +modifyTimeStruct.messages, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
+
+            modifyTimeStruct = client.sendChat(peerUid, "fuckyou", MessageTypes.P2PMessage, "");
+            outPutMsg(modifyTimeStruct, "sendChat", realp2pbeizhu +modifyTimeStruct.messages, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
+
+
+//            client.sendChat(peerUid, textMessage, MessageTypes.P2PMessage, "", new ISendMsgCallBack() {
+//                @Override
+//                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+//                    asyncOutPutMsg(answer, "sendchat", realp2pbeizhu + " " + message, mtime, messageId);
+//                }
+//            });
+
+            modifyTimeStruct = client.sendChat(groupId, "fuckyou", MessageTypes.GroupMessage, "");
+            outPutMsg(modifyTimeStruct, "sendChat", groupBeizhu + modifyTimeStruct.messages, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
+
+            modifyTimeStruct = client.sendChat(groupId, "fuckyou", MessageTypes.GroupMessage, "");
+            outPutMsg(modifyTimeStruct, "sendChat", groupBeizhu + modifyTimeStruct.messages, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
+
+            modifyTimeStruct = client.sendChat(groupId, "fuckyou", MessageTypes.GroupMessage, "");
+            outPutMsg(modifyTimeStruct, "sendChat", groupBeizhu + modifyTimeStruct.messages, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
+
+            client.sendChat(groupId, textMessage, MessageTypes.GroupMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendChat", realp2pbeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendgroupChat", groupBeizhu + " " + message, mtime, messageId);
                 }
             });
 
-            modifyTimeStruct = client.sendChat(groupId, textMessage,MessageTypes.GroupMessage,"");
-            outPutMsg(modifyTimeStruct, "sendChat", groupBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendChat(groupId, textMessage, MessageTypes.GroupMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
-                @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendChat", groupBeizhu, aLong, aLong2);
-                }
-            });
-
-
-            modifyTimeStruct = client.sendChat(roomId, textMessage,MessageTypes.RoomMessage,"");
+            modifyTimeStruct = client.sendChat(roomId, textMessage, MessageTypes.RoomMessage, "");
             outPutMsg(modifyTimeStruct, "sendChat", roomBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendChat(roomId, textMessage, MessageTypes.RoomMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            client.sendChat(roomId, textMessage, MessageTypes.RoomMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendChat", roomBeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendroomChat", roomBeizhu + " " + message, mtime, messageId);
                 }
             });
 
 
             /***************************发送CMD类************************************/
-            modifyTimeStruct = client.sendCmd(peerUid, textMessage,MessageTypes.P2PMessage,"");
+            modifyTimeStruct = client.sendCmd(peerUid, textMessage, MessageTypes.P2PMessage, "");
             outPutMsg(modifyTimeStruct, "sendcmd", realp2pbeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendCmd(peerUid, textMessage, MessageTypes.P2PMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            client.sendCmd(peerUid, textMessage, MessageTypes.P2PMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendcmd", realp2pbeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendCmd", realp2pbeizhu + " " + message, mtime, messageId);
                 }
             });
 
-            modifyTimeStruct = client.sendCmd(groupId, textMessage,MessageTypes.GroupMessage,"");
+            modifyTimeStruct = client.sendCmd(groupId, textMessage, MessageTypes.GroupMessage, "");
             outPutMsg(modifyTimeStruct, "sendcmd", groupBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendCmd(groupId, textMessage, MessageTypes.GroupMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            client.sendCmd(groupId, textMessage, MessageTypes.GroupMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendcmd", groupBeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendgroupCmd", groupBeizhu + " " + message, mtime, messageId);
                 }
             });
 
 
-            modifyTimeStruct = client.sendCmd(roomId, textMessage,MessageTypes.RoomMessage,"");
+            modifyTimeStruct = client.sendCmd(roomId, textMessage, MessageTypes.RoomMessage, "");
             outPutMsg(modifyTimeStruct, "sendcmd", roomBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendCmd(roomId, textMessage, MessageTypes.RoomMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            client.sendCmd(roomId, textMessage, MessageTypes.RoomMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendcmd", roomBeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendroomCmd", roomBeizhu + " " + message, mtime, messageId);
                 }
             });
 
+            if (true)
+                return;
 
 
             /***************************发送Message类************************************/
-            modifyTimeStruct = client.sendMessage(peerUid, sendMessgeType, textMessage,MessageTypes.P2PMessage,"");
+            modifyTimeStruct = client.sendMessage(peerUid, sendMessgeType, textMessage, MessageTypes.P2PMessage, "");
             outPutMsg(modifyTimeStruct, "sendMessage", realp2pbeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendMessage(peerUid, sendMessgeType, textMessage, MessageTypes.P2PMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            client.sendMessage(peerUid, sendMessgeType, textMessage, MessageTypes.P2PMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendMessage", realp2pbeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendCmd", realp2pbeizhu + " " + message, mtime, messageId);
                 }
             });
 
-            modifyTimeStruct = client.sendMessage(groupId, sendMessgeType, textMessage,MessageTypes.GroupMessage,"");
+            modifyTimeStruct = client.sendMessage(groupId, sendMessgeType, textMessage, MessageTypes.GroupMessage, "");
             outPutMsg(modifyTimeStruct, "sendMessage", groupBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendMessage(groupId, sendMessgeType, textMessage, MessageTypes.GroupMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            client.sendMessage(groupId, sendMessgeType, textMessage, MessageTypes.GroupMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendMessage", groupBeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendgroupCmd", groupBeizhu + " " + message, mtime, messageId);
                 }
             });
 
 
-            modifyTimeStruct = client.sendMessage(roomId, sendMessgeType, textMessage,MessageTypes.RoomMessage,"");
+            modifyTimeStruct = client.sendMessage(roomId, sendMessgeType, textMessage, MessageTypes.RoomMessage, "");
             outPutMsg(modifyTimeStruct, "sendMessage", roomBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
 
-            client.sendMessage(roomId, sendMessgeType, textMessage, MessageTypes.RoomMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
+            client.sendMessage(roomId, sendMessgeType, textMessage, MessageTypes.RoomMessage, "", new ISendMsgCallBack() {
                 @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendMessage", roomBeizhu, aLong, aLong2);
+                public void onResult(long mtime, long messageId, String message, RTMAnswer answer) {
+                    asyncOutPutMsg(answer, "sendroomCmd", roomBeizhu + " " + message, mtime, messageId);
                 }
             });
 
-
-            /***************************发送Message二进制类************************************/
-            modifyTimeStruct = client.sendMessage(peerUid, sendMessgeType, binaryData,MessageTypes.P2PMessage,"");
-            outPutMsg(modifyTimeStruct, "sendMessage", realp2pbeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
-
-            client.sendMessage(peerUid, sendMessgeType, binaryData, MessageTypes.P2PMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
-                @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendMessage", realp2pbeizhu, aLong, aLong2);
-                }
-            });
-
-            modifyTimeStruct = client.sendMessage(groupId, sendMessgeType, binaryData,MessageTypes.GroupMessage,"");
-            outPutMsg(modifyTimeStruct, "sendMessage", groupBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
-
-            client.sendMessage(groupId, sendMessgeType, binaryData, MessageTypes.GroupMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
-                @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendMessage", groupBeizhu, aLong, aLong2);
-                }
-            });
-
-
-            modifyTimeStruct = client.sendMessage(roomId, sendMessgeType, binaryData,MessageTypes.RoomMessage,"");
-            outPutMsg(modifyTimeStruct, "sendMessage", roomBeizhu, modifyTimeStruct.modifyTime, modifyTimeStruct.messageId);
-
-            client.sendMessage(roomId, sendMessgeType, binaryData , MessageTypes.RoomMessage, "", new IRTMDoubleValueCallback<Long, Long>() {
-                @Override
-                public void onResult(Long aLong, Long aLong2, RTMAnswer answer) {
-                    asyncOutPutMsg(answer, "sendMessage", roomBeizhu, aLong, aLong2);
-                }
-            });
         }
-
-
 
         void newInterface(){
             HashSet<Long> p2puids = new HashSet<>();
@@ -690,27 +672,27 @@ public class TestClass {
             final String beizhu = "to user " + loginUid;
             long toUid = loginUid;
             RTMClient client = pushClients.get(peerUid);
-            client.sendChat(toUid, textMessage,MessageTypes.P2PMessage,"",new IRTMDoubleValueCallback<Long,Long>() {
-                @Override
-                public void onResult(Long mtime, Long messageId, RTMAnswer answer) {
-                    outPutMsg(answer, "sendchat", beizhu, mtime, messageId,false);
-                }
-            });
+//            client.sendChat(toUid, textMessage,MessageTypes.P2PMessage,"",new IRTMDoubleValueCallback<Long,Long>() {
+//                @Override
+//                public void onResult(Long mtime, Long messageId, RTMAnswer answer) {
+//                    outPutMsg(answer, "sendchat", beizhu, mtime, messageId,false);
+//                }
+//            });
 
 
-            client.sendCmd(toUid, textMessage,MessageTypes.P2PMessage, "",new IRTMDoubleValueCallback<Long,Long>() {
-                @Override
-                public void onResult(Long mtime, Long messageId, RTMAnswer answer) {
-                    outPutMsg(answer, "sendCmd", beizhu, mtime, messageId,false);
-                }
-            });
+//            client.sendCmd(toUid, textMessage,MessageTypes.P2PMessage, "",new IRTMDoubleValueCallback<Long,Long>() {
+//                @Override
+//                public void onResult(Long mtime, Long messageId, RTMAnswer answer) {
+//                    outPutMsg(answer, "sendCmd", beizhu, mtime, messageId,false);
+//                }
+//            });
 
-            client.sendMessage(toUid, sendMessgeType, textMessage,MessageTypes.P2PMessage, "", new IRTMDoubleValueCallback<Long,Long>() {
-                @Override
-                public void onResult(Long mtime, Long messageId, RTMAnswer answer) {
-                    outPutMsg(answer, "sendMessage", beizhu, mtime, messageId,false);
-                }
-            });
+//            client.sendMessage(toUid, sendMessgeType, textMessage,MessageTypes.P2PMessage, "", new IRTMDoubleValueCallback<Long,Long>() {
+//                @Override
+//                public void onResult(Long mtime, Long messageId, RTMAnswer answer) {
+//                    outPutMsg(answer, "sendMessage", beizhu, mtime, messageId,false);
+//                }
+//            });
 
 
 //        client.sendAudio(new IRTMDoubleValueCallback<Long,Long>() {
@@ -1362,7 +1344,7 @@ public class TestClass {
         List<Integer> types = new ArrayList<Integer>() {{
             add( 66);
         }};
-        private int fetchTotalCount = 1;
+        private int fetchTotalCount = 10;
 
         
 
@@ -1371,6 +1353,92 @@ public class TestClass {
                 mylog.log("not available rtmclient");
                 return;
             }
+
+         /*   client.getp2pConversationList(0, null, new IRTMCallback<List<ConversationInfo>>() {
+                @Override
+                public void onResult(List<ConversationInfo> conversationInfos, RTMAnswer answer) {
+                    mylog.log("getp2pConversationList result " + answer.getErrInfo());
+                    if (answer.errorCode == 0){
+                        for (ConversationInfo conversationInfo: conversationInfos){
+                            if (isFileType(conversationInfo.lastHistortMessage.messageType) )
+                                mylog.log("getp2pConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.fileInfo.url);
+                            else
+                                mylog.log("getp2pConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.stringMessage);
+                        }
+                    }
+                }
+            });*/
+
+//            client.getGroupConversationList(0, null, new IRTMCallback<List<ConversationInfo>>() {
+//                @Override
+//                public void onResult(List<ConversationInfo> conversationInfos, RTMAnswer answer) {
+//                    mylog.log("getGroupConversationList result " + answer.getErrInfo());
+//                    if (answer.errorCode == 0){
+//                        for (ConversationInfo conversationInfo: conversationInfos){
+//                            if (isFileType(conversationInfo.lastHistortMessage.messageType) )
+//                                mylog.log("getGroupConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.fileInfo.url);
+//                            else
+//                                mylog.log("getGroupConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.stringMessage);
+//                        }
+//                    }
+//                }
+//            });
+//
+//
+//            client.getP2PUnreadConversationList(0, null, new IRTMCallback<List<ConversationInfo>>() {
+//                @Override
+//                public void onResult(List<ConversationInfo> conversationInfos, RTMAnswer answer) {
+//                    mylog.log("getP2PUnreadConversationList result " + answer.getErrInfo());
+//                    if (answer.errorCode == 0){
+//                        for (ConversationInfo conversationInfo: conversationInfos){
+//                            if (isFileType(conversationInfo.lastHistortMessage.messageType) )
+//                                mylog.log("getP2PUnreadConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.fileInfo.url);
+//                            else
+//                                mylog.log("getP2PUnreadConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.stringMessage);
+//                        }
+//                    }
+//
+//                }
+//            });
+//
+//            client.getGroupUnreadConversationList(0, null, new IRTMCallback<List<ConversationInfo>>() {
+//                @Override
+//                public void onResult(List<ConversationInfo> conversationInfos, RTMAnswer answer) {
+//                    mylog.log("getGroupUnreadConversationList result " + answer.getErrInfo());
+//                    if (answer.errorCode == 0){
+//                        for (ConversationInfo conversationInfo: conversationInfos){
+//                            if (isFileType(conversationInfo.lastHistortMessage.messageType) )
+//                                mylog.log("getGroupUnreadConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.fileInfo.url);
+//                            else
+//                                mylog.log("getGroupUnreadConversationList uid:"  + conversationInfo.toId + " unreadnum:" + conversationInfo.unreadNum + " lastmsg:" + conversationInfo.lastHistortMessage.stringMessage);
+//                        }
+//                    }
+//                }
+//            });
+////
+//            client.getUnreadConversationList(true, 0, null, new IRTMCallback<UnreadConversationInfo>() {
+//                @Override
+//                public void onResult(UnreadConversationInfo unreadConversationInfo, RTMAnswer answer) {
+//                    mylog.log("getUnreadConversationList result " + answer.getErrInfo());
+//                    if (answer.errorCode == 0){
+//                        for (ConversationInfo p2punread: unreadConversationInfo.p2pUnreads){
+//                            if (isFileType(p2punread.lastHistortMessage.messageType) )
+//                                mylog.log("getUnreadConversationList p2p uid:"  + p2punread.toId + " unreadnum:" + p2punread.unreadNum + " lastmsg:" + p2punread.lastHistortMessage.fileInfo.url);
+//                            else
+//                                mylog.log("getUnreadConversationList p2p uid:"  + p2punread.toId + " unreadnum:" + p2punread.unreadNum + " lastmsg:" + p2punread.lastHistortMessage.stringMessage);
+//
+//                        }
+//
+//                        for (ConversationInfo groupunread: unreadConversationInfo.groupUnreads){
+//                            if (isFileType(groupunread.lastHistortMessage.messageType) )
+//                                mylog.log("getUnreadConversationList group uid:"  + groupunread.toId + " unreadnum:" + groupunread.unreadNum + " lastmsg:" + groupunread.lastHistortMessage.fileInfo.url);
+//                            else
+//                                mylog.log("getUnreadConversationList group uid:"  + groupunread.toId + " unreadnum:" + groupunread.unreadNum + " lastmsg:" + groupunread.lastHistortMessage.stringMessage);
+//
+//                        }
+//                    }
+//                }
+//            });
             mylog.log("Begin History test case\n");
             RTMAnswer answer = client.enterRoom(roomId);
             outPutMsg(answer, "enterRoom", "enterroom " + roomId);
@@ -1476,220 +1544,222 @@ public class TestClass {
         //------------------------[ Desplay Histories Message ]-------------------------//
         void syncHistoryTest() {
             mylog.log("\n================[ get P2P History Chat " + fetchTotalCount + " items ]==================");
-            int count = fetchTotalCount;
-            long beginMsec = 0;
-            long endMsec = 0;
-            long lastId = 0;
+            final int[] count = {fetchTotalCount};
+            final long[] beginMsec = {0};
+            final long[] endMsec = {0};
+            final long[] lastId = {0};
 
             HistoryMessageResult hisresult;
 
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
+            beginMsec[0] = 0;
+            endMsec[0] = 0;
+            lastId[0] = 0;
+            count[0] = fetchTotalCount;
 
-            while (count >= 0) {
-                hisresult = client.getHistoryChat(peerUid, true, fetchTotalCount, beginMsec, endMsec, lastId, MessageTypes.P2PMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-
+            while (count[0] >= fetchTotalCount) {
+                hisresult = client.getHistoryChat(peerUid, true, fetchTotalCount, beginMsec[0], endMsec[0], 0,MessageTypes.P2PMessage);
+                count[0] = hisresult.count;
+                mylog.log("getHistoryChatByTime desc true：retcount:" + count[0]);
                 displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
+                beginMsec[0] = hisresult.beginMsec;
+                endMsec[0] = hisresult.endMsec;
             }
 
-            mylog.log("\n================[ get Group History Chat " + fetchTotalCount + " items ]==================");
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
-
-            while (count >= 0) {
-                hisresult = client.getHistoryChat(groupId, true, fetchTotalCount, beginMsec, endMsec, lastId, MessageTypes.GroupMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-
+            mySleep(2);
+            beginMsec[0] = 0;
+            endMsec[0] = 0;
+            lastId[0] = 0;
+            count[0] = fetchTotalCount;
+            while (count[0] >= fetchTotalCount) {
+                hisresult = client.getHistoryChat(peerUid, true, fetchTotalCount, 0,0,lastId[0], MessageTypes.P2PMessage);
+                count[0] = hisresult.count;
+                mylog.log("getHistoryChatById desc true");
                 displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
+                beginMsec[0] = hisresult.beginMsec;
+                endMsec[0] = hisresult.endMsec;
+                lastId[0] = hisresult.lastId;
             }
 
-            mylog.log("\n================[ get Room History Chat " + fetchTotalCount + " items ]==================");
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
+            mySleep(2);
+            beginMsec[0] = 0;
+            endMsec[0] = 0;
+            lastId[0] = 0;
+            count[0] = fetchTotalCount;
 
-            while (count >= 0) {
-                hisresult = client.getHistoryChat(roomId, true, fetchTotalCount, beginMsec, endMsec, lastId, MessageTypes.RoomMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-                if (hisresult.errorCode != 0)
-                    break;
+            while (count[0] >= fetchTotalCount) {
+                hisresult = client.getHistoryChat(peerUid, false, fetchTotalCount, beginMsec[0], endMsec[0], 0,MessageTypes.P2PMessage);
+                count[0] = hisresult.count;
+                mylog.log("getHistoryChatByTime desc false");
                 displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
+                beginMsec[0] = hisresult.beginMsec;
+                endMsec[0] = hisresult.endMsec;
             }
 
-            mylog.log("\n================[ get Broadcast History Chat " + fetchTotalCount + " items ]==================");
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
-
-            while (count >= 0) {
-                hisresult = client.getHistoryChat(-1,true, fetchTotalCount, beginMsec, endMsec, lastId, MessageTypes.BroadcastMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-
+            mySleep(2);
+            beginMsec[0] = 0;
+            endMsec[0] = 0;
+            lastId[0] = 0;
+            count[0] = fetchTotalCount;
+            while (count[0] >= fetchTotalCount) {
+                hisresult = client.getHistoryChat(peerUid, false, fetchTotalCount, 0,0,lastId[0], MessageTypes.P2PMessage);
+                count[0] = hisresult.count;
+                mylog.log("getHistoryChatById desc false");
                 displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
-            }
-
-
-            mylog.log("\n================[ get P2P History Message " + fetchTotalCount + " items ]==================");
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
-
-            while (count >= 0) {
-                hisresult = client.getHistoryMessage(peerUid, true, fetchTotalCount, beginMsec, endMsec, lastId, types, MessageTypes.P2PMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-
-                displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
+                beginMsec[0] = hisresult.beginMsec;
+                endMsec[0] = hisresult.endMsec;
+                lastId[0] = hisresult.lastId;
             }
 
 
-            mylog.log("\n================[ get Group History Message " + fetchTotalCount + " items ]==================");
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
 
-            while (count >= 0) {
-                hisresult = client.getHistoryMessage(groupId, true, fetchTotalCount, beginMsec, endMsec, lastId, types,MessageTypes.GroupMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-
-                displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
-            }
-
-
-            mylog.log("\n================[ get Room History Message " + fetchTotalCount + " items ]==================");
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
-
-            while (count >= 0) {
-                hisresult = client.getHistoryMessage(roomId, true, fetchTotalCount, beginMsec, endMsec, lastId, types,MessageTypes.RoomMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-                if (hisresult.errorCode != 0 )
-                {
-                    mylog.log("chucuol " + hisresult.getErrInfo());
-                    break;
-                }
-                displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
-            }
-
-            mylog.log("\n================[ get Broadcast History Message " + fetchTotalCount + " items ]==================");
-            beginMsec = 0;endMsec = 0;lastId = 0;count = fetchTotalCount;
-
-            while (count >= 0) {
-                hisresult = client.getHistoryMessage(-1,true, fetchTotalCount, beginMsec, endMsec, lastId, types,MessageTypes.BroadcastMessage);
-                count = hisresult.count;
-
-                count -= fetchTotalCount;
-
-                displayHistoryMessages(hisresult.messages);
-                beginMsec = hisresult.beginMsec;
-                endMsec = hisresult.endMsec;
-                lastId = hisresult.lastId;
-            }
-        }
-
-        void asyncHistoryTest(){
-            mylog.log("\n================[ get P2P History Chat " + fetchTotalCount + " items ]==================");
-            client.getHistoryChat(peerUid, true, fetchTotalCount, 0, 0, 0,MessageTypes.P2PMessage,new IRTMCallback<HistoryMessageResult>() {
+            client.getHistoryChat(peerUid, true, fetchTotalCount, beginMsec[0], endMsec[0],0, MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
                 @Override
                 public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
                     if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
                         mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
                         return;
                     }
+                    mylog.log("getHistoryChatByTime async desc true");
                     displayHistoryMessages(ret.messages);
+                    count[0] = ret.count;
+                    beginMsec[0] = ret.beginMsec;
+                    endMsec[0] = ret.endMsec;
+                    if (count[0] >= fetchTotalCount){
+                        client.getHistoryChat(peerUid, true, fetchTotalCount, beginMsec[0], endMsec[0], 0,MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
+                            @Override
+                            public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
+                                if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
+                                    mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
+                                    return;
+                                }
+                                mylog.log("getHistoryChatByTime async desc true");
+                                displayHistoryMessages(ret.messages);
+                                count[0] = ret.count;
+                                beginMsec[0] = ret.beginMsec;
+                                endMsec[0] = ret.endMsec;
+                            }
+                        });
+                    }
                 }
             });
-            mySleep(1);
 
-            mylog.log("\n================[ get GROUP History Chat " + fetchTotalCount + " items ]==================");
-            client.getHistoryChat(groupId, true, fetchTotalCount, 0, 0, 0, MessageTypes.GroupMessage,new IRTMCallback<HistoryMessageResult>() {
+            mySleep(2);
+            beginMsec[0] = 0;
+            endMsec[0] = 0;
+            lastId[0] = 0;
+            count[0] = fetchTotalCount;
+
+            if (count[0] >= fetchTotalCount) {
+                client.getHistoryChat(peerUid, false, fetchTotalCount, beginMsec[0], endMsec[0],0, MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
+                    @Override
+                    public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
+                        if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
+                            mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
+                            return;
+                        }
+                        mylog.log("getHistoryChatByTime async desc false");
+                        displayHistoryMessages(ret.messages);
+                        count[0] = ret.count;
+                        beginMsec[0] = ret.beginMsec;
+                        endMsec[0] = ret.endMsec;
+                        lastId[0] = ret.lastId;
+                        if (count[0] >= fetchTotalCount){
+                            client.getHistoryChat(peerUid, false, fetchTotalCount, beginMsec[0], endMsec[0], 0,MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
+                                @Override
+                                public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
+                                    if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
+                                        mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
+                                        return;
+                                    }
+                                    mylog.log("getHistoryChatByTime async desc false");
+                                    displayHistoryMessages(ret.messages);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+            mySleep(2);
+            beginMsec[0] = 0;
+            endMsec[0] = 0;
+            lastId[0] = 0;
+            count[0] = fetchTotalCount;
+
+
+            client.getHistoryChat(peerUid, true, fetchTotalCount, 0,0,lastId[0], MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
                 @Override
                 public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
                     if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
-                        mylog.log("getGroupHistoryChat in async return error:" + answer.getErrInfo());
+                        mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
                         return;
                     }
+                    mylog.log("getHistoryChatById async desc true");
                     displayHistoryMessages(ret.messages);
+                    count[0] = ret.count;
+                    beginMsec[0] = ret.beginMsec;
+                    endMsec[0] = ret.endMsec;
+                    lastId[0] = ret.lastId;
+                    if (count[0]>= fetchTotalCount){
+                        client.getHistoryChat(peerUid, true, fetchTotalCount, 0,0,lastId[0], MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
+                            @Override
+                            public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
+                                if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
+                                    mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
+                                    return;
+                                }
+                                mylog.log("getHistoryChatById async desc true");
+                                displayHistoryMessages(ret.messages);
+                                count[0] = ret.count;
+                                beginMsec[0] = ret.beginMsec;
+                                endMsec[0] = ret.endMsec;
+                                lastId[0] = ret.lastId;
+                            }
+                        });
+                    }
                 }
             });
-            mySleep(1);
 
-            mylog.log("\n================[ get ROOM History Chat " + fetchTotalCount + " items ]==================");
-            client.getHistoryChat(roomId, true, fetchTotalCount, 0, 0, 0, MessageTypes.RoomMessage,new IRTMCallback<HistoryMessageResult>() {
+            mySleep(2);
+            beginMsec[0] = 0;
+            endMsec[0] = 0;
+            lastId[0] = 0;
+            count[0] = fetchTotalCount;
+
+            client.getHistoryChat(peerUid, false, fetchTotalCount, 0,0,lastId[0], MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
                 @Override
                 public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
                     if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
-                        mylog.log("getRoomHistoryChat in async return error:" + answer.getErrInfo());
+                        mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
                         return;
                     }
+                    mylog.log("getHistoryChatById async desc true");
                     displayHistoryMessages(ret.messages);
-                }
-            });
-            mySleep(1);
-
-            mylog.log("\n================[ get P2P History Message " + fetchTotalCount + " items ]==================");
-            client.getHistoryMessage(peerUid, true, fetchTotalCount, 0, 0, 0, types, MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
-                @Override
-                public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
-                    if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
-                        mylog.log("getP2PHistoryMessage in async return error:" + answer.getErrInfo());
-                        return;
+                    count[0] = ret.count;
+                    beginMsec[0] = ret.beginMsec;
+                    endMsec[0] = ret.endMsec;
+                    lastId[0] = ret.lastId;
+                    if (count[0]>= fetchTotalCount){
+                        client.getHistoryChat(peerUid, false, fetchTotalCount, 0,0,lastId[0], MessageTypes.P2PMessage, new IRTMCallback<HistoryMessageResult>() {
+                            @Override
+                            public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
+                                if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
+                                    mylog.log("getP2PHistoryChat in async return error:" + answer.getErrInfo());
+                                    return;
+                                }
+                                mylog.log("getHistoryChatById async desc true");
+                                displayHistoryMessages(ret.messages);
+                                count[0] = ret.count;
+                                beginMsec[0] = ret.beginMsec;
+                                endMsec[0] = ret.endMsec;
+                                lastId[0] = ret.lastId;
+                            }
+                        });
                     }
-                    displayHistoryMessages(ret.messages);
                 }
             });
-            mySleep(1);
+        }
 
-            mylog.log("\n================[ get GROUP History Message " + fetchTotalCount + " items ]==================");
-            client.getHistoryMessage(groupId, true, fetchTotalCount, 0, 0, 0, types, MessageTypes.GroupMessage, new IRTMCallback<HistoryMessageResult>() {
-                @Override
-                public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
-                    if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
-                        mylog.log("getGroupHistoryMessage in async return error:" + answer.getErrInfo());
-                        return;
-                    }
-                    displayHistoryMessages(ret.messages);
-                }
-            });
-            mySleep(1);
-
-
-            mylog.log("\n================[ get ROOM History Message " + fetchTotalCount + " items ]==================");
-            client.getHistoryMessage(roomId, true, fetchTotalCount, 0, 0, 0, types, MessageTypes.RoomMessage, new IRTMCallback<HistoryMessageResult>() {
-                @Override
-                public void onResult(HistoryMessageResult ret, RTMAnswer answer) {
-                    if (answer.errorCode != ErrorCode.FPNN_EC_OK.value()) {
-                        mylog.log("getRoomHistoryMessage in async return error:" + answer.getErrInfo());
-                        return;
-                    }
-                    displayHistoryMessages(ret.messages);
-                }
-            });
-            mySleep(1);
+        void asyncHistoryTest(){
         }
 
         void displayHistoryMessages(List<HistoryMessage> messages) {
@@ -1906,6 +1976,7 @@ public class TestClass {
 
         client  = RTMCenter.initRTMClient(info.host, info.pid, loginUid, new RTMExampleQuestProcessor(loginUid),activityWeakReference.get());
         client.setErrorRecoder(mylogRecoder);
+//        client.enableEncryptor();
 
 //        for(int i= 0;i<1;i++) {
 //            peerUid = getuid();
@@ -2143,8 +2214,8 @@ public class TestClass {
 
     final HashMap<String, RTMProjectInfo> testAddress = new HashMap(){{
         put("test", new RTMProjectInfo(11000001,"161.189.171.91:13321"));
-//        put("nx",new RTMProjectInfo(80000071,"rtm-nx-front.ilivedata.com:13321"));
-        put("nx",new RTMProjectInfo(80000071,"52.83.245.22:13092"));
+        put("nx",new RTMProjectInfo(80000071,"rtm-nx-front.ilivedata.com:13321"));
+//        put("nx",new RTMProjectInfo(80000071,"52.83.245.22:13092"));
         put("intl",new RTMProjectInfo(80000087,"rtm-ms-frontgate.ilivedata.com:13321"));
     }};
 

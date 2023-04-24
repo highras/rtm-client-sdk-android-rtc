@@ -168,7 +168,7 @@ public class TCPClient {
         }
     }
 
-    private boolean enableEncryptorByDerData(String curve, byte[] peerPublicKey, boolean streamMode, boolean reinforce) {
+    public boolean enableEncryptorByDerData(String curve, byte[] peerPublicKey, boolean streamMode, boolean reinforce) {
         try {
             keyGenerator = new KeyGenerator(curve, peerPublicKey, streamMode, reinforce);
             return true;

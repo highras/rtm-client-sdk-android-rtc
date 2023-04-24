@@ -1,11 +1,4 @@
 apply plugin: 'com.android.library'
-ext {
-    PUBLISH_GROUP_ID = "com.github.highras"        //项目包名
-    PUBLISH_ARTIFACT_ID = 'rtc-android'            //项目名
-    PUBLISH_VERSION = '2.7.6'                 //版本号
-}
-apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"
-
 android {
     compileSdkVersion 30
     buildToolsVersion "29.0.3"

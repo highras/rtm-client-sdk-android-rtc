@@ -132,7 +132,7 @@ class RTMChat extends RTMRoom {
      * @param attrs     用户自定义附加信息(可空)
      * @param messageTypes   消息类别
      */
-    public void sendChat(long uid, String message, MessageTypes messageTypes, String attrs, UserInterface.IRTMDoubleValueCallback<Long,Long> callback) {
+    public void sendChat(long uid, String message, MessageTypes messageTypes, String attrs, UserInterface.ISendMsgCallBack callback) {
         internalSendChat(callback, uid, RTMStruct.MessageType.CHAT, message, attrs, messageTypes);
     }
 
@@ -156,7 +156,7 @@ class RTMChat extends RTMRoom {
      * @param attrs     附加信息
      * @param messageTypes   消息类别
      */
-    public void sendCmd(long uid, String message, MessageTypes messageTypes,String attrs, UserInterface.IRTMDoubleValueCallback<Long,Long> callback) {
+    public void sendCmd(long uid, String message, MessageTypes messageTypes,String attrs, UserInterface.ISendMsgCallBack callback) {
         internalSendChat(callback, uid, RTMStruct.MessageType.CMD, message, attrs, messageTypes);
     }
 
@@ -174,34 +174,39 @@ class RTMChat extends RTMRoom {
 
 
     /**
-     *获得历史聊天消息(async)
-     * @param toUid   目标id(对于Broadcast类消息 可传任意值)
+     *分页获得历史聊天消息(async)
+     * @param targetId   目标id(对于Broadcast类消息 可传任意值)
      * @param desc      是否按时间倒叙排列
-     * @param count     显示条目数
-     * @param beginMsec 开始时间戳(毫秒)
-     * @param endMsec   结束时间戳(毫秒)
-     * @param lastId    最后一条消息索引id(第一次默认填0)
+     * @param count     获取条数(后台配置 最多建议20条)
+     * @param beginMsec 开始时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.beginMsec)
+     * @param endMsec   结束时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.endMsec)
+     * @param lastId    索引id(可选默认0，第一次获取传入0 第二次查询传入上次结果HistoryMessageResult的lastId)
      * @param messageTypes   消息类别
      * @param callback  HistoryMessageResult类型回调
+     * 注意: 建议时间和id不要同时传入 通过时间查询是左右闭区间(beginMsec<=x<=endMsec)
+     *       通过id查询是开区间lastId<x
      */
-    public void getHistoryChat(long toUid, boolean desc, int count, long beginMsec, long endMsec, long lastId, MessageTypes messageTypes, UserInterface.IRTMCallback<RTMStruct.HistoryMessageResult> callback) {
-        getHistoryMessages(callback, toUid, desc, count, beginMsec, endMsec, lastId, chatMTypes, messageTypes);
+    public void getHistoryChat(long targetId, boolean desc, int count, long beginMsec, long endMsec, long lastId, MessageTypes messageTypes, UserInterface.IRTMCallback<RTMStruct.HistoryMessageResult> callback) {
+        getHistoryMessages(callback, targetId, desc, count, beginMsec, endMsec, lastId, chatMTypes, messageTypes);
     }
 
 
     /**
-     * 获得历史聊天消息(sync)
-     * @param toUid   目标id(对于Broadcast类消息 可传任意值)
+     *分页获得历史聊天消息(sync)
+     * @param targetId   目标id(对于Broadcast类消息 可传任意值)
      * @param desc      是否按时间倒叙排列
-     * @param count     显示条目数
-     * @param beginMsec 开始时间戳(毫秒)
-     * @param endMsec   结束时间戳(毫秒)
-     * @param lastId    最后一条消息索引id(第一次默认填0)
-     * return   HistoryMessageResult
+     * @param count     获取条数(后台配置 最多建议20条)
+     * @param beginMsec 开始时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.beginMsec)
+     * @param endMsec   结束时间戳(毫秒)(可选默认0,第二次查询传入上次结果的HistoryMessageResult.endMsec)
+     * @param lastId    索引id(可选默认0，第一次获取传入0 第二次查询传入上次结果HistoryMessageResult的lastId)
+     * @param messageTypes   消息类别
+     * 注意: 建议时间和id不要同时传入 通过时间查询是左右闭区间(beginMsec<=x<=endMsec)
+     *       通过id查询是开区间lastId<x
      */
-    public HistoryMessageResult getHistoryChat(long toUid, boolean desc, int count, long beginMsec, long endMsec, long lastId, MessageTypes messageTypes) {
-        return getHistoryMessage( toUid, desc, count, beginMsec, endMsec, lastId, chatMTypes, messageTypes);
+    public HistoryMessageResult getHistoryChat(long targetId, boolean desc, int count, long beginMsec, long endMsec, long lastId, MessageTypes messageTypes) {
+        return getHistoryMessage( targetId, desc, count, beginMsec, endMsec, lastId, chatMTypes, messageTypes);
     }
+
 
     /**
      *获取服务器未读消息
