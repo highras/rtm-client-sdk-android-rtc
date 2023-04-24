@@ -24,11 +24,11 @@ dependency in Gradle
 ~~~
     使用RTC:
     dependencies {
-        implementation 'com.github.highras:rtc-android:2.7.6'
+        implementation 'com.github.highras:rtc-android:2.7.7'
     }
     使用RTM:
         dependencies {
-        implementation 'com.github.highras:rtm-android:2.7.6'
+        implementation 'com.github.highras:rtm-android:2.7.7'
     }
 ~~~
 
