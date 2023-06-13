@@ -11,27 +11,6 @@
 - RTM最低支持Android版本为5.0(api-21) 带有RTC(实时音视频)功能最低支持Android版本为7.0(api-24)
 
 ### 依赖集成
-dependency in Gradle
-  - Add maventral as your repository in project's build.gradle:
-  ~~~
-    allprojects {
-        repositories {
-          maventral()
-        }
-    }
-~~~
-  - Add dependency in your module's build.gradle:
-~~~
-    使用RTC:
-    dependencies {
-        implementation 'com.github.highras:rtc-android:2.7.7'
-    }
-    使用RTM:
-        dependencies {
-        implementation 'com.github.highras:rtm-android:2.7.7'
-    }
-~~~
-
 
 ### 使用说明
 - 需要的权限
