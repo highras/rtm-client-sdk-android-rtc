@@ -563,22 +563,26 @@ public class TestVideoActivity extends BaseActivity implements View.OnClickListe
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated( SurfaceHolder holder) {
-                RTMStruct.RTMAnswer jj = client.subscribeVideos(activityRoom, new HashMap<Long, SurfaceView>() {{
-                    put(inituid, surfaceView);
-                }});
-                addlog( "surfaceCreated: 订阅 "  + showName(inituid,initname )+" 视频流" + transRet(jj));
-                if (jj.errorCode == 0){
-                    userSurfaces.put(inituid, view);
+                if (userSurfaces.get(inituid) != null){
+                    client.bindDecodeSurface(inituid, surfaceView);
+
+                }else {
+                    RTMStruct.RTMAnswer jj = client.subscribeVideos(activityRoom, new HashMap<Long, SurfaceView>() {{
+                        put(inituid, surfaceView);
+                    }});
+                    addlog("surfaceCreated: 订阅 " + showName(inituid, initname) + " 视频流" + transRet(jj));
+                    if (jj.errorCode == 0) {
+                        userSurfaces.put(inituid, view);
 //                    linearlayout.addView(view);
-                }
-                else{
-                    linearlayout.removeView(view);
+                    } else {
+                        linearlayout.removeView(view);
+                    }
                 }
             }
 
             @Override
             public void surfaceChanged( SurfaceHolder holder, int format, int width, int height) {
-//                addlog("surfaceChanged ");
+                addlog("surfaceChanged ");
             }
 
             @Override

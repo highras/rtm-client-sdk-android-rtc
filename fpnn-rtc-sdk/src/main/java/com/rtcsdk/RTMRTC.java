@@ -495,6 +495,13 @@ public class RTMRTC extends RTMChat{
         });
     }
 
+    /**
+     * 设置对方的surfaceview(当原有的surfaceview发生重建的时候)
+     */
+    public void bindDecodeSurface(long uid, SurfaceView view){
+        RTCEngine.bindDecodeSurface(peerUid, view.getHolder().getSurface());
+    }
+
 }
 
 
