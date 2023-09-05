@@ -16,11 +16,7 @@ android {
 
     defaultConfig {
         applicationId "com.highras.rtc"
-        if (needRTC.toBoolean()) {
-            minSdkVersion 24
-        }else{
-            minSdkVersion 21
-        }
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 3
         versionName "3.0"
@@ -62,9 +58,17 @@ android {
         }
     }
 }
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
 
 dependencies {
-    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
+//    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation(name: 'rtc-android', ext: 'aar')
+
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
@@ -78,5 +82,4 @@ dependencies {
     implementation project(':spinner_lib')
 
     implementation 'com.tuzhenlei:crashhandler:1.0.1'
-    implementation project(path: ':fpnn-rtc-sdk')
 }
