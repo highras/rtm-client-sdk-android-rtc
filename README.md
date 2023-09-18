@@ -23,6 +23,14 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     ~~~
+- 混淆 请在混淆规则里加入
+
+    -keep class com.fpnn.sdk.**{*;}
+
+    -keep class com.rtcsdk.**{*;}
+    
+    -keep class org.msgpack.core.**{*;}
+
   
 - RTM说明:
   - 服务器push消息:请继承RTMPushProcessor类,重写自己需要的push系列函数(所有push函数在子线程执行，如需更新ui请自行切回主线程 RTM的push回调函数和收发线程在一起 如果用户在push的回调函数中有耗时操作 建议请独开启线程处理)
